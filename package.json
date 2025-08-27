@@ -10,6 +10,7 @@
     "typegen": "sanity schema extract --path=src/sanity/extract.json && sanity typegen generate && rm ./src/sanity/extract.json"
   },
   "dependencies": {
+    "@googlemaps/js-api-loader": "^1.16.10",
     "@headlessui/react": "^2.2.6",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-context-menu": "^2.2.16",
@@ -21,7 +22,7 @@
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "feed": "^5.1.0",
-    "framer-motion": "^12.23.11",
+    "framer-motion": "^12.23.12",
     "lucide-react": "^0.542.0",
     "motion": "^12.23.12",
     "next": "15.4.4",
@@ -36,6 +37,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4.1.11",
+    "@types/google.maps": "^3.58.1",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",

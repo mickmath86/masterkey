@@ -17,6 +17,7 @@ import { Testimonials } from '@/components/testimonials'
 import { Heading, Subheading } from '@/components/text'
 import { ChevronRightIcon } from '@heroicons/react/16/solid'
 import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { FadeInUp, FadeInStagger } from '@/components/animations';
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -31,7 +32,8 @@ function Hero() {
       <div 
         className="absolute inset-2 bottom-0 rounded-4xl ring-1 ring-black/5 ring-inset bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: 'url(https://d1xt9s86fx9r45.cloudfront.net/assets/hl-production/assets/hlca/home/hero_desktop_wide-5b3707a057fa6298422d5dd72baea5c852a16db63d806cb0ea75eac6f86b6a7f.webp)'
+          // backgroundImage: 'url(https://d1xt9s86fx9r45.cloudfront.net/assets/hl-production/assets/hlca/home/hero_desktop_wide-5b3707a057fa6298422d5dd72baea5c852a16db63d806cb0ea75eac6f86b6a7f.webp)'
+          backgroundImage: 'url(/images/hero-bg.webp)'
         }}
       />
       {/* Gradient overlay */}
@@ -51,13 +53,17 @@ function Hero() {
         <Navbar3 />
         <div className="flex flex-col md:flex-row gap-4 items-center">
           <div className="pt-16 pb-24 sm:pt-24 sm:pb-32 md:pt-32 md:pb-48">
-            <h1 className="font-display text-6xl/[0.9] font-medium tracking-tight text-balance text-gray-950 sm:text-8xl/[0.8] md:text-9xl/[0.8]">
-              Close every deal.
-            </h1>
-            <p className="mt-8 max-w-lg text-xl/7 font-medium text-gray-950/75 sm:text-2xl/8">
-              Radiant helps you sell more by revealing sensitive information about
-              your customers.
-            </p>
+            <FadeInUp delay={0.2}>
+              <h1 className="font-display text-6xl/[0.9] font-medium tracking-tight text-balance text-gray-950 sm:text-8xl/[0.8] md:text-9xl/[0.8]">
+                Close every deal.
+              </h1>
+            </FadeInUp>
+            <FadeInUp delay={0.4}>
+              <p className="mt-8 max-w-lg text-xl/7 font-medium text-gray-950/75 sm:text-2xl/8">
+                Radiant helps you sell more by revealing sensitive information about
+                your customers.
+              </p>
+            </FadeInUp>
             {/* <div className="mt-12 flex flex-col gap-x-6 gap-y-4 sm:flex-row">
               <Button href="#">Get started</Button>
               <Button variant="secondary" href="/pricing">
@@ -67,14 +73,16 @@ function Hero() {
             
           </div>
         
-          <div className="bg-background mb-10 shadow-lg h-[75%] p-10 w-100 border border-gray-200 rounded-sm  flex flex-col gap-y-4 items-center justify-center">
-           
-            <h2 className="text-2xl font-medium">How can we help?</h2>
-            <p className="text-gray-500">Choose the plan that best fits your needs.</p>
-            <Button className="w-full" href="/real-estate-buy">Looking to Buy</Button>
-            <Button className="w-full" href="/real-estate-sell">Looking to Sell</Button>
-            <Button className="w-full" href="#">Looking for Both</Button>
-          </div>
+          <FadeInUp delay={0.6}>
+            <div className="bg-background mb-10 shadow-lg h-[75%] p-10 w-100 border border-gray-200 rounded-sm  flex flex-col gap-y-4 items-center justify-center">
+             
+              <h2 className="text-2xl font-medium">How can we help?</h2>
+              <p className="text-gray-500">Choose the plan that best fits your needs.</p>
+              <Button className="w-full" href="/real-estate-buy">Looking to Buy</Button>
+              <Button className="w-full" href="/real-estate-sell">Looking to Sell</Button>
+              <Button className="w-full" href="#">Looking for Both</Button>
+            </div>
+          </FadeInUp>
         </div>
        
       </Container>
@@ -86,15 +94,19 @@ function FeatureSection() {
   return (
     <div className="overflow-hidden">
       <Container className="pb-24">
-        <Heading as="h2" className="max-w-3xl">
-          A snapshot of your entire sales pipeline.
-        </Heading>
-        <Screenshot
-          width={1216}
-          height={768}
-          src="/screenshots/app.png"
-          className="mt-16 h-144 sm:h-auto sm:w-304"
-        />
+        <FadeInUp delay={0.2}>
+          <Heading as="h2" className="max-w-3xl">
+            A snapshot of your entire sales pipeline.
+          </Heading>
+        </FadeInUp>
+        <FadeInUp delay={0.4}>
+          <Screenshot
+            width={1216}
+            height={768}
+            src="/screenshots/app.png"
+            className="mt-16 h-144 sm:h-auto sm:w-304"
+          />
+        </FadeInUp>
       </Container>
     </div>
   )
@@ -103,10 +115,14 @@ function FeatureSection() {
 function BentoSection() {
   return (
     <Container>
-      <Subheading>Sales</Subheading>
-      <Heading as="h3" className="mt-2 max-w-3xl">
-        Know more about your customers than they do.
-      </Heading>
+      <FadeInUp delay={0.2}>
+        <Subheading>Sales</Subheading>
+      </FadeInUp>
+      <FadeInUp delay={0.4}>
+        <Heading as="h3" className="mt-2 max-w-3xl">
+          Know more about your customers than they do.
+        </Heading>
+      </FadeInUp>
 
       <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2">
         <BentoCard
