@@ -7,6 +7,7 @@ import { ChevronRightIcon } from '@heroicons/react/16/solid';
 import { GooglePlacesInput } from '@/components/ui/google-places-input';
 import { PropertyLookup } from '@/components/ui/property-lookup';
 import { PropertyVerification } from '@/components/ui/property-verification';
+import { webhookService, type WebhookSubmissionData } from '../../lib/webhook-api';
 
 // Simplified form data - removed property details that will come from API
 interface FormData {
@@ -85,13 +86,13 @@ const timelines = [
   'Just exploring options'
 ];
 
-
-type FormStep = 'address' | 'lookup' | 'verification' | 'details' | 'contact';
+type FormStep = 'address' | 'lookup' | 'verification' | 'details' | 'contact' | 'success' | 'error';
 
 export default function RealEstateSellPage() {
   const [currentStep, setCurrentStep] = useState<FormStep>('address');
-  const [propertyDetails, setPropertyDetails] = useState<PropertyDetails>({});
   const [propertyData, setPropertyData] = useState<PropertyData | null>(null);
+  const [propertyDetails, setPropertyDetails] = useState<PropertyDetails>({});
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     propertyLocation: '',
     sellingReason: '',
@@ -144,15 +145,35 @@ export default function RealEstateSellPage() {
     if (!propertyData) return;
 
     try {
-      const leadData: LeadData = {
+      const webhookData: WebhookSubmissionData = {
+        // Contact Information
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
+        
+        // Property Information
         propertyLocation: formData.propertyLocation,
         propertyType: propertyData.propertyType,
+        bedrooms: propertyData.bedrooms,
+        bathrooms: propertyData.bathrooms,
+        livingArea: propertyData.livingArea,
+        yearBuilt: propertyData.yearBuilt,
+        lotSize: propertyData.lotSize,
+        zestimate: propertyData.zestimate || propertyData.price,
+        homeStatus: propertyData.homeStatus,
+        zpid: propertyData.zpid,
+        
+        // Selling Details
+        sellingReason: formData.sellingReason,
         timeline: formData.timeline,
-        leadSource: 'MasterKey Sell Property Quiz',
+        needToSellFirst: formData.needToSellFirst,
+        expectedValue: formData.expectedValue,
+        outstandingObligations: formData.outstandingObligations,
+        occupancyStatus: formData.occupancyStatus,
+        
+        // Metadata
+        leadSource: 'MasterKey Property Sell Form',
         notes: `Property Details:
 - Address: ${propertyData.address}
 - Type: ${propertyData.propertyType}
@@ -161,44 +182,30 @@ export default function RealEstateSellPage() {
 - Living Area: ${propertyData.livingArea} sq ft
 - Year Built: ${propertyData.yearBuilt || 'N/A'}
 - Estimated Value: $${propertyData.zestimate?.toLocaleString() || propertyData.price?.toLocaleString() || 'N/A'}
-- Selling Reason: ${formData.sellingReason}
+- Home Status: ${propertyData.homeStatus}
+
+Selling Details:
+- Reason: ${formData.sellingReason}
 - Timeline: ${formData.timeline}
 - Need to Sell First: ${formData.needToSellFirst}
 - Expected Value: ${formData.expectedValue}
 - Outstanding Obligations: ${formData.outstandingObligations}
-- Occupancy Status: ${formData.occupancyStatus}`,
-        customFields: {
-          propertyType: propertyData.propertyType,
-          bedrooms: propertyData.bedrooms.toString(),
-          bathrooms: propertyData.bathrooms.toString(),
-          livingArea: propertyData.livingArea.toString(),
-          yearBuilt: propertyData.yearBuilt?.toString() || 'N/A',
-          estimatedValue: propertyData.zestimate?.toString() || propertyData.price?.toString() || 'N/A',
-          sellingReason: formData.sellingReason,
-          needToSellFirst: formData.needToSellFirst,
-          expectedValue: formData.expectedValue,
-          outstandingObligations: formData.outstandingObligations,
-          occupancyStatus: formData.occupancyStatus,
-          ...(propertyDetails.placeId && { placeId: propertyDetails.placeId }),
-          ...(propertyDetails.coordinates && { 
-            coordinatesLat: propertyDetails.coordinates.lat.toString(),
-            coordinatesLng: propertyDetails.coordinates.lng.toString()
-          })
-        }
+- Occupancy Status: ${formData.occupancyStatus}`
       };
 
-      const repliersClient = getRepliersClient();
-      const result = await repliersClient.createLead(leadData);
+      const result = await webhookService.submitLead(webhookData);
 
       if (result.success) {
-        alert('Thank you! Your property evaluation request has been submitted successfully. We will contact you soon with a comprehensive market analysis.');
+        setCurrentStep('success');
       } else {
-        console.error('Failed to create lead:', result.error);
-        alert('Thank you! Your information has been submitted. We will contact you soon.');
+        console.error('Failed to submit lead:', result.error);
+        setSubmissionError(result.error || 'Unknown error occurred');
+        setCurrentStep('error');
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Thank you! Your information has been submitted. We will contact you soon.');
+      setSubmissionError(error instanceof Error ? error.message : 'Network error occurred');
+      setCurrentStep('error');
     }
   };
 
@@ -466,4 +473,98 @@ export default function RealEstateSellPage() {
       </div>
     </div>
   );
+
+  // Success Page
+  if (currentStep === 'success') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Thank You!
+          </h1>
+          
+          <p className="text-gray-600 mb-6">
+            Your property evaluation request has been submitted successfully. Our team will contact you soon with a comprehensive market analysis.
+          </p>
+          
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-green-800">
+              <strong>What happens next?</strong><br />
+              • We'll analyze your property data<br />
+              • Prepare a detailed market report<br />
+              • Contact you within 24 hours
+            </p>
+          </div>
+          
+          <Button
+            onClick={() => window.location.href = '/'}
+            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold"
+          >
+            Return to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Error Page
+  if (currentStep === 'error') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-rose-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Submission Error
+          </h1>
+          
+          <p className="text-gray-600 mb-4">
+            We encountered an issue submitting your information. Don't worry - your data is safe.
+          </p>
+          
+          {submissionError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-red-800">
+                <strong>Error:</strong> {submissionError}
+              </p>
+            </div>
+          )}
+          
+          <div className="space-y-3">
+            <Button
+              onClick={() => {
+                setSubmissionError(null);
+                setCurrentStep('contact');
+              }}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+            >
+              Try Again
+            </Button>
+            
+            <Button
+              onClick={() => window.location.href = '/'}
+              variant="outline"
+              className="w-full py-3 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold"
+            >
+              Return to Home
+            </Button>
+          </div>
+          
+          <p className="text-xs text-gray-500 mt-4">
+            If the problem persists, please contact us directly.
+          </p>
+        </div>
+      </div>
+    );
+  }
 }
