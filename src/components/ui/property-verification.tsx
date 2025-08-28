@@ -5,18 +5,36 @@ import { Button } from '@/components/button';
 import { CheckIcon, XMarkIcon, HomeIcon, MapPinIcon } from '@heroicons/react/24/solid';
 
 interface PropertyData {
+  zpid: string;
   address: string;
-  propertyType: string;
   bedrooms: number;
   bathrooms: number;
-  squareFootage: string;
-  yearBuilt: number;
-  lotSize: string;
-  estimatedValue: string;
-  lastSaleDate: string;
-  lastSalePrice: string;
-  propertyTax: string;
-  neighborhood: string;
+  livingArea: number;
+  propertyType: string;
+  homeStatus: string;
+  zestimate?: number;
+  rentZestimate?: number;
+  yearBuilt?: number;
+  lotSize?: number;
+  price?: number;
+  priceHistory?: Array<{
+    date: string;
+    price: number;
+    event: string;
+  }>;
+  photos?: string[];
+  description?: string;
+  schools?: Array<{
+    name: string;
+    rating: number;
+    level: string;
+  }>;
+  neighborhood?: {
+    name: string;
+    walkScore?: number;
+    transitScore?: number;
+    bikeScore?: number;
+  };
 }
 
 interface PropertyVerificationProps {
@@ -59,7 +77,7 @@ export function PropertyVerification({ propertyData, onConfirm, onEdit }: Proper
               <h3 className="font-semibold text-gray-900">Property Address</h3>
             </div>
             <p className="text-lg text-gray-800">{propertyData.address}</p>
-            <p className="text-sm text-gray-600 mt-1">{propertyData.neighborhood}</p>
+            <p className="text-sm text-gray-600 mt-1">{propertyData.neighborhood?.name || 'N/A'}</p>
           </motion.div>
 
           {/* Property Details Grid */}
@@ -81,8 +99,8 @@ export function PropertyVerification({ propertyData, onConfirm, onEdit }: Proper
               </div>
               
               <div className="p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-gray-700 mb-2">Square Footage</h4>
-                <p className="text-gray-900">{propertyData.squareFootage} sq ft</p>
+                <h4 className="font-medium text-gray-700 mb-2">Living Area</h4>
+                <p className="text-gray-900">{propertyData.livingArea} sq ft</p>
               </div>
             </motion.div>
 
@@ -94,17 +112,17 @@ export function PropertyVerification({ propertyData, onConfirm, onEdit }: Proper
             >
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium text-gray-700 mb-2">Year Built</h4>
-                <p className="text-gray-900">{propertyData.yearBuilt}</p>
+                <p className="text-gray-900">{propertyData.yearBuilt || 'N/A'}</p>
               </div>
               
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium text-gray-700 mb-2">Lot Size</h4>
-                <p className="text-gray-900">{propertyData.lotSize}</p>
+                <p className="text-gray-900">{propertyData.lotSize ? `${propertyData.lotSize} sq ft` : 'N/A'}</p>
               </div>
               
               <div className="p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-gray-700 mb-2">Property Tax</h4>
-                <p className="text-gray-900">{propertyData.propertyTax}</p>
+                <h4 className="font-medium text-gray-700 mb-2">Home Status</h4>
+                <p className="text-gray-900">{propertyData.homeStatus}</p>
               </div>
             </motion.div>
           </div>
@@ -120,12 +138,18 @@ export function PropertyVerification({ propertyData, onConfirm, onEdit }: Proper
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-green-600">Current Estimate</p>
-                <p className="text-2xl font-bold text-green-800">{propertyData.estimatedValue}</p>
+                <p className="text-2xl font-bold text-green-800">
+                  ${(propertyData.zestimate || propertyData.price || 0).toLocaleString()}
+                </p>
               </div>
-              <div>
-                <p className="text-sm text-green-600">Last Sale ({propertyData.lastSaleDate})</p>
-                <p className="text-lg font-semibold text-green-700">{propertyData.lastSalePrice}</p>
-              </div>
+              {propertyData.priceHistory && propertyData.priceHistory.length > 0 && (
+                <div>
+                  <p className="text-sm text-green-600">Last Sale ({propertyData.priceHistory[0].date})</p>
+                  <p className="text-lg font-semibold text-green-700">
+                    ${propertyData.priceHistory[0].price.toLocaleString()}
+                  </p>
+                </div>
+              )}
             </div>
           </motion.div>
 

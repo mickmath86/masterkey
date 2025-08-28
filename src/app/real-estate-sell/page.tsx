@@ -7,7 +7,6 @@ import { ChevronRightIcon } from '@heroicons/react/16/solid';
 import { GooglePlacesInput } from '@/components/ui/google-places-input';
 import { PropertyLookup } from '@/components/ui/property-lookup';
 import { PropertyVerification } from '@/components/ui/property-verification';
-import { getRepliersClient, type LeadData } from '../../lib/repliers-api';
 
 // Simplified form data - removed property details that will come from API
 interface FormData {
@@ -34,18 +33,36 @@ interface PropertyDetails {
 }
 
 interface PropertyData {
+  zpid: string;
   address: string;
-  propertyType: string;
   bedrooms: number;
   bathrooms: number;
-  squareFootage: string;
-  yearBuilt: number;
-  lotSize: string;
-  estimatedValue: string;
-  lastSaleDate: string;
-  lastSalePrice: string;
-  propertyTax: string;
-  neighborhood: string;
+  livingArea: number;
+  propertyType: string;
+  homeStatus: string;
+  zestimate?: number;
+  rentZestimate?: number;
+  yearBuilt?: number;
+  lotSize?: number;
+  price?: number;
+  priceHistory?: Array<{
+    date: string;
+    price: number;
+    event: string;
+  }>;
+  photos?: string[];
+  description?: string;
+  schools?: Array<{
+    name: string;
+    rating: number;
+    level: string;
+  }>;
+  neighborhood?: {
+    name: string;
+    walkScore?: number;
+    transitScore?: number;
+    bikeScore?: number;
+  };
 }
 
 const sellingReasons = [
@@ -141,9 +158,9 @@ export default function RealEstateSellPage() {
 - Type: ${propertyData.propertyType}
 - Bedrooms: ${propertyData.bedrooms}
 - Bathrooms: ${propertyData.bathrooms}
-- Square Footage: ${propertyData.squareFootage}
-- Year Built: ${propertyData.yearBuilt}
-- Estimated Value: ${propertyData.estimatedValue}
+- Living Area: ${propertyData.livingArea} sq ft
+- Year Built: ${propertyData.yearBuilt || 'N/A'}
+- Estimated Value: $${propertyData.zestimate?.toLocaleString() || propertyData.price?.toLocaleString() || 'N/A'}
 - Selling Reason: ${formData.sellingReason}
 - Timeline: ${formData.timeline}
 - Need to Sell First: ${formData.needToSellFirst}
@@ -154,9 +171,9 @@ export default function RealEstateSellPage() {
           propertyType: propertyData.propertyType,
           bedrooms: propertyData.bedrooms.toString(),
           bathrooms: propertyData.bathrooms.toString(),
-          squareFootage: propertyData.squareFootage,
-          yearBuilt: propertyData.yearBuilt.toString(),
-          estimatedValue: propertyData.estimatedValue,
+          livingArea: propertyData.livingArea.toString(),
+          yearBuilt: propertyData.yearBuilt?.toString() || 'N/A',
+          estimatedValue: propertyData.zestimate?.toString() || propertyData.price?.toString() || 'N/A',
           sellingReason: formData.sellingReason,
           needToSellFirst: formData.needToSellFirst,
           expectedValue: formData.expectedValue,
@@ -300,7 +317,7 @@ export default function RealEstateSellPage() {
                 <p className="text-sm text-white/80 mb-1">Your Property</p>
                 <p className="font-semibold">{propertyData.address}</p>
                 <p className="text-sm text-white/90">
-                  {propertyData.bedrooms} bed • {propertyData.bathrooms} bath • {propertyData.squareFootage} sq ft
+                  {propertyData.bedrooms} bed • {propertyData.bathrooms} bath • {propertyData.livingArea} sq ft
                 </p>
               </div>
             )}
