@@ -86,7 +86,7 @@ const timelines = [
   'Just exploring options'
 ];
 
-type FormStep = 'address' | 'lookup' | 'verification' | 'details' | 'contact' | 'success' | 'error';
+type FormStep = 'address' | 'lookup' | 'verification' | 'motivation' | 'timeline' |'contact' | 'success' | 'error';
 
 export default function RealEstateSellPage() {
   const [currentStep, setCurrentStep] = useState<FormStep>('address');
@@ -134,7 +134,7 @@ export default function RealEstateSellPage() {
   };
 
   const handleVerificationConfirm = () => {
-    setCurrentStep('details');
+    setCurrentStep('motivation');
   };
 
   const handleVerificationEdit = () => {
@@ -212,8 +212,8 @@ Selling Details:
   // Address Input Step
   if (currentStep === 'address') {
     return (
-      <div className="h-screen flex">
-        <div className="flex-1 relative">
+      <div className="h-screen flex flex-row">
+        <div className=" hidden md:flex items-center justify-center w-1/2 relative">
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
@@ -234,7 +234,7 @@ Selling Details:
           </div>
         </div>
 
-        <div className="w-full max-w-md bg-white p-8 flex flex-col justify-center">
+        <div className=" max-w-md bg-white p-8 flex flex-col justify-center w-full mx-auto ">
           <div className="mb-8">
             <h2 className="text-3xl font-semibold text-gray-900 mb-2">
               Enter Your Property Address
@@ -302,7 +302,7 @@ Selling Details:
   // Rest of the form (details and contact)
   return (
     <div className="h-screen flex">
-      <div className="flex-1 relative">
+      <div className="hidden md:flex w-1/2 justify-center items-center relative">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
@@ -332,8 +332,8 @@ Selling Details:
         </div>
       </div>
 
-      <div className="w-full max-w-md bg-white p-8 flex flex-col justify-center overflow-y-auto">
-        {currentStep === 'details' && (
+      <div className="w-full max-w-md bg-white p-8 flex flex-col justify-center overflow-y-auto mx-auto">
+        {currentStep === 'motivation' && (
           <div className="space-y-6">
             <div>
               <h3 className="text-2xl font-semibold text-gray-900 mb-2">
@@ -365,9 +365,32 @@ Selling Details:
               </div>
             </div>
 
+            <Button
+              onClick={() => setCurrentStep('timeline')}
+              disabled={!formData.sellingReason}
+              className="w-full py-3"
+            >
+              Continue
+              <ChevronRightIcon className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        )}
+
+
+        {currentStep === 'timeline' && (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                When Do You Want to Sell?
+              </h3>
+              <p className="text-gray-600 mb-6">
+                This helps us understand your urgency and provide better guidance
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                When do you want to sell?
+                Select your preferred timeline
               </label>
               <div className="space-y-2">
                 {timelines.map((timeline) => (
@@ -388,7 +411,7 @@ Selling Details:
 
             <Button
               onClick={() => setCurrentStep('contact')}
-              disabled={!formData.sellingReason || !formData.timeline}
+              disabled={!formData.timeline}
               className="w-full py-3"
             >
               Continue
