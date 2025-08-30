@@ -8,7 +8,7 @@ import { GooglePlacesInput } from '@/components/ui/google-places-input';
 import { PropertyLookup } from '@/components/ui/property-lookup';
 import { PropertyVerification } from '@/components/ui/property-verification';
 import { webhookService, type WebhookSubmissionData } from '../../lib/webhook-api';
-import PropertyDataModule from '@/components/property-data-module';
+import { PropertyDataModule } from '@/components/property-data-module';
 
 // Simplified form data - removed property details that will come from API
 interface FormData {
@@ -292,8 +292,7 @@ Selling Details:
   // Property Verification Step
   if (currentStep === 'verification' && propertyData) {
     return (
-    
-      <PropertyDataModule />
+      <PropertyDataModule address={formData.propertyLocation} />
     );
   }
 

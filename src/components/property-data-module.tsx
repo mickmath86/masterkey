@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import { getZillowAPI } from '@/lib/api/zillow'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -25,103 +27,93 @@ import {
 } from "lucide-react"
 import { ChartRadialStacked } from "./ui/chart-radial-stacked"
 import { ChartArea } from "./ui/area-chart"
+import { GoogleMap } from "./ui/google-map"
 
-// Mock property data
-const propertyData = {
-  address: "1234 Maple Street, San Francisco, CA 94102",
-  estimatedValue: 1250000,
-  bedrooms: 3,
-  bathrooms: 2.5,
-  sqft: 2100,
-  lotSize: 0.15,
-  yearBuilt: 1985,
-  propertyType: "Single Family Home",
-  lastSold: {
-    date: "2019-03-15",
-    price: 980000,
-  },
-  marketData: {
-    medianHomeValue: 1180000,
-    priceChange30Days: 2.3,
-    priceChange1Year: 8.7,
-    daysOnMarket: 28,
-  },
-  valuationGauge: {
-    low: 1100000,
-    recommended: 1250000,
-    high: 1400000,
-    current: 1250000,
-  },
-  images: [
-    "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&h=600&fit=crop",
-  ],
-  priceHistory: {
-    "1": [
-      { month: "Jan 2024", price: 1150000 },
-      { month: "Mar 2024", price: 1180000 },
-      { month: "Jun 2024", price: 1200000 },
-      { month: "Sep 2024", price: 1220000 },
-      { month: "Dec 2024", price: 1250000 },
-    ],
-    "3": [
-      { year: "2022", price: 1050000 },
-      { year: "2023", price: 1120000 },
-      { year: "2024", price: 1250000 },
-    ],
-    "5": [
-      { year: "2020", price: 950000 },
-      { year: "2021", price: 1000000 },
-      { year: "2022", price: 1050000 },
-      { year: "2023", price: 1120000 },
-      { year: "2024", price: 1250000 },
-    ],
-  },
-  priceForecasting: [
-    { month: "Sep 2024", price: 1220000, type: "historical" },
-    { month: "Oct 2024", price: 1235000, type: "historical" },
-    { month: "Nov 2024", price: 1245000, type: "historical" },
-    { month: "Dec 2024", price: 1250000, type: "current" },
-    { month: "Jan 2025", price: 1265000, type: "projected" },
-    { month: "Feb 2025", price: 1275000, type: "projected" },
-    { month: "Mar 2025", price: 1290000, type: "projected" },
-  ],
-}
-
-const createRadialData = () => {
-  const { low, recommended, high } = propertyData.valuationGauge
-  const total = high - low
-  const lowPercentage = ((recommended - low) / total) * 100
-  const highPercentage = ((high - recommended) / total) * 100
-
-  return [
-    { name: "Low Range", value: lowPercentage, fill: "#ef4444" },
-    { name: "Recommended", value: 20, fill: "#22c55e" },
-    { name: "High Range", value: highPercentage, fill: "#f59e0b" },
-  ]
-}
 
 const agentData = {
   name: "Mike Mathias",
-  avatar: "/real-estate-agent-headshot.png",
+  avatar: "/mike-avatar.png",
   title: "Senior Real Estate Agent",
   rating: 4.9,
   reviews: 127,
   yearsExperience: 8,
 }
 
-export default function PropertyDataModule() {
+interface PropertyDataModuleProps {
+  address?: string;
+}
+
+export function PropertyDataModule({ address }: PropertyDataModuleProps) {
+  const [propertyData, setPropertyData] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!address) return
+
+    let didCancel = false // Prevent state updates if component unmounts
+
+    const fetchPropertyData = async () => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        // Call our server-side API route instead of direct RapidAPI
+        const response = await fetch(`/api/zillow?location=${encodeURIComponent(address)}`)
+        
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status}`)
+        }
+
+        const propertyResult = await response.json()
+
+        if (!didCancel) {
+          setPropertyData(propertyResult)
+        }
+      } catch (err: any) {
+        console.warn('API failed, using fallback data:', err.message)
+        if (!didCancel) {
+          setError(err.message)
+          // Fallback data will be provided by the server route
+          setPropertyData({
+            address: address,
+            price: 1250000,
+            bedrooms: 3,
+            bathrooms: 2,
+            livingArea: 2100,
+            zestimate: 1250000,
+            propertyType: 'Single Family Home',
+            homeStatus: 'For Sale',
+            isFallback: true
+          })
+        }
+      } finally {
+        if (!didCancel) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    fetchPropertyData()
+
+    return () => {
+      didCancel = true // Cleanup function to prevent state updates
+    }
+  }, [address])
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [selectedTimeframe, setSelectedTimeframe] = useState<"1" | "3" | "5">("1")
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % propertyData.images.length)
+    if (propertyData && propertyData.photos && propertyData.photos.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % propertyData.photos.length)
+    }
   }
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + propertyData.images.length) % propertyData.images.length)
+    if (propertyData && propertyData.photos && propertyData.photos.length > 0) {
+      setCurrentImageIndex((prev) => (prev - 1 + propertyData.photos.length) % propertyData.photos.length)
+    }
   }
 
   const formatCurrency = (amount: number) => {
@@ -144,11 +136,51 @@ export default function PropertyDataModule() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500 mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading property data...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <p className="text-red-500 mb-2">Error loading property data</p>
+          <p className="text-muted-foreground text-sm">{error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!propertyData) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-muted-foreground">No property data available</p>
+      </div>
+    )
+  }
+
+  // Calculate valuation data for chart
+  const valuationData = {
+    low: Math.round((propertyData.zestimate || propertyData.price) * 0.88),
+    recommended: propertyData.zestimate || propertyData.price,
+    high: Math.round((propertyData.zestimate || propertyData.price) * 1.12),
+  }
+
+  // Format address for display
+  const displayAddress = typeof propertyData.address === 'object' 
+    ? `${propertyData.address.streetAddress || ''}, ${propertyData.address.city || ''}, ${propertyData.address.state || ''} ${propertyData.address.zipcode || ''}`.trim()
+    : propertyData.address || address
+
   return (
     <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 mx-auto p-6">
       <div className="flex max-w-7xl mx-auto border-1 shadow-sm bg-background border-gray-200 p-6 rounded-sm gap-8">
-
-       
 
         {/* Main Content */}
         <div id="valuation-content" className="flex-1 space-y-8">
@@ -156,7 +188,7 @@ export default function PropertyDataModule() {
           <div className="text-center space-y-4">
             <div className="flex items-center justify-center gap-2 text-muted-foreground">
               <MapPin className="h-4 w-4" />
-              <span className="text-sm">{propertyData.address}</span>
+              <span className="text-sm">{displayAddress}</span>
             </div>
             <h1 className="text-4xl font-bold text-balance">Property Valuation Report</h1>
             <p className="text-lg text-muted-foreground text-pretty">
@@ -195,10 +227,18 @@ export default function PropertyDataModule() {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => scrollToSection("property-location")}
+                className="text-sky-700 hover:text-sky-900 hover:bg-sky-100"
+              >
+                Location & Map
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => scrollToSection("market-statistics")}
                 className="text-sky-700 hover:text-sky-900 hover:bg-sky-100"
               >
-                Market Statistics
+                Market Data
               </Button>
               <Button
                 variant="ghost"
@@ -269,7 +309,7 @@ export default function PropertyDataModule() {
 
         <div className="flex flex-col gap-y-8">
         <Card id="home-value" className="border-2 border-sky-200 scroll-mt-24">
-              <ChartRadialStacked />
+              <ChartRadialStacked valuationData={valuationData} />
             {/* <CardHeader className="text-center">
               <CardTitle className="text-3xl font-bold text-sky-600">
                 {formatCurrency(propertyData.estimatedValue)}
@@ -280,25 +320,27 @@ export default function PropertyDataModule() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div className="space-y-1">
                   <div className="text-2xl font-semibold text-sky-600">
-                    +{propertyData.marketData.priceChange1Year}%
+                    {propertyData.bedrooms || propertyData.beds || 'N/A'}
                   </div>
-                  <div className="text-sm text-muted-foreground">1-Year Change</div>
+                  <div className="text-sm text-muted-foreground">Bedrooms</div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-2xl font-semibold text-sky-600">
-                    +{propertyData.marketData.priceChange30Days}%
+                    {propertyData.bathrooms || propertyData.baths || 'N/A'}
                   </div>
-                  <div className="text-sm text-muted-foreground">30-Day Change</div>
+                  <div className="text-sm text-muted-foreground">Bathrooms</div>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-2xl font-semibold">{propertyData.marketData.daysOnMarket}</div>
-                  <div className="text-sm text-muted-foreground">Avg Days on Market</div>
+                  <div className="text-2xl font-semibold text-sky-600">
+                    {propertyData.livingArea ? formatNumber(propertyData.livingArea) : 'N/A'}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Sq Ft</div>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-2xl font-semibold">
-                    {formatCurrency(propertyData.marketData.medianHomeValue)}
+                  <div className="text-2xl font-semibold text-sky-600">
+                    {propertyData.yearBuilt || 'N/A'}
                   </div>
-                  <div className="text-sm text-muted-foreground">Area Median</div>
+                  <div className="text-sm text-muted-foreground">Year Built</div>
                 </div>
               </div>
 
@@ -313,7 +355,7 @@ export default function PropertyDataModule() {
             <CardContent className="space-y-6">
               <div className="relative">
                 <img
-                  src={propertyData.images[currentImageIndex] || "/placeholder.svg"}
+                  src={propertyData.photos?.[currentImageIndex] || "/placeholder.svg"}
                   alt={`Property photo ${currentImageIndex + 1}`}
                   className="w-full h-80 object-cover rounded-lg"
                 />
@@ -334,7 +376,7 @@ export default function PropertyDataModule() {
                   <ChevronRight className="h-4 w-4" />
                 </Button>
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                  {propertyData.images.map((_, index) => (
+                  {(propertyData.photos || []).map((_: any, index: number) => (
                     <button
                       key={index}
                       className={`w-2 h-2 rounded-full transition-colors ${
@@ -361,21 +403,21 @@ export default function PropertyDataModule() {
                 <div className="flex items-center gap-3">
                   <Bed className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="font-semibold">{propertyData.bedrooms}</div>
+                    <div className="font-semibold">{propertyData.bedrooms || propertyData.beds || 'N/A'}</div>
                     <div className="text-sm text-muted-foreground">Bedrooms</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Bath className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="font-semibold">{propertyData.bathrooms}</div>
+                    <div className="font-semibold">{propertyData.bathrooms || propertyData.baths || 'N/A'}</div>
                     <div className="text-sm text-muted-foreground">Bathrooms</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Square className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="font-semibold">{formatNumber(propertyData.sqft)}</div>
+                    <div className="font-semibold">{propertyData.livingArea ? formatNumber(propertyData.livingArea) : 'N/A'}</div>
                     <div className="text-sm text-muted-foreground">Sq Ft</div>
                   </div>
                 </div>
@@ -402,7 +444,10 @@ export default function PropertyDataModule() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Last Sold</span>
                   <span className="font-medium">
-                    {formatCurrency(propertyData.lastSold.price)} ({new Date(propertyData.lastSold.date).getFullYear()})
+                    {propertyData.lastSold ? 
+                      `${formatCurrency(propertyData.lastSold.price)} (${new Date(propertyData.lastSold.date).getFullYear()})` : 
+                      'N/A'
+                    }
                   </span>
                 </div>
               </div>
@@ -420,6 +465,13 @@ export default function PropertyDataModule() {
 
           {/* Property Details Section */}
         
+
+          {/* Property Location Map */}
+          {/* <GoogleMap 
+            address={propertyData.address}
+            className="border-green-200 scroll-mt-24"
+            id="property-location"
+          /> */}
 
           {/* Market Statistics Section */}
           <Card id="market-statistics" className="border-blue-200 scroll-mt-24">
@@ -452,7 +504,7 @@ export default function PropertyDataModule() {
                       <div className="flex items-center gap-1 mt-1">
                         <TrendingUp className="h-3 w-3 text-sky-600" />
                         <span className="text-sm font-medium text-sky-600">
-                          +{propertyData.marketData.priceChange1Year}% YoY
+                          +{propertyData.marketData?.priceChange1Year || 0}% YoY
                         </span>
                       </div>
                     </div>
@@ -482,14 +534,14 @@ export default function PropertyDataModule() {
                   >
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
-                        data={propertyData.priceHistory[selectedTimeframe]}
+                        data={propertyData.priceHistory?.[selectedTimeframe] || []}
                         margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
                       >
                         <XAxis dataKey={selectedTimeframe === "1" ? "month" : "year"} tick={{ fontSize: 10 }} />
                         <YAxis tick={{ fontSize: 10 }} tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
                         <ChartTooltip
                           content={({ active, payload, label }) => {
-                            if (active && payload && payload.length) {
+                            if (active && payload && payload.length && payload[0]) {
                               return (
                                 <div className="rounded-lg border bg-background p-2 shadow-sm">
                                   <div className="grid grid-cols-2 gap-2">
@@ -543,12 +595,12 @@ export default function PropertyDataModule() {
                 className="h-[300px]"
               >
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={propertyData.priceForecasting} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+                  <LineChart data={propertyData.priceForecasting || []} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
                     <XAxis dataKey="month" tick={{ fontSize: 10 }} />
                     <YAxis tick={{ fontSize: 10 }} tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
                     <ChartTooltip
                       content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
+                        if (active && payload && payload.length && payload[0]) {
                           const data = payload[0].payload
                           return (
                             <div className="rounded-lg border bg-background p-2 shadow-sm">
@@ -575,9 +627,10 @@ export default function PropertyDataModule() {
                       dataKey="price"
                       stroke="#8b5cf6"
                       strokeWidth={2}
-                      strokeDasharray={(data: any) => (data.type === "projected" ? "5 5" : "0")}
-                      dot={({ payload, cx, cy }: any) => {
-                        if (!payload) return null
+                      strokeDasharray="5 5"
+                      dot={(props: any) => {
+                        const { payload, cx, cy, index } = props
+                        if (!payload) return <></>
                         const fillColor =
                           payload.type === "current" ? "#ef4444" : payload.type === "projected" ? "#8b5cf6" : "#6b7280"
                         const strokeColor =
@@ -587,6 +640,7 @@ export default function PropertyDataModule() {
 
                         return (
                           <circle
+                            key={`dot-${index}`}
                             cx={cx}
                             cy={cy}
                             r={radius}

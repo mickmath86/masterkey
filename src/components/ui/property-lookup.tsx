@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import { GithubGlobe } from './github-globe';
-import { zillowAPI } from '../../lib/zillow-api';
-import type { ZillowPropertyData } from '../../lib/zillow-api';
+import { type ZillowPropertyData } from '../../lib/api/zillow';
 
 interface LookupStep {
   id: string;
@@ -72,33 +71,39 @@ export function PropertyLookup({ address, onComplete }: PropertyLookupProps) {
         setCurrentStep(i + 1);
       }
 
-      // Call Zillow API to get property data
+      // Call our server-side API route instead of direct RapidAPI
       try {
-        const propertyResponse = await zillowAPI.getPropertyByAddress(address);
-        if (propertyResponse.success && propertyResponse.data) {
-          onComplete(propertyResponse.data);
-        } else {
-          throw new Error('Failed to get property data');
+        const response = await fetch(`/api/zillow?location=${encodeURIComponent(address)}`);
+        
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status}`);
         }
+
+        const propertyData = await response.json();
+        onComplete(propertyData);
       } catch (error) {
         console.error('Error fetching property data:', error);
-        // Use fallback data if API fails
-        const fallbackData: ZillowPropertyData = {
-          zpid: 'fallback-123',
+        
+        // Use fallback data when API fails
+        const fallbackData = {
+          zpid: 'fallback-' + Date.now(),
           address,
-          propertyType: 'Single Family Home',
+          price: 1250000,
           bedrooms: 3,
           bathrooms: 2,
-          livingArea: 1800,
+          livingArea: 2100,
+          zestimate: 1250000,
+          propertyType: 'Single Family Home',
           homeStatus: 'For Sale',
-          zestimate: 650000,
           yearBuilt: 1995,
           lotSize: 7200,
-          neighborhood: {
-            name: 'Downtown',
-            walkScore: 85
-          }
+          priceHistory: [],
+          comparables: [],
+          photos: [],
+          isFallback: true
         };
+        
+        // Continue with fallback data instead of throwing error
         onComplete(fallbackData);
       }
     };
