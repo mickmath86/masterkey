@@ -28,7 +28,9 @@ import {
 import { ChartRadialStacked } from "./ui/chart-radial-stacked"
 import { ChartArea } from "./ui/area-chart"
 import { GoogleMap } from "./ui/google-map"
-
+import { extractZipcode } from "@/lib/utils/address"
+import type { MarketStatistics } from "@/lib/api/rentcast"
+import { MarketInsights } from "./ui/market-insights"
 
 const agentData = {
   name: "Mike Mathias",
@@ -45,6 +47,7 @@ interface PropertyDataModuleProps {
 
 export function PropertyDataModule({ address }: PropertyDataModuleProps) {
   const [propertyData, setPropertyData] = useState<any>(null)
+  const [marketData, setMarketData] = useState<MarketStatistics | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -69,6 +72,9 @@ export function PropertyDataModule({ address }: PropertyDataModuleProps) {
 
         if (!didCancel) {
           setPropertyData(propertyResult)
+          
+          // Fetch market data using Rentcast API
+          await fetchMarketData(address)
         }
       } catch (err: any) {
         console.warn('API failed, using fallback data:', err.message)
@@ -91,6 +97,23 @@ export function PropertyDataModule({ address }: PropertyDataModuleProps) {
         if (!didCancel) {
           setIsLoading(false)
         }
+      }
+    }
+
+    const fetchMarketData = async (address: string) => {
+      try {
+        const response = await fetch(`/api/rentcast/markets?address=${encodeURIComponent(address)}`)
+        
+        if (response.ok) {
+          const marketResult = await response.json()
+          if (!didCancel) {
+            setMarketData(marketResult)
+          }
+        } else {
+          console.warn('Market data fetch failed:', response.status)
+        }
+      } catch (err) {
+        console.warn('Market data fetch error:', err)
       }
     }
 
@@ -195,6 +218,9 @@ export function PropertyDataModule({ address }: PropertyDataModuleProps) {
               Comprehensive market analysis and property insights for your home
             </p>
           </div>
+
+          {/* Market Insights Component */}
+          {address && <MarketInsights address={address} className="border-blue-200" />}
        
 
           {/* Navigation Section */}
@@ -477,20 +503,81 @@ export function PropertyDataModule({ address }: PropertyDataModuleProps) {
           <Card id="market-statistics" className="border-blue-200 scroll-mt-24">
             <CardHeader>
               <CardTitle>Market Statistics</CardTitle>
-              <CardDescription>Detailed market trends and pricing analysis for your area</CardDescription>
+              <CardDescription>
+                Detailed market trends and pricing analysis for your area
+                {marketData?.zipCode && ` (${marketData.zipCode})`}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
-              {/* <div>
-                <h3 className="text-xl font-semibold mb-4">Market Summary</h3>
-                <div className="prose prose-sm max-w-none mb-6">
-                  <p className="text-muted-foreground leading-relaxed">
-                    The San Francisco real estate market continues to show strong performance with steady appreciation.
-                    Single-family homes in your area have experienced consistent growth, driven by limited inventory and
-                    sustained demand. Current market conditions favor sellers, with properties typically receiving
-                    multiple offers and selling above asking price.
-                  </p>
+              {/* Market Summary with Rentcast Data */}
+              {marketData && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  {marketData.saleData?.averageDaysOnMarket && (
+                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {marketData.saleData.averageDaysOnMarket}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Avg Days on Market</div>
+                    </div>
+                  )}
+                  
+                  {marketData.saleData?.averageSalePrice && (
+                    <div className="text-center p-4 bg-green-50 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">
+                        {formatCurrency(marketData.saleData.averageSalePrice)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Avg Sale Price</div>
+                    </div>
+                  )}
+                  
+                  {marketData.saleData?.totalSales && (
+                    <div className="text-center p-4 bg-purple-50 rounded-lg">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {marketData.saleData.totalSales}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Recent Sales</div>
+                    </div>
+                  )}
+                  
+                  {marketData.saleData?.averagePricePerSqft && (
+                    <div className="text-center p-4 bg-orange-50 rounded-lg">
+                      <div className="text-2xl font-bold text-orange-600">
+                        ${marketData.saleData.averagePricePerSqft}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Price per Sq Ft</div>
+                    </div>
+                  )}
                 </div>
-              </div> */}
+              )}
+
+              {/* Market Insights */}
+              {marketData && (
+                <div className="bg-slate-50 p-4 rounded-lg">
+                  <h4 className="font-semibold mb-2">Market Insights</h4>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    {marketData.saleData?.averageDaysOnMarket && (
+                      <p>
+                        Properties in this area typically sell within{' '}
+                        <strong>{marketData.saleData.averageDaysOnMarket} days</strong>
+                        {marketData.saleData.averageDaysOnMarket < 30 ? ' - a fast-moving market!' : 
+                         marketData.saleData.averageDaysOnMarket > 60 ? ' - buyers have more time to decide.' : 
+                         ' - a balanced market.'}
+                      </p>
+                    )}
+                    {marketData.saleData?.priceReduction && (
+                      <p>
+                        <strong>{marketData.saleData.priceReduction.percent}%</strong> of listings 
+                        had price reductions ({marketData.saleData.priceReduction.count} properties).
+                      </p>
+                    )}
+                    {marketData.rentalData?.averageRentPrice && (
+                      <p>
+                        Average rental price in the area: <strong>{formatCurrency(marketData.rentalData.averageRentPrice)}/month</strong>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
@@ -656,7 +743,7 @@ export function PropertyDataModule({ address }: PropertyDataModuleProps) {
               </ChartContainer>
 
               <div className="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
-                <h5 className="font-semibold text-purple-900 mb-2">Forecast Summary</h5>
+                <h4 className="font-semibold mb-2">Forecast Summary</h4>
                 <p className="text-purple-800 text-sm">
                   Based on current market trends, waiting 3 months could potentially increase your home value by
                   approximately <strong>$40,000 (3.2%)</strong>. However, market conditions can change, and this

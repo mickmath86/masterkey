@@ -1,0 +1,139 @@
+/**
+ * Rentcast API Service
+ * Handles all interactions with the Rentcast API for market data and property information
+ */
+
+// Types for Rentcast API responses
+export interface MarketStatistics {
+  zipCode: string
+  saleData?: {
+    averageDaysOnMarket?: number
+    averageListPrice?: number
+    averageSalePrice?: number
+    averagePricePerSqft?: number
+    medianListPrice?: number
+    medianSalePrice?: number
+    totalListings?: number
+    totalSales?: number
+    priceReduction?: {
+      percent?: number
+      count?: number
+    }
+  }
+  rentalData?: {
+    averageDaysOnMarket?: number
+    averageRentPrice?: number
+    averageRentPricePerSqft?: number
+    medianRentPrice?: number
+    totalListings?: number
+    totalRentals?: number
+  }
+  lastUpdated?: string
+}
+
+export interface RentcastApiResponse {
+  zipCode: string
+  saleData?: any
+  rentalData?: any
+  status: string
+  message?: string
+}
+
+export class RentcastAPI {
+  private apiKey: string
+  private baseUrl: string
+
+  constructor() {
+    this.apiKey = process.env.RENTCAST_API_KEY || ''
+    this.baseUrl = process.env.RENTCAST_API_BASE_URL || 'https://api.rentcast.io/v1'
+
+    if (!this.apiKey) {
+      throw new Error('RENTCAST_API_KEY environment variable is required')
+    }
+  }
+
+  /**
+   * Get market statistics for a specific zip code
+   */
+  async getMarketStatistics(
+    zipCode: string, 
+    dataType: 'All' | 'Sale' | 'Rental' = 'All'
+  ): Promise<MarketStatistics> {
+    try {
+      const url = `${this.baseUrl}/markets/${zipCode}`
+      const params = new URLSearchParams({
+        dataType,
+        historyRange: '12' // Get 12 months of historical data
+      })
+
+      console.log(`Rentcast API: Fetching market data for zip ${zipCode}`)
+      
+      const response = await fetch(`${url}?${params}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'X-Api-Key': this.apiKey,
+        },
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Invalid Rentcast API key')
+        }
+        if (response.status === 404) {
+          throw new Error(`No market data available for zip code ${zipCode}`)
+        }
+        if (response.status === 429) {
+          throw new Error('Rentcast API rate limit exceeded')
+        }
+        throw new Error(`Rentcast API error: ${response.status}`)
+      }
+
+      const data: RentcastApiResponse = await response.json()
+      
+      return this.processMarketData(data, zipCode)
+    } catch (error) {
+      console.error('Rentcast API error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Process and normalize market data from Rentcast API
+   */
+  private processMarketData(data: RentcastApiResponse, zipCode: string): MarketStatistics {
+    return {
+      zipCode,
+      saleData: data.saleData ? {
+        averageDaysOnMarket: data.saleData.averageDaysOnMarket,
+        averageListPrice: data.saleData.averageListPrice,
+        averageSalePrice: data.saleData.averageSalePrice,
+        averagePricePerSqft: data.saleData.averagePricePerSqft,
+        medianListPrice: data.saleData.medianListPrice,
+        medianSalePrice: data.saleData.medianSalePrice,
+        totalListings: data.saleData.totalListings,
+        totalSales: data.saleData.totalSales,
+        priceReduction: data.saleData.priceReduction
+      } : undefined,
+      rentalData: data.rentalData ? {
+        averageDaysOnMarket: data.rentalData.averageDaysOnMarket,
+        averageRentPrice: data.rentalData.averageRentPrice,
+        averageRentPricePerSqft: data.rentalData.averageRentPricePerSqft,
+        medianRentPrice: data.rentalData.medianRentPrice,
+        totalListings: data.rentalData.totalListings,
+        totalRentals: data.rentalData.totalRentals
+      } : undefined,
+      lastUpdated: new Date().toISOString()
+    }
+  }
+}
+
+// Singleton instance
+let rentcastAPI: RentcastAPI | null = null
+
+export function getRentcastAPI(): RentcastAPI {
+  if (!rentcastAPI) {
+    rentcastAPI = new RentcastAPI()
+  }
+  return rentcastAPI
+}

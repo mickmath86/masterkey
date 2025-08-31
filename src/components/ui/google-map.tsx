@@ -3,18 +3,31 @@
 import { useEffect, useRef, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, ExternalLink } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { MapPin, ExternalLink, Navigation, Mountain, Star, Utensils, GraduationCap, ShoppingBag } from "lucide-react"
 import { getGoogleMapsAPI, type PlaceDetails, type MapConfig } from "@/lib/api/google-maps"
 
 interface GoogleMapProps {
   address: string
   className?: string
   id?: string
+  showNearbyPlaces?: boolean
+  showElevation?: boolean
 }
 
-export function GoogleMap({ address, className, id }: GoogleMapProps) {
+interface NearbyPlace {
+  name: string
+  rating?: number
+  distance?: string
+  type: string
+}
+
+export function GoogleMap({ address, className, id, showNearbyPlaces = true, showElevation = true }: GoogleMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const [placeDetails, setPlaceDetails] = useState<PlaceDetails | null>(null)
+  const [nearbyPlaces, setNearbyPlaces] = useState<NearbyPlace[]>([])
+  const [elevation, setElevation] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [map, setMap] = useState<google.maps.Map | null>(null)
@@ -138,6 +151,11 @@ export function GoogleMap({ address, className, id }: GoogleMapProps) {
           country: 'USA',
         })
 
+        // Fetch additional data using MCP if enabled
+        if (showNearbyPlaces || showElevation) {
+          await fetchAdditionalData(location.lat(), location.lng())
+        }
+
         // Create and initialize map
         const map = new google.maps.Map(mapRef.current!, {
           center: { lat: location.lat(), lng: location.lng() },
@@ -173,7 +191,92 @@ export function GoogleMap({ address, className, id }: GoogleMapProps) {
     return () => {
       isMounted = false
     }
-  }, [address])
+  }, [address, showNearbyPlaces, showElevation])
+
+  const fetchAdditionalData = async (lat: number, lng: number) => {
+    try {
+      // Fetch nearby places using MCP
+      if (showNearbyPlaces) {
+        const [restaurants, schools, shopping] = await Promise.all([
+          fetch('/api/maps/nearby', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: 'restaurants',
+              location: { latitude: lat, longitude: lng },
+              radius: 2000
+            })
+          }).then(res => res.json()).catch(() => ({ places: [] })),
+          
+          fetch('/api/maps/nearby', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: 'schools',
+              location: { latitude: lat, longitude: lng },
+              radius: 3000
+            })
+          }).then(res => res.json()).catch(() => ({ places: [] })),
+          
+          fetch('/api/maps/nearby', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: 'shopping',
+              location: { latitude: lat, longitude: lng },
+              radius: 2500
+            })
+          }).then(res => res.json()).catch(() => ({ places: [] }))
+        ])
+
+        const allPlaces: NearbyPlace[] = [
+          ...restaurants.places?.slice(0, 3).map((p: any) => ({ 
+            name: p.name, 
+            rating: p.rating, 
+            type: 'restaurant' 
+          })) || [],
+          ...schools.places?.slice(0, 2).map((p: any) => ({ 
+            name: p.name, 
+            rating: p.rating, 
+            type: 'school' 
+          })) || [],
+          ...shopping.places?.slice(0, 2).map((p: any) => ({ 
+            name: p.name, 
+            rating: p.rating, 
+            type: 'shopping' 
+          })) || []
+        ]
+        
+        setNearbyPlaces(allPlaces)
+      }
+
+      // Fetch elevation using MCP
+      if (showElevation) {
+        const elevationData = await fetch('/api/maps/elevation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            locations: [{ latitude: lat, longitude: lng }]
+          })
+        }).then(res => res.json()).catch(() => null)
+
+        if (elevationData?.results?.[0]) {
+          setElevation(Math.round(elevationData.results[0].elevation * 3.28084)) // Convert to feet
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching additional map data:', error)
+    }
+  }
+
+  const getPlaceIcon = (type: string) => {
+    switch (type) {
+      case 'restaurant': return <Utensils className="h-4 w-4" />
+      case 'school': return <GraduationCap className="h-4 w-4" />
+      case 'shopping': return <ShoppingBag className="h-4 w-4" />
+      default: return <MapPin className="h-4 w-4" />
+    }
+  }
 
   const openInGoogleMaps = () => {
     if (placeDetails) {
@@ -224,22 +327,63 @@ export function GoogleMap({ address, className, id }: GoogleMapProps) {
             />
             
             {placeDetails && (
-              <div className="flex items-center justify-between pt-2">
-                <div className="text-sm text-muted-foreground">
-                  <p className="font-medium">{placeDetails.formattedAddress}</p>
-                  {placeDetails.city && placeDetails.state && (
-                    <p>{placeDetails.city}, {placeDetails.state} {placeDetails.zipCode}</p>
-                  )}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    <p className="font-medium">{placeDetails.formattedAddress}</p>
+                    {placeDetails.city && placeDetails.state && (
+                      <p>{placeDetails.city}, {placeDetails.state} {placeDetails.zipCode}</p>
+                    )}
+                    {elevation && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <Mountain className="h-3 w-3" />
+                        <span className="text-xs">{elevation.toLocaleString()} ft elevation</span>
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={openInGoogleMaps}
+                    className="flex items-center gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Open in Maps
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={openInGoogleMaps}
-                  className="flex items-center gap-2"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Open in Maps
-                </Button>
+
+                {nearbyPlaces.length > 0 && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                        <Navigation className="h-4 w-4" />
+                        Nearby Places
+                      </h4>
+                      <div className="grid grid-cols-1 gap-2">
+                        {nearbyPlaces.map((place, index) => (
+                          <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              {getPlaceIcon(place.type)}
+                              <span className="text-sm font-medium">{place.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {place.rating && (
+                                <div className="flex items-center gap-1">
+                                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                  <span className="text-xs">{place.rating}</span>
+                                </div>
+                              )}
+                              <Badge variant="secondary" className="text-xs">
+                                {place.type}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </>
