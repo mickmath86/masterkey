@@ -23,6 +23,7 @@ import {
   Video,
   UserCheck,
   ArrowRight,
+  TrendingDown,
   Star,
 } from "lucide-react"
 import { ChartRadialStacked } from "./ui/chart-radial-stacked"
@@ -41,15 +42,65 @@ const agentData = {
   yearsExperience: 8,
 }
 
-interface PropertyDataModuleProps {
-  address?: string;
+interface MarketInsightsProps {
+  address: string
+  className?: string
 }
 
-export function PropertyDataModule({ address }: PropertyDataModuleProps) {
+interface PropertyDataModuleProps {
+  address?: string;
+  zipcode?: string;
+}
+
+export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps) {
   const [propertyData, setPropertyData] = useState<any>(null)
   const [marketData, setMarketData] = useState<MarketStatistics | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  useEffect(() => {
+    if (!address) return
+
+    const fetchMarketData = async () => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        // Use zipcode parameter if provided, otherwise extract from address
+        const marketZipcode = zipcode || extractZipcode(address || '')
+        if (!marketZipcode) {
+          setError('Unable to determine zipcode for market data')
+          return
+        }
+
+        const response = await fetch(`/api/rentcast/markets?zipcode=${encodeURIComponent(marketZipcode)}`)
+        
+        if (response.ok) {
+          const data = await response.json()
+          setMarketData(data)
+        } else {
+          const errorData = await response.json()
+          setError(errorData.error || 'Failed to fetch market data')
+        }
+      } catch (err) {
+        setError('Network error while fetching market data')
+        console.error('Market data fetch error:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchMarketData()
+  }, [address, zipcode])
+
+  
+    const getMarketSpeedIndicator = (days: number) => {
+      if (days < 30) return { label: "Fast Market", color: "bg-green-100 text-green-800", icon: TrendingUp }
+      if (days > 60) return { label: "Slow Market", color: "bg-red-100 text-red-800", icon: TrendingDown }
+      return { label: "Balanced Market", color: "bg-blue-100 text-blue-800", icon: Calendar }
+    }
+
+
 
   useEffect(() => {
     if (!address) return
@@ -201,6 +252,10 @@ export function PropertyDataModule({ address }: PropertyDataModuleProps) {
     ? `${propertyData.address.streetAddress || ''}, ${propertyData.address.city || ''}, ${propertyData.address.state || ''} ${propertyData.address.zipcode || ''}`.trim()
     : propertyData.address || address
 
+  const extractedZipcode = extractZipcode(address || '')
+  const avgDaysOnMarket = marketData?.saleData?.averageDaysOnMarket
+  const marketSpeed = avgDaysOnMarket ? getMarketSpeedIndicator(avgDaysOnMarket) : null 
+
   return (
     <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 mx-auto p-6">
       <div className="flex max-w-7xl mx-auto border-1 shadow-sm bg-background border-gray-200 p-6 rounded-sm gap-8">
@@ -220,7 +275,7 @@ export function PropertyDataModule({ address }: PropertyDataModuleProps) {
           </div>
 
           {/* Market Insights Component */}
-          {address && <MarketInsights address={address} className="border-blue-200" />}
+          {/* {address && <MarketInsights address={address} className="border-blue-200" />} */}
        
 
           {/* Navigation Section */}
@@ -346,27 +401,27 @@ export function PropertyDataModule({ address }: PropertyDataModuleProps) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div className="space-y-1">
                   <div className="text-2xl font-semibold text-sky-600">
-                    {propertyData.bedrooms || propertyData.beds || 'N/A'}
+                    {marketData?.saleData?.averageDaysOnMarket || 'N/A'}
                   </div>
-                  <div className="text-sm text-muted-foreground">Bedrooms</div>
+                  <div className="text-sm text-muted-foreground">Average Days on Market</div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-2xl font-semibold text-sky-600">
-                    {propertyData.bathrooms || propertyData.baths || 'N/A'}
+                    {marketData?.saleData?.averagePrice ? formatCurrency(marketData.saleData.averagePrice) : 'N/A'}
                   </div>
-                  <div className="text-sm text-muted-foreground">Bathrooms</div>
+                  <div className="text-sm text-muted-foreground">Average Sales Price</div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-2xl font-semibold text-sky-600">
-                    {propertyData.livingArea ? formatNumber(propertyData.livingArea) : 'N/A'}
+                    {marketData?.saleData?.newListings || 'N/A'}
                   </div>
-                  <div className="text-sm text-muted-foreground">Sq Ft</div>
+                  <div className="text-sm text-muted-foreground">New Listings <span className="text-xs text-gray-500">(last 6 months)</span></div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-2xl font-semibold text-sky-600">
-                    {propertyData.yearBuilt || 'N/A'}
+                    {marketData?.saleData?.averagePricePerSquareFoot ? `$${marketData.saleData.averagePricePerSquareFoot}` : 'N/A'}
                   </div>
-                  <div className="text-sm text-muted-foreground">Year Built</div>
+                  <div className="text-sm text-muted-foreground">Price per Sq Ft</div>
                 </div>
               </div>
 
@@ -480,16 +535,12 @@ export function PropertyDataModule({ address }: PropertyDataModuleProps) {
             </CardContent>
           </div>
           </Card>
-          {/* enter prop details */}
+
          
           
 
           
 
-          {/* Property Photos Section */}
-       
-
-          {/* Property Details Section */}
         
 
           {/* Property Location Map */}
@@ -510,50 +561,13 @@ export function PropertyDataModule({ address }: PropertyDataModuleProps) {
             </CardHeader>
             <CardContent className="space-y-8">
               {/* Market Summary with Rentcast Data */}
-              {marketData && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  {marketData.saleData?.averageDaysOnMarket && (
-                    <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {marketData.saleData.averageDaysOnMarket}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Avg Days on Market</div>
-                    </div>
-                  )}
-                  
-                  {marketData.saleData?.averageSalePrice && (
-                    <div className="text-center p-4 bg-green-50 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">
-                        {formatCurrency(marketData.saleData.averageSalePrice)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Avg Sale Price</div>
-                    </div>
-                  )}
-                  
-                  {marketData.saleData?.totalSales && (
-                    <div className="text-center p-4 bg-purple-50 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600">
-                        {marketData.saleData.totalSales}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Recent Sales</div>
-                    </div>
-                  )}
-                  
-                  {marketData.saleData?.averagePricePerSqft && (
-                    <div className="text-center p-4 bg-orange-50 rounded-lg">
-                      <div className="text-2xl font-bold text-orange-600">
-                        ${marketData.saleData.averagePricePerSqft}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Price per Sq Ft</div>
-                    </div>
-                  )}
-                </div>
-              )}
+           
 
               {/* Market Insights */}
               {marketData && (
                 <div className="bg-slate-50 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">Market Insights</h4>
+                  
                   <div className="text-sm text-muted-foreground space-y-1">
                     {marketData.saleData?.averageDaysOnMarket && (
                       <p>
@@ -576,6 +590,18 @@ export function PropertyDataModule({ address }: PropertyDataModuleProps) {
                       </p>
                     )}
                   </div>
+                </div>
+              )}
+
+              {/* Show error message when no market data is available */}
+              {error && !marketData && (
+                <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                  <h4 className="font-semibold mb-2 text-yellow-800">Market Data Unavailable</h4>
+                  <p className="text-sm text-yellow-700">
+                    {error.includes('No market data available') 
+                      ? `Market statistics are not available for this zip code in our database.`
+                      : 'Unable to load current market data. Please try again later.'}
+                  </p>
                 </div>
               )}
 

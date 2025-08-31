@@ -54,34 +54,6 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Rentcast markets API error:', error.message)
 
-    // Return fallback data for common zipcodes during development
-    const fallbackData: MarketStatistics = {
-      zipCode: '90210',
-      saleData: {
-        averageDaysOnMarket: 45,
-        averageListPrice: 2500000,
-        averageSalePrice: 2350000,
-        averagePricePerSqft: 850,
-        medianListPrice: 2200000,
-        medianSalePrice: 2100000,
-        totalListings: 125,
-        totalSales: 89,
-        priceReduction: {
-          percent: 15,
-          count: 18
-        }
-      },
-      rentalData: {
-        averageDaysOnMarket: 28,
-        averageRentPrice: 8500,
-        averageRentPricePerSqft: 4.2,
-        medianRentPrice: 7800,
-        totalListings: 45,
-        totalRentals: 32
-      },
-      lastUpdated: new Date().toISOString()
-    }
-
     if (error.message.includes('Invalid Rentcast API key')) {
       return NextResponse.json(
         { error: 'Rentcast API configuration error. Please check your API key.' },
@@ -91,16 +63,22 @@ export async function GET(request: NextRequest) {
 
     if (error.message.includes('rate limit')) {
       return NextResponse.json(
-        { error: 'API rate limit exceeded. Please try again later.', data: fallbackData },
+        { error: 'API rate limit exceeded. Please try again later.' },
         { status: 429 }
       )
     }
 
-    // Return fallback data for other errors
-    return NextResponse.json({
-      ...fallbackData,
-      error: 'Using fallback market data. Rentcast API temporarily unavailable.',
-      isFallback: true
-    })
+    if (error.message.includes('No market data available')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 404 }
+      )
+    }
+
+    // Return generic error for other cases
+    return NextResponse.json(
+      { error: 'Failed to fetch market data from Rentcast API' },
+      { status: 500 }
+    )
   }
 }

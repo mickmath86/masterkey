@@ -9,12 +9,13 @@ export interface MarketStatistics {
   saleData?: {
     averageDaysOnMarket?: number
     averageListPrice?: number
-    averageSalePrice?: number
-    averagePricePerSqft?: number
+    averagePrice?: number
+    averagePricePerSquareFoot?: number
     medianListPrice?: number
-    medianSalePrice?: number
+    medianPrice?: number
     totalListings?: number
     totalSales?: number
+    newListings?: number
     priceReduction?: {
       percent?: number
       count?: number
@@ -60,10 +61,11 @@ export class RentcastAPI {
     dataType: 'All' | 'Sale' | 'Rental' = 'All'
   ): Promise<MarketStatistics> {
     try {
-      const url = `${this.baseUrl}/markets/${zipCode}`
+      const url = `${this.baseUrl}/markets`
       const params = new URLSearchParams({
+        zipCode,
         dataType,
-        historyRange: '12' // Get 12 months of historical data
+        historyRange: '6' // Match sandbox parameter
       })
 
       console.log(`Rentcast API: Fetching market data for zip ${zipCode}`)
@@ -107,12 +109,13 @@ export class RentcastAPI {
       saleData: data.saleData ? {
         averageDaysOnMarket: data.saleData.averageDaysOnMarket,
         averageListPrice: data.saleData.averageListPrice,
-        averageSalePrice: data.saleData.averageSalePrice,
-        averagePricePerSqft: data.saleData.averagePricePerSqft,
+        averagePrice: data.saleData.averagePrice,
+        averagePricePerSquareFoot: data.saleData.averagePricePerSquareFoot,
         medianListPrice: data.saleData.medianListPrice,
-        medianSalePrice: data.saleData.medianSalePrice,
+        medianPrice: data.saleData.medianPrice,
         totalListings: data.saleData.totalListings,
         totalSales: data.saleData.totalSales,
+        newListings: data.saleData.newListings,
         priceReduction: data.saleData.priceReduction
       } : undefined,
       rentalData: data.rentalData ? {
