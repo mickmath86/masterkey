@@ -51,26 +51,27 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(marketData)
 
-  } catch (error: any) {
-    console.error('Rentcast markets API error:', error.message)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    console.error('Rentcast markets API error:', errorMessage)
 
-    if (error.message.includes('Invalid Rentcast API key')) {
+    if (errorMessage.includes('Invalid Rentcast API key')) {
       return NextResponse.json(
         { error: 'Rentcast API configuration error. Please check your API key.' },
         { status: 500 }
       )
     }
 
-    if (error.message.includes('rate limit')) {
+    if (errorMessage.includes('rate limit')) {
       return NextResponse.json(
         { error: 'API rate limit exceeded. Please try again later.' },
         { status: 429 }
       )
     }
 
-    if (error.message.includes('No market data available')) {
+    if (errorMessage.includes('No market data available')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: errorMessage },
         { status: 404 }
       )
     }

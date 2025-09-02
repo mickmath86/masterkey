@@ -34,8 +34,8 @@ export interface MarketStatistics {
 
 export interface RentcastApiResponse {
   zipCode: string
-  saleData?: any
-  rentalData?: any
+  saleData?: Record<string, unknown>
+  rentalData?: Record<string, unknown>
   status: string
   message?: string
 }
@@ -107,24 +107,24 @@ export class RentcastAPI {
     return {
       zipCode,
       saleData: data.saleData ? {
-        averageDaysOnMarket: data.saleData.averageDaysOnMarket,
-        averageListPrice: data.saleData.averageListPrice,
-        averagePrice: data.saleData.averagePrice,
-        averagePricePerSquareFoot: data.saleData.averagePricePerSquareFoot,
-        medianListPrice: data.saleData.medianListPrice,
-        medianPrice: data.saleData.medianPrice,
-        totalListings: data.saleData.totalListings,
-        totalSales: data.saleData.totalSales,
-        newListings: data.saleData.newListings,
-        priceReduction: data.saleData.priceReduction
+        averageDaysOnMarket: data.saleData.averageDaysOnMarket as number,
+        averageListPrice: data.saleData.averageListPrice as number,
+        averagePrice: data.saleData.averagePrice as number,
+        averagePricePerSquareFoot: data.saleData.averagePricePerSquareFoot as number,
+        medianListPrice: data.saleData.medianListPrice as number,
+        medianPrice: data.saleData.medianPrice as number,
+        totalListings: data.saleData.totalListings as number,
+        totalSales: data.saleData.totalSales as number,
+        newListings: data.saleData.newListings as number,
+        priceReduction: data.saleData.priceReduction as { percent?: number; count?: number }
       } : undefined,
       rentalData: data.rentalData ? {
-        averageDaysOnMarket: data.rentalData.averageDaysOnMarket,
-        averageRentPrice: data.rentalData.averageRentPrice,
-        averageRentPricePerSqft: data.rentalData.averageRentPricePerSqft,
-        medianRentPrice: data.rentalData.medianRentPrice,
-        totalListings: data.rentalData.totalListings,
-        totalRentals: data.rentalData.totalRentals
+        averageDaysOnMarket: data.rentalData.averageDaysOnMarket as number,
+        averageRentPrice: data.rentalData.averageRentPrice as number,
+        averageRentPricePerSqft: data.rentalData.averageRentPricePerSqft as number,
+        medianRentPrice: data.rentalData.medianRentPrice as number,
+        totalListings: data.rentalData.totalListings as number,
+        totalRentals: data.rentalData.totalRentals as number
       } : undefined,
       lastUpdated: new Date().toISOString()
     }

@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Input } from "@/components/ui/input"
-import { getZillowAPI } from '@/lib/api/zillow'
+// import { Input } from "@/components/ui/input"
+// import { getZillowAPI } from '@/lib/api/zillow'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
-import { XAxis, YAxis, ResponsiveContainer, LineChart, Line, RadialBarChart, RadialBar, Legend } from "recharts"
+import { XAxis, YAxis, ResponsiveContainer, LineChart, Line } from "recharts"
 import {
   Home,
   Bed,
@@ -22,16 +22,16 @@ import {
   Calendar,
   Video,
   UserCheck,
-  ArrowRight,
+  // ArrowRight,
   TrendingDown,
   Star,
 } from "lucide-react"
 import { ChartRadialStacked } from "./ui/chart-radial-stacked"
 import { ChartArea } from "./ui/area-chart"
-import { GoogleMap } from "./ui/google-map"
+// import { GoogleMap } from "./ui/google-map"
 import { extractZipcode } from "@/lib/utils/address"
 import type { MarketStatistics } from "@/lib/api/rentcast"
-import { MarketInsights } from "./ui/market-insights"
+// import { MarketInsights } from "./ui/market-insights"
 
 const agentData = {
   name: "Mike Mathias",
@@ -42,10 +42,10 @@ const agentData = {
   yearsExperience: 8,
 }
 
-interface MarketInsightsProps {
-  address: string
-  className?: string
-}
+// interface MarketInsightsProps {
+//   address: string
+//   className?: string
+// }
 
 interface PropertyDataModuleProps {
   address?: string;
@@ -127,10 +127,11 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
           // Fetch market data using Rentcast API
           await fetchMarketData(address)
         }
-      } catch (err: any) {
-        console.warn('API failed, using fallback data:', err.message)
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+        console.warn('API failed, using fallback data:', errorMessage)
         if (!didCancel) {
-          setError(err.message)
+          setError(errorMessage)
           // Fallback data will be provided by the server route
           setPropertyData({
             address: address,
@@ -252,9 +253,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     ? `${propertyData.address.streetAddress || ''}, ${propertyData.address.city || ''}, ${propertyData.address.state || ''} ${propertyData.address.zipcode || ''}`.trim()
     : propertyData.address || address
 
-  const extractedZipcode = extractZipcode(address || '')
+  // const extractedZipcode = extractZipcode(address || '')
   const avgDaysOnMarket = marketData?.saleData?.averageDaysOnMarket
-  const marketSpeed = avgDaysOnMarket ? getMarketSpeedIndicator(avgDaysOnMarket) : null 
+  // const marketSpeed = avgDaysOnMarket ? getMarketSpeedIndicator(avgDaysOnMarket) : null 
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 mx-auto p-6">
