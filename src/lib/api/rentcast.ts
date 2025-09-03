@@ -46,7 +46,7 @@ export class RentcastAPI {
 
   constructor() {
     this.apiKey = process.env.RENTCAST_API_KEY || ''
-    this.baseUrl = process.env.RENTCAST_API_BASE_URL || 'https://api.rentcast.io/v1'
+    this.baseUrl = 'https://api.rentcast.io/v1' // Use hardcoded URL to avoid env var issues
 
     if (!this.apiKey) {
       throw new Error('RENTCAST_API_KEY environment variable is required')

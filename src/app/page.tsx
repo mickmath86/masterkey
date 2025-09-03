@@ -19,6 +19,7 @@ import { ChevronRightIcon } from '@heroicons/react/16/solid'
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { FadeInUp, FadeInStagger } from '@/components/animations';
 import type { Metadata } from 'next'
+import { Feature77 } from '@/components/feature77'
 
 export const metadata: Metadata = {
   description:
@@ -235,11 +236,9 @@ export default function Home() {
     <div className="overflow-hidden">
       <Hero />
       <main>
-        <Container className="mt-10">
-          <LogoCloud />
-        </Container>
+       
         <div className="bg-linear-to-b from-white from-50% to-gray-100 py-32">
-          <FeatureSection />
+     
           <BentoSection />
         </div>
         <DarkBentoSection />
