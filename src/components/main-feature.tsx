@@ -1,7 +1,6 @@
 
 
 
-import { Eyebrow } from "./ui/eyebrow";
 import { Container } from "./container";
 import { GradientBackground } from "./gradient";
 import { Heading, Lead, Subheading } from '@/components/text'
@@ -11,7 +10,6 @@ import { ArrowLongRightIcon } from "@heroicons/react/16/solid";
 import { Button } from "./ui/button";
 import { ArrowUpRight } from "lucide-react";
 import { ChartRadialStacked } from "./ui/chart-radial-stacked";
-import { Safari } from "./ui/shadcn-io/safari";
 
 
 

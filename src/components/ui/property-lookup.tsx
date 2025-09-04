@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckIcon } from '@heroicons/react/24/solid';
-import { GithubGlobe } from './github-globe';
 import { type ZillowPropertyData } from '../../lib/api/zillow';
 
 interface LookupStep {
@@ -127,7 +126,9 @@ export function PropertyLookup({ address, onComplete }: PropertyLookupProps) {
           </p>
         </motion.div>
 
-        <GithubGlobe className="mb-8" />
+        <div className="mb-8 flex justify-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
 
         <div className="space-y-4">
           {steps.map((step, index) => (
