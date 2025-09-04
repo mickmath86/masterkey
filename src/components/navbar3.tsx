@@ -26,6 +26,7 @@ import {
   PhoneIcon,
   RectangleGroupIcon,
 } from '@heroicons/react/24/outline'
+import { SparkleIcon } from 'lucide-react'
 
 
 
@@ -56,7 +57,7 @@ const brokerageLinks = [
 
 const brokerageCallsToAction = [
   { name: 'Watch demo', href: '#', icon: PlayCircleIcon },
-  { name: 'Contact sales', href: '#', icon: PhoneIcon },
+  { name: 'Contact sales', href: '/contact', icon: PhoneIcon },
   { name: 'View all products', href: '#', icon: RectangleGroupIcon },
 ]
 
@@ -72,7 +73,7 @@ const propertyManagementLinks = [
 
 const propertyManagementCallsToAction = [
   { name: 'Watch demo', href: '#', icon: PlayCircleIcon },
-  { name: 'Contact sales', href: '#', icon: PhoneIcon },
+  { name: 'Contact sales', href: '/contact', icon: PhoneIcon },
 
 ]
 
@@ -248,22 +249,23 @@ export default function Navbar3() {
                   ))}
                   
                   {/* Featured Section */}
-                  <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 p-6 text-white animate-in slide-in-from-right-2 duration-300">
+                  <a href="/ai-insights" className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 p-6 text-white animate-in slide-in-from-right-2 duration-300 hover:bg-blue-900 hover:text-white">
                     <div className="relative z-10">
                       <div className="mb-4">
                         <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
                           New Feature
                         </span>
                       </div>
-                      <h3 className="text-lg font-semibold mb-2">
+                      <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                        <SparkleIcon className="w-5 h-5" />
                         AI Property Insights
                       </h3>
                       <p className="text-sm text-white/90 mb-4">
                         Get instant market analysis and property recommendations powered by advanced AI.
                       </p>
-                      <a href="/ai-insights" className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors">
+                      <div  className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors">
                         Learn more →
-                      </a>
+                      </div>
                     </div>
                     <div className="absolute -bottom-4 -right-4 opacity-20">
                       <div className="size-24 rounded-full bg-white/10"></div>
@@ -271,7 +273,7 @@ export default function Navbar3() {
                     <div className="absolute -top-2 -left-2 opacity-10">
                       <div className="size-16 rounded-full bg-white/20"></div>
                     </div>
-                  </div>
+                  </a>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-800/50 animate-in slide-in-from-bottom-2 duration-300">
                   <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -298,13 +300,13 @@ export default function Navbar3() {
             onMouseLeave={handleMenuLeave}
             isActive={activeMenu === 'property-mgmt'}
           />
-          
-          <a href="#" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
-            Marketplace
-          </a>
-          <a href="#" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
+           <a href="/company" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
             Company
           </a>
+          <a href="/contact" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
+            Contact
+          </a>
+         
         </PopoverGroup>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
           <a href="#" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
