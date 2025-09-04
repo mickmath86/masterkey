@@ -143,11 +143,11 @@ export function MarketInsights({ address, className }: MarketInsightsProps) {
 
         {/* Secondary Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {marketData.saleData?.averageSalePrice && (
+          {marketData.saleData?.averagePrice && (
             <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
               <DollarSign className="h-5 w-5 mx-auto text-green-600 mb-2" />
               <div className="text-xl font-bold text-green-600">
-                {formatCurrency(marketData.saleData.averageSalePrice)}
+                {formatCurrency(marketData.saleData.averagePrice)}
               </div>
               <div className="text-sm text-green-700">Average Sale Price</div>
             </div>

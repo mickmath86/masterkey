@@ -2,7 +2,7 @@ import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { Container } from "@/components/container"
 import { Heading } from "@/components/text"
 import { Lead } from "@/components/text"
-import { FadeIn, FadeInStagger } from "@/components/animations"
+import { FadeInStagger } from "@/components/animations"
 import { Subheading } from "@/components/text"
 import { ChartRadialStacked } from '@/components/ui/chart-radial-stacked'
 import {
@@ -15,7 +15,7 @@ import {
   } from '@heroicons/react/20/solid'
 
 import { Footer } from '@/components/footer'
-import { ArrowRight, ArrowUpRight, Link, Home, Key, DollarSign, Star } from "lucide-react"
+import { ArrowRight, Home, Key, DollarSign, Star } from "lucide-react"
 
 
 const featredPosts = [

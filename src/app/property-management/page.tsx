@@ -2,20 +2,11 @@ import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { Container } from "@/components/container"
 import { Heading } from "@/components/text"
 import { Lead } from "@/components/text"
-import { FadeIn, FadeInStagger } from "@/components/animations"
+import { FadeInStagger } from "@/components/animations"
 import { Subheading } from "@/components/text"
-import { ChartRadialStacked } from '@/components/ui/chart-radial-stacked'
-import {
-    ArrowPathIcon,
-    CloudArrowUpIcon,
-    Cog6ToothIcon,
-    FingerPrintIcon,
-    LockClosedIcon,
-    ServerIcon,
-  } from '@heroicons/react/20/solid'
   import Navbar3 from '@/components/navbar3'
 import { Footer } from '@/components/footer'
-import { ArrowRight, ArrowUpRight, Link, Building, Users, Wrench, Star } from "lucide-react"
+import { ArrowRight, Building, Users, Wrench, Star } from "lucide-react"
 
 
 const featredPosts = [

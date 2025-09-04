@@ -4,20 +4,15 @@ import { Container } from '@/components/container'
 import { Footer } from '@/components/footer'
 import { Gradient } from '@/components/gradient'
 import { Keyboard } from '@/components/keyboard'
-import { Link } from '@/components/link'
 import { LinkedAvatars } from '@/components/linked-avatars'
-import { LogoCloud } from '@/components/logo-cloud'
 import { LogoCluster } from '@/components/logo-cluster'
 import { LogoTimeline } from '@/components/logo-timeline'
 import { Map } from '@/components/map'
 import Navbar3 from '@/components/navbar3'
-import { Navbar4 } from '@/components/navbar4'
 import { Screenshot } from '@/components/screenshot'
 import { Testimonials } from '@/components/testimonials'
 import { Heading, Subheading } from '@/components/text'
-import { ChevronRightIcon } from '@heroicons/react/16/solid'
-import { GlowingEffect } from "@/components/ui/glowing-effect";
-import { FadeInUp, FadeInStagger } from '@/components/animations';
+import { FadeInUp } from '@/components/animations';
 import { Star } from 'lucide-react';
 import type { Metadata } from 'next'
 import { SectionHeader } from '@/components/section-header'

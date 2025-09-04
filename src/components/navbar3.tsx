@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import Link from 'next/link'
 import {
   Dialog,
   DialogPanel,
@@ -182,7 +183,7 @@ export default function Navbar3() {
     <header className="relative isolate z-10 ">
       <nav aria-label="Global" className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
         <div className="flex lg:flex-1">
-          <a href="/" className="-m-1.5 p-1.5">
+          <Link href="/" className="-m-1.5 p-1.5">
             <span className="sr-only">MasterKey</span>
             {/* <img
               alt=""
@@ -196,7 +197,7 @@ export default function Navbar3() {
               src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=sky&shade=500"
               className="h-8 w-auto not-dark:hidden"
             />
-          </a>
+          </Link>
         </div>
         <div className="flex lg:hidden">
           <button
