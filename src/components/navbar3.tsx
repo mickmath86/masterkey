@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   Dialog,
   DialogPanel,
@@ -19,10 +19,18 @@ import {
   FingerPrintIcon,
   SquaresPlusIcon,
   XMarkIcon,
+  ArrowPathIcon,
+  ChevronDownIcon,
+  PlayCircleIcon,
+  PhoneIcon,
+  RectangleGroupIcon,
 } from '@heroicons/react/24/outline'
-import { ChevronDownIcon, PhoneIcon, PlayCircleIcon, RectangleGroupIcon } from '@heroicons/react/20/solid'
 
-const products = [
+
+
+
+// Brokerage
+const brokerageLinks = [
   {
     name: 'Analytics',
     description: 'Get a better understanding where your traffic is coming from',
@@ -43,27 +51,146 @@ const products = [
     icon: SquaresPlusIcon,
   },
 ]
-const callsToAction = [
+
+
+const brokerageCallsToAction = [
   { name: 'Watch demo', href: '#', icon: PlayCircleIcon },
   { name: 'Contact sales', href: '#', icon: PhoneIcon },
   { name: 'View all products', href: '#', icon: RectangleGroupIcon },
 ]
 
 
+// Property Management
+const propertyManagementLinks = [
+  { name: 'Analytics', description: 'Get a better understanding of your traffic', href: '#', icon: ChartPieIcon },
+  { name: 'Engagement', description: 'Speak directly to your customers', href: '#', icon: CursorArrowRaysIcon },
+  { name: 'Security', description: "Your customers' data will be safe and secure", href: '#', icon: FingerPrintIcon },
+  { name: 'Integrations', description: 'Connect with third-party tools', href: '#', icon: SquaresPlusIcon },
+  { name: 'Automations', description: 'Build strategic funnels that will convert', href: '#', icon: ArrowPathIcon },
+]
+
+const propertyManagementCallsToAction = [
+  { name: 'Watch demo', href: '#', icon: PlayCircleIcon },
+  { name: 'Contact sales', href: '#', icon: PhoneIcon },
+
+]
+
+
+function PropertyManagementNav({ onMouseEnter, onMouseLeave, isActive }: { onMouseEnter: () => void, onMouseLeave: () => void, isActive: boolean }) {
+  return (
+    <Popover className="relative" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+      <PopoverButton className="group inline-flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900 dark:text-white">
+        <span>Property Management</span>
+        <ChevronDownIcon aria-hidden="true" className="size-5 transition-transform duration-200 group-hover:rotate-180" />
+      </PopoverButton>
+
+      {isActive && (
+        <PopoverPanel
+          static
+          className="absolute left-1/2 z-10 mt-5 flex w-screen max-w-max -translate-x-1/2 bg-transparent px-4 animate-in slide-in-from-top-1 duration-200"
+        >
+        <div className="w-screen max-w-2xl flex-auto overflow-hidden rounded-3xl bg-white text-sm/6 shadow-lg outline-1 outline-gray-900/5 dark:bg-gray-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
+            <div className="space-y-1">
+              {propertyManagementLinks.map((item, index) => (
+                <div
+                  key={item.name}
+                  className="group relative flex gap-x-6 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-white/5 animate-in slide-in-from-right-2 duration-300"
+                >
+                  <div className="mt-1 flex size-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white dark:bg-gray-700/50 dark:group-hover:bg-gray-700">
+                    <item.icon
+                      aria-hidden="true"
+                      className="size-6 text-gray-600 group-hover:text-indigo-600 dark:text-gray-400 dark:group-hover:text-white"
+                    />
+                  </div>
+                  <div>
+                    <a href={item.href} className="font-semibold text-gray-900 dark:text-white">
+                      {item.name}
+                      <span className="absolute inset-0" />
+                    </a>
+                    <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Client Portal Featured Section */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 p-6 text-white animate-in slide-in-from-left-2 duration-300">
+              <div className="relative z-10">
+                <div className="mb-4">
+                  <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
+                    Client Access
+                  </span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">
+                  Client Portal
+                </h3>
+                <p className="text-sm text-white/90 mb-4">
+                  Access your property documents, maintenance requests, and financial reports securely.
+                </p>
+                <a href="/client-portal" className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors">
+                  Login Now →
+                </a>
+              </div>
+              <div className="absolute -bottom-4 -right-4 opacity-20">
+                <div className="size-24 rounded-full bg-white/10"></div>
+              </div>
+              <div className="absolute -top-2 -left-2 opacity-10">
+                <div className="size-16 rounded-full bg-white/20"></div>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 divide-x divide-gray-900/5 bg-gray-50 dark:divide-white/10 dark:bg-gray-700/50 animate-in slide-in-from-bottom-2 duration-300">
+            {propertyManagementCallsToAction.map((item, index) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className="flex items-center justify-center gap-x-2.5 p-3 font-semibold text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700/50 animate-in slide-in-from-bottom-1 duration-200"
+              >
+                <item.icon aria-hidden="true" className="size-5 flex-none text-gray-400 dark:text-gray-500" />
+                {item.name}
+              </a>
+            ))}
+          </div>
+        </div>
+        </PopoverPanel>
+      )}
+    </Popover>
+  )
+}
+
+
 export default function Navbar3() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [activeMenu, setActiveMenu] = useState<'buy-sell' | 'property-mgmt' | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleMenuEnter = (menu: 'buy-sell' | 'property-mgmt') => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+    setActiveMenu(menu)
+  }
+
+  const handleMenuLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setActiveMenu(null)
+    }, 100)
+  }
 
   return (
     <header className="relative isolate z-10 ">
       <nav aria-label="Global" className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
         <div className="flex lg:flex-1">
-          <a href="#" className="-m-1.5 p-1.5">
-            <span className="sr-only">Your Company</span>
-            <img
+          <a href="/" className="-m-1.5 p-1.5">
+            <span className="sr-only">MasterKey</span>
+            {/* <img
               alt=""
               src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=sky&shade=600"
               className="h-8 w-auto dark:hidden"
             />
+            */}
+            <h1 className="text-3xl font-bold capitalize">MasterKey</h1> 
             <img
               alt=""
               src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=sky&shade=500"
@@ -82,27 +209,28 @@ export default function Navbar3() {
           </button>
         </div>
         <PopoverGroup className="hidden lg:flex lg:gap-x-12">
-          <Popover>
-            <PopoverButton className="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900 dark:text-white">
-              Product
-              <ChevronDownIcon aria-hidden="true" className="size-5 flex-none text-gray-400 dark:text-gray-500" />
+          <Popover onMouseEnter={() => handleMenuEnter('buy-sell')} onMouseLeave={handleMenuLeave}>
+            <PopoverButton className="group flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900 dark:text-white">
+              Buy & Sell
+              <ChevronDownIcon aria-hidden="true" className="size-5 flex-none text-gray-400 dark:text-gray-500 transition-transform duration-200 group-hover:rotate-180" />
             </PopoverButton>
 
-            <PopoverPanel
-              transition
-              className="absolute inset-x-0 top-16 bg-white transition data-closed:-translate-y-1 data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in dark:bg-gray-900"
-            >
+            {activeMenu === 'buy-sell' && (
+              <PopoverPanel
+                static
+                className="absolute inset-x-0 top-16 bg-white dark:bg-gray-900 animate-in slide-in-from-top-1 duration-200"
+              >
               {/* Presentational element used to render the bottom shadow, if we put the shadow on the actual panel it pokes out the top, so we use this shorter element to hide the top of the shadow */}
               <div
                 aria-hidden="true"
                 className="absolute inset-0 top-1/2 bg-white shadow-lg ring-1 ring-gray-900/5 dark:bg-gray-900 dark:shadow-none dark:ring-white/15"
               />
               <div className="relative bg-white dark:bg-gray-900">
-                <div className="mx-auto grid max-w-7xl grid-cols-4 gap-x-4 px-6 py-10 lg:px-8 xl:gap-x-8">
-                  {products.map((item) => (
+                <div className="mx-auto grid max-w-7xl grid-cols-4 gap-x-4 px-6 py-10 lg:px-8 xl:gap-x-8 lg:grid-cols-5">
+                  {brokerageLinks.map((item, index) => (
                     <div
                       key={item.name}
-                      className="group relative rounded-lg p-6 text-sm/6 hover:bg-gray-50 dark:hover:bg-white/5"
+                      className="group relative rounded-lg p-6 text-sm/6 hover:bg-gray-50 dark:hover:bg-white/5 animate-in slide-in-from-left-2 duration-300"
                     >
                       <div className="flex size-11 items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white dark:bg-gray-700/50 dark:group-hover:bg-gray-700">
                         <item.icon
@@ -117,15 +245,41 @@ export default function Navbar3() {
                       <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p>
                     </div>
                   ))}
+                  
+                  {/* Featured Section */}
+                  <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 p-6 text-white animate-in slide-in-from-right-2 duration-300">
+                    <div className="relative z-10">
+                      <div className="mb-4">
+                        <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
+                          New Feature
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">
+                        AI Property Insights
+                      </h3>
+                      <p className="text-sm text-white/90 mb-4">
+                        Get instant market analysis and property recommendations powered by advanced AI.
+                      </p>
+                      <a href="/ai-insights" className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors">
+                        Learn more →
+                      </a>
+                    </div>
+                    <div className="absolute -bottom-4 -right-4 opacity-20">
+                      <div className="size-24 rounded-full bg-white/10"></div>
+                    </div>
+                    <div className="absolute -top-2 -left-2 opacity-10">
+                      <div className="size-16 rounded-full bg-white/20"></div>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800/50">
+                <div className="bg-gray-50 dark:bg-gray-800/50 animate-in slide-in-from-bottom-2 duration-300">
                   <div className="mx-auto max-w-7xl px-6 lg:px-8">
                     <div className="grid grid-cols-3 divide-x divide-gray-900/5 border-x border-gray-900/5 dark:divide-white/5 dark:border-white/10">
-                      {callsToAction.map((item) => (
+                      {brokerageCallsToAction.map((item, index) => (
                         <a
                           key={item.name}
                           href={item.href}
-                          className="flex items-center justify-center gap-x-2.5 p-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800"
+                          className="flex items-center justify-center gap-x-2.5 p-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800 animate-in slide-in-from-bottom-1 duration-200"
                         >
                           <item.icon aria-hidden="true" className="size-5 flex-none text-gray-400 dark:text-gray-500" />
                           {item.name}
@@ -135,12 +289,15 @@ export default function Navbar3() {
                   </div>
                 </div>
               </div>
-            </PopoverPanel>
+              </PopoverPanel>
+            )}
           </Popover>
-
-          <a href="#" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
-            Features
-          </a>
+          <PropertyManagementNav 
+            onMouseEnter={() => handleMenuEnter('property-mgmt')} 
+            onMouseLeave={handleMenuLeave}
+            isActive={activeMenu === 'property-mgmt'}
+          />
+          
           <a href="#" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
             Marketplace
           </a>
@@ -189,7 +346,7 @@ export default function Navbar3() {
                     <ChevronDownIcon aria-hidden="true" className="size-5 flex-none group-data-open:rotate-180" />
                   </DisclosureButton>
                   <DisclosurePanel className="mt-2 space-y-2">
-                    {[...products, ...callsToAction].map((item) => (
+                    {[...brokerageLinks, ...brokerageCallsToAction].map((item) => (
                       <DisclosureButton
                         key={item.name}
                         as="a"
@@ -235,3 +392,5 @@ export default function Navbar3() {
     </header>
   )
 }
+
+
