@@ -5,8 +5,6 @@ import { Safari } from '@/components/ui/shadcn-io/safari'
 import { Footer } from '@/components/footer'
 import { CloudArrowUpIcon, LockClosedIcon, ServerIcon } from '@heroicons/react/20/solid'
 import { FadeIn, FadeInLeft, FadeInRight, FadeInUp } from '@/components/animations'
-import { ArrowRight } from 'lucide-react'
-import Iphone15Pro from '@/components/ui/shadcn-io/iphone-15-pro'
 
 
 const features = [
