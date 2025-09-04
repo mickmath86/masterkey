@@ -35,7 +35,7 @@ const featredPosts = [
     },
     {
         title: "See Your Home's Current Value",
-        link:"/property-valuation", 
+        link:"/questionnaire/real-estate-sell", 
         slug: "home-valuation",
         icon: DollarSign,
         excerpt: "Get an instant, AI-powered valuation of your property based on current market data and comparable sales."

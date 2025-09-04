@@ -34,45 +34,82 @@ import { SparkleIcon } from 'lucide-react'
 // Brokerage
 const brokerageLinks = [
   {
-    name: 'Analytics',
-    description: 'Get a better understanding where your traffic is coming from',
-    href: '#',
+    name: 'Buy & Sell Services',
+    description: 'Complete real estate solutions for buying and selling properties',
+    href: '/brokerage',
     icon: ChartPieIcon,
   },
   {
-    name: 'Engagement',
-    description: 'Speak directly to your customers with our engagement tool',
-    href: '#',
+    name: 'Market Analysis',
+    description: 'Comprehensive market research and property valuations',
+    href: '/market-analysis',
     icon: CursorArrowRaysIcon,
   },
-  { name: 'Security', description: 'Your customers’ data will be safe and secure', href: '#', icon: FingerPrintIcon },
-  {
-    name: 'Integrations',
-    description: 'Your customers’ data will be safe and secure',
-    href: '#',
-    icon: SquaresPlusIcon,
+  { 
+    name: 'Property Lookup', 
+    description: 'Search and analyze properties with detailed insights', 
+    href: '/questionnaire/real-estate-sell', 
+    icon: FingerPrintIcon 
   },
+  {
+    name: 'Transaction Management',
+    description: 'Our proprietary platform guides buyers and sellers through every step of their transaction',
+    href: '/brokerage/transaction-management',
+    icon: RectangleGroupIcon,
+    beta: true,
+  },
+  // {
+  //   name: 'Investment Services',
+  //   description: 'Expert guidance for real estate investment opportunities',
+  //   href: '#',
+  //   icon: SquaresPlusIcon,
+  // },
 ]
 
 
 const brokerageCallsToAction = [
-  { name: 'Watch demo', href: '#', icon: PlayCircleIcon },
+  { name: 'Get Started', href: '/questionnaire', icon: PlayCircleIcon },
   { name: 'Contact sales', href: '/contact', icon: PhoneIcon },
-  { name: 'View all products', href: '#', icon: RectangleGroupIcon },
+  { name: 'View all services', href: '/buy-and-sell', icon: RectangleGroupIcon },
 ]
 
 
 // Property Management
 const propertyManagementLinks = [
-  { name: 'Analytics', description: 'Get a better understanding of your traffic', href: '#', icon: ChartPieIcon },
-  { name: 'Engagement', description: 'Speak directly to your customers', href: '#', icon: CursorArrowRaysIcon },
-  { name: 'Security', description: "Your customers' data will be safe and secure", href: '#', icon: FingerPrintIcon },
-  { name: 'Integrations', description: 'Connect with third-party tools', href: '#', icon: SquaresPlusIcon },
-  { name: 'Automations', description: 'Build strategic funnels that will convert', href: '#', icon: ArrowPathIcon },
+  { 
+    name: 'Property Management', 
+    description: 'Comprehensive property management services for investors', 
+    href: '/property-management', 
+    icon: ChartPieIcon 
+  },
+  { 
+    name: 'Tenant Screening', 
+    description: 'Thorough background checks and tenant verification services', 
+    href: '#', 
+    icon: CursorArrowRaysIcon 
+  },
+  { 
+    name: 'Rent Collection', 
+    description: 'Automated rent collection and payment processing', 
+    href: '#', 
+    icon: FingerPrintIcon 
+  },
+  { 
+    name: 'Maintenance Services', 
+    description: '24/7 maintenance coordination and emergency response', 
+    href: '#', 
+    icon: SquaresPlusIcon 
+  },
+  { 
+    name: 'Financial Reporting', 
+    description: 'Detailed monthly reports and expense tracking', 
+    href: '#', 
+    icon: ArrowPathIcon 
+  },
 ]
 
 const propertyManagementCallsToAction = [
-  { name: 'Watch demo', href: '#', icon: PlayCircleIcon },
+  { name: 'Get Started', href: '/questionnaire', icon: PlayCircleIcon },
   { name: 'Contact sales', href: '/contact', icon: PhoneIcon },
 
 ]
@@ -220,15 +257,10 @@ export default function Navbar3() {
             {activeMenu === 'buy-sell' && (
               <PopoverPanel
                 static
-                className="absolute inset-x-0 top-16 bg-white dark:bg-gray-900 animate-in slide-in-from-top-1 duration-200"
+                className="absolute left-1/2 z-10 mt-5 flex w-screen max-w-max -translate-x-1/2 bg-transparent px-4 animate-in slide-in-from-top-1 duration-200"
               >
-              {/* Presentational element used to render the bottom shadow, if we put the shadow on the actual panel it pokes out the top, so we use this shorter element to hide the top of the shadow */}
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 top-1/2 bg-white shadow-lg ring-1 ring-gray-900/5 dark:bg-gray-900 dark:shadow-none dark:ring-white/15"
-              />
-              <div className="relative bg-white dark:bg-gray-900">
-                <div className="mx-auto grid max-w-7xl grid-cols-4 gap-x-4 px-6 py-10 lg:px-8 xl:gap-x-8 lg:grid-cols-5">
+        <div className="w-screen max-w-6xl flex-auto overflow-hidden rounded-3xl bg-white text-sm/6 shadow-lg outline-1 outline-gray-900/5 dark:bg-gray-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
+          <div className="grid grid-cols-4 gap-x-4 p-6 lg:grid-cols-5 xl:gap-x-6">
                   {brokerageLinks.map((item, index) => (
                     <div
                       key={item.name}
@@ -241,7 +273,14 @@ export default function Navbar3() {
                         />
                       </div>
                       <a href={item.href} className="mt-6 block font-semibold text-gray-900 dark:text-white">
-                        {item.name}
+                        <div className="flex items-center gap-2">
+                          {item.name}
+                          {item.beta && (
+                            <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                              Beta
+                            </span>
+                          )}
+                        </div>
                         <span className="absolute inset-0" />
                       </a>
                       <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p>
@@ -275,23 +314,19 @@ export default function Navbar3() {
                     </div>
                   </a>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800/50 animate-in slide-in-from-bottom-2 duration-300">
-                  <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                    <div className="grid grid-cols-3 divide-x divide-gray-900/5 border-x border-gray-900/5 dark:divide-white/5 dark:border-white/10">
-                      {brokerageCallsToAction.map((item, index) => (
-                        <a
-                          key={item.name}
-                          href={item.href}
-                          className="flex items-center justify-center gap-x-2.5 p-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800 animate-in slide-in-from-bottom-1 duration-200"
-                        >
-                          <item.icon aria-hidden="true" className="size-5 flex-none text-gray-400 dark:text-gray-500" />
-                          {item.name}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div className="grid grid-cols-3 divide-x divide-gray-900/5 bg-gray-50 dark:divide-white/10 dark:bg-gray-700/50 animate-in slide-in-from-bottom-2 duration-300">
+            {brokerageCallsToAction.map((item, index) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className="flex items-center justify-center gap-x-2.5 p-3 font-semibold text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700/50 animate-in slide-in-from-bottom-1 duration-200"
+              >
+                <item.icon aria-hidden="true" className="size-5 flex-none text-gray-400 dark:text-gray-500" />
+                {item.name}
+              </a>
+            ))}
+          </div>
+        </div>
               </PopoverPanel>
             )}
           </Popover>

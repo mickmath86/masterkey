@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Gradient } from '@/components/gradient';
 import { FadeInUp, FadeInStagger } from '@/components/animations';
+import Navbar3 from '@/components/navbar3';
+import { Footer } from '@/components/footer';
 import { 
   TrendingUpIcon, 
   HomeIcon, 
@@ -14,7 +16,13 @@ import {
   CalendarIcon,
   DollarSignIcon,
   BarChart3Icon,
-  ChevronLeftIcon
+  ChevronLeftIcon,
+  SearchIcon,
+  TargetIcon,
+  TrendingDownIcon,
+  PieChartIcon,
+  DatabaseIcon,
+  ZapIcon
 } from 'lucide-react';
 
 interface MarketData {
@@ -53,61 +61,123 @@ export default function MarketAnalysisPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.history.back()}
-                className="flex items-center gap-2"
-              >
-                <ChevronLeftIcon className="w-4 h-4" />
-                Back
-              </Button>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Market Analysis</h1>
-                <p className="text-gray-600 mt-1">Get comprehensive market insights and property valuations</p>
+    <div className="min-h-screen bg-white">
+      <Navbar3 />
+      
+      {/* Hero Section */}
+      <div className="relative isolate overflow-hidden bg-gradient-to-b from-sky-100/20 pt-14">
+        <div className="absolute inset-y-0 right-1/2 -z-10 -mr-96 w-[200%] origin-top-right skew-x-[-30deg] bg-white shadow-xl shadow-sky-600/10 ring-1 ring-sky-50 sm:-mr-80 lg:-mr-96" />
+        <div className="mx-auto max-w-7xl px-6 py-32 sm:py-40 lg:px-8">
+          <div className="mx-auto max-w-2xl lg:mx-0 lg:grid lg:max-w-none lg:grid-cols-2 lg:gap-x-16 lg:gap-y-6 xl:grid-cols-1 xl:grid-rows-1 xl:gap-x-8">
+            <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:col-span-2 xl:col-auto">
+              Advanced Market Intelligence at Your Fingertips
+            </h1>
+            <div className="mt-6 max-w-xl lg:mt-0 xl:col-end-1 xl:row-start-1">
+              <p className="text-lg leading-8 text-gray-600">
+                Leverage MasterKey's sophisticated analytics platform to make data-driven real estate decisions. Our proprietary tools analyze market trends, comparable sales, and pricing strategies to give you the competitive edge.
+              </p>
+              <div className="mt-10 flex items-center gap-x-6">
+                <Button size="lg" className="bg-sky-600 hover:bg-sky-500">
+                  <SearchIcon className="w-4 h-4 mr-2" />
+                  Start Analysis
+                </Button>
+                <Button variant="outline" size="lg">
+                  View Demo
+                </Button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Hero Section with Search */}
-      <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 py-16">
-        <Gradient className="absolute inset-0 opacity-20" />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <FadeInUp delay={0.2}>
-            <h2 className="text-4xl font-bold text-white mb-4">
-              Discover Your Local Market
-            </h2>
-          </FadeInUp>
-          <FadeInUp delay={0.4}>
-            <p className="text-xl text-blue-100 mb-8">
-              Enter your location to get detailed market analysis, recent sales, and property trends
+      {/* Tools & Features Section */}
+      <div className="py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl lg:text-center">
+            <h2 className="text-base font-semibold leading-7 text-sky-600">Powerful Analytics</h2>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+              Everything you need to dominate your market
             </p>
-          </FadeInUp>
-          
-          <FadeInUp delay={0.6}>
-            <div className="flex gap-4 max-w-md mx-auto">
+            <p className="mt-6 text-lg leading-8 text-gray-600">
+              Our comprehensive suite of market analysis tools gives you the insights needed to price properties accurately, identify trends, and make profitable investment decisions.
+            </p>
+          </div>
+          <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl">
+            <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16">
+              <div className="relative pl-16">
+                <dt className="text-base font-semibold leading-7 text-gray-900">
+                  <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-sky-600">
+                    <TargetIcon className="h-6 w-6 text-white" aria-hidden="true" />
+                  </div>
+                  Precision Pricing Engine
+                </dt>
+                <dd className="mt-2 text-base leading-7 text-gray-600">
+                  Our AI-powered valuation model analyzes thousands of data points to provide accurate property valuations within 3% of market value.
+                </dd>
+              </div>
+              <div className="relative pl-16">
+                <dt className="text-base font-semibold leading-7 text-gray-900">
+                  <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-sky-600">
+                    <TrendingUpIcon className="h-6 w-6 text-white" aria-hidden="true" />
+                  </div>
+                  Market Trend Forecasting
+                </dt>
+                <dd className="mt-2 text-base leading-7 text-gray-600">
+                  Predict market movements up to 12 months in advance using our proprietary trend analysis algorithms and economic indicators.
+                </dd>
+              </div>
+              <div className="relative pl-16">
+                <dt className="text-base font-semibold leading-7 text-gray-900">
+                  <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-sky-600">
+                    <DatabaseIcon className="h-6 w-6 text-white" aria-hidden="true" />
+                  </div>
+                  Comprehensive Comps Database
+                </dt>
+                <dd className="mt-2 text-base leading-7 text-gray-600">
+                  Access the most complete database of comparable sales, including off-market transactions and pending sales data.
+                </dd>
+              </div>
+              <div className="relative pl-16">
+                <dt className="text-base font-semibold leading-7 text-gray-900">
+                  <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-sky-600">
+                    <ZapIcon className="h-6 w-6 text-white" aria-hidden="true" />
+                  </div>
+                  Real-Time Market Alerts
+                </dt>
+                <dd className="mt-2 text-base leading-7 text-gray-600">
+                  Get instant notifications when market conditions change, new listings match your criteria, or price adjustments occur.
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      {/* Interactive Search Section */}
+      <div className="bg-gray-50 py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+              Try Our Market Analysis Tool
+            </h2>
+            <p className="mt-6 text-lg leading-8 text-gray-600">
+              Enter any address or area to see our advanced analytics in action
+            </p>
+            <div className="mt-10 flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
               <Input
                 type="text"
-                placeholder="Enter city, state or ZIP code"
+                placeholder="Enter address, city, or ZIP code"
                 value={searchLocation}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchLocation(e.target.value)}
-                className="flex-1 bg-white"
+                className="flex-1"
                 onKeyPress={(e: React.KeyboardEvent) => e.key === 'Enter' && handleSearch()}
               />
-              <Button onClick={handleSearch} size="lg">
+              <Button onClick={handleSearch} size="lg" className="bg-sky-600 hover:bg-sky-500">
                 <BarChart3Icon className="w-4 h-4 mr-2" />
-                Analyze
+                Analyze Market
               </Button>
             </div>
-          </FadeInUp>
+          </div>
         </div>
       </div>
 
@@ -278,45 +348,63 @@ export default function MarketAnalysisPage() {
         </div>
       )}
 
-      {/* Call to Action */}
-      {!showResults && (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">
-            Why Market Analysis Matters
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+      {/* Stats Section */}
+      <div className="bg-sky-600 py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl lg:max-w-none">
             <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <TrendingUpIcon className="w-6 h-6 text-blue-600" />
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-2">Price Trends</h4>
-              <p className="text-gray-600 text-sm">
-                Understand how property values are changing in your area
+              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Trusted by real estate professionals nationwide
+              </h2>
+              <p className="mt-4 text-lg leading-8 text-sky-200">
+                Our platform processes millions of data points daily to deliver the most accurate market insights
               </p>
             </div>
-            
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <BarChart3Icon className="w-6 h-6 text-green-600" />
+            <dl className="mt-16 grid grid-cols-1 gap-0.5 overflow-hidden rounded-2xl text-center sm:grid-cols-2 lg:grid-cols-4">
+              <div className="flex flex-col bg-white/5 p-8">
+                <dt className="text-sm font-semibold leading-6 text-sky-200">Properties Analyzed</dt>
+                <dd className="order-first text-3xl font-bold tracking-tight text-white">2.5M+</dd>
               </div>
-              <h4 className="font-semibold text-gray-900 mb-2">Market Conditions</h4>
-              <p className="text-gray-600 text-sm">
-                Know if it's a buyer's or seller's market in your neighborhood
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <HomeIcon className="w-6 h-6 text-purple-600" />
+              <div className="flex flex-col bg-white/5 p-8">
+                <dt className="text-sm font-semibold leading-6 text-sky-200">Accuracy Rate</dt>
+                <dd className="order-first text-3xl font-bold tracking-tight text-white">97%</dd>
               </div>
-              <h4 className="font-semibold text-gray-900 mb-2">Property Values</h4>
-              <p className="text-gray-600 text-sm">
-                Get accurate valuations based on recent comparable sales
-              </p>
+              <div className="flex flex-col bg-white/5 p-8">
+                <dt className="text-sm font-semibold leading-6 text-sky-200">Markets Covered</dt>
+                <dd className="order-first text-3xl font-bold tracking-tight text-white">500+</dd>
+              </div>
+              <div className="flex flex-col bg-white/5 p-8">
+                <dt className="text-sm font-semibold leading-6 text-sky-200">Active Users</dt>
+                <dd className="order-first text-3xl font-bold tracking-tight text-white">25K+</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="bg-white py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+              Ready to gain your competitive advantage?
+            </h2>
+            <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-gray-600">
+              Join thousands of real estate professionals who rely on MasterKey's market intelligence to close more deals and maximize profits.
+            </p>
+            <div className="mt-10 flex items-center justify-center gap-x-6">
+              <Button size="lg" className="bg-sky-600 hover:bg-sky-500">
+                Get Started Today
+              </Button>
+              <Button variant="outline" size="lg">
+                Schedule Demo
+              </Button>
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      <Footer />
     </div>
   );
 }

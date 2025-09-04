@@ -18,21 +18,21 @@ const serviceOptions = [
     title: "Buy Real Estate", 
     description: "Find your dream home with our expert agents and technology",
     icon: Home,
-    href: "/real-estate-buy",
+    href: "/questionnaire/real-estate-buy",
     color: "bg-blue-500"
   },
   {
     title: "Buy and Sell",
     description: "Complete solution for buying your next home while selling current",
     icon: Building,
-    href: "/buy-and-sell",
+    href: "/questionnaire/real-estate-buy",
     color: "bg-purple-500"
   },
   {
     title: "Property Management",
     description: "Professional management services for your investment properties",
     icon: Users,
-    href: "/property-management", 
+    href: "/questionnaire/property-management", 
     color: "bg-orange-500"
   }
 ];
