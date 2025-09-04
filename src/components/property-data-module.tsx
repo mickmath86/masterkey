@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 // import { Input } from "@/components/ui/input"
 // import { getZillowAPI } from '@/lib/api/zillow'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -53,6 +54,7 @@ interface PropertyDataModuleProps {
 }
 
 export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps) {
+  const router = useRouter()
   const [propertyData, setPropertyData] = useState<any>(null)
   const [marketData, setMarketData] = useState<MarketStatistics | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -259,12 +261,23 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 mx-auto p-6">
-      <div className="flex max-w-7xl mx-auto border-1 shadow-sm bg-background border-gray-200 p-6 rounded-sm gap-8">
+      <div className="flex max-w-7xl mx-auto border-1 shadow-sm bg-background border-gray-200 p-6 rounded-sm gap-8 relative">
+   
+        {/* Back Button - Top Left */}
+        <Button 
+          variant="outline" 
+          onClick={() => router.back()}
+          className="absolute top-4 left-4 flex items-center gap-2 bg-background/80 backdrop-blur-sm hover:bg-background/90 z-10"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Back
+        </Button>
 
         {/* Main Content */}
         <div id="valuation-content" className="flex-1 space-y-8">
+       
           {/* Header Section */}
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-4 pt-8">
             <div className="flex items-center justify-center gap-2 text-muted-foreground">
               <MapPin className="h-4 w-4" />
               <span className="text-sm">{displayAddress}</span>

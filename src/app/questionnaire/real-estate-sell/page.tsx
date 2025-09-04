@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
 import { ChevronRightIcon } from '@heroicons/react/16/solid';
 import { GooglePlacesInput } from '@/components/ui/google-places-input';
 import { PropertyLookup } from '@/components/ui/property-lookup';
 import { PropertyVerification } from '@/components/ui/property-verification';
-import { webhookService, type WebhookSubmissionData } from '../../lib/webhook-api';
-import { PropertyDataModule } from '@/components/property-data-module';
+import { webhookService, type WebhookSubmissionData } from '../../../lib/webhook-api';
 
 // Simplified form data - removed property details that will come from API
 interface FormData {
@@ -90,6 +90,7 @@ const timelines = [
 type FormStep = 'address' | 'lookup' | 'verification' | 'motivation' | 'timeline' |'contact' | 'success' | 'error';
 
 export default function RealEstateSellPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<FormStep>('address');
   const [propertyData, setPropertyData] = useState<PropertyData | null>(null);
   const [propertyDetails, setPropertyDetails] = useState<PropertyDetails>({});
@@ -107,6 +108,14 @@ export default function RealEstateSellPage() {
     email: '',
     phone: '',
   });
+
+  // Handle redirect to property profile page
+  useEffect(() => {
+    if (currentStep === 'verification' && propertyData) {
+      const encodedAddress = encodeURIComponent(formData.propertyLocation);
+      router.push(`/property-profile?address=${encodedAddress}`);
+    }
+  }, [currentStep, propertyData, formData.propertyLocation, router]);
 
   const handleLocationChange = (address: string, placeDetails?: google.maps.places.PlaceResult) => {
     setFormData({ ...formData, propertyLocation: address });
@@ -289,10 +298,15 @@ Selling Details:
     );
   }
 
-  // Property Verification Step
+  // Property Verification Step - Show loading state while redirecting
   if (currentStep === 'verification' && propertyData) {
     return (
-      <PropertyDataModule address={formData.propertyLocation} />
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to property profile...</p>
+        </div>
+      </div>
     );
   }
 
