@@ -10,8 +10,7 @@ import { LogoCloud } from '@/components/logo-cloud'
 import { LogoCluster } from '@/components/logo-cluster'
 import { LogoTimeline } from '@/components/logo-timeline'
 import { Map } from '@/components/map'
-import { Navbar3 } from '@/components/navbar3'
-import { Navbar } from '@/components/navbar'
+import Navbar3 from '@/components/navbar3'
 import { Screenshot } from '@/components/screenshot'
 import { Testimonials } from '@/components/testimonials'
 import { Heading, Subheading } from '@/components/text'
@@ -19,7 +18,12 @@ import { ChevronRightIcon } from '@heroicons/react/16/solid'
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { FadeInUp, FadeInStagger } from '@/components/animations';
 import type { Metadata } from 'next'
-import { Feature77 } from '@/components/feature77'
+import { SectionHeader } from '@/components/section-header'
+import HeroFeature1 from '@/components/hero-feature1'
+import BrokerFeature from '@/components/broker-feature'
+import ManagementFeature from '@/components/management-feature'
+import PropertyProfileCTA from '@/components/property-profile-cta'
+
 
 export const metadata: Metadata = {
   description:
@@ -180,17 +184,17 @@ function DarkBentoSection() {
   return (
     <div className="mx-2 mt-2 rounded-4xl bg-gray-900 py-32">
       <Container>
-        <Subheading dark>Outreach</Subheading>
+        <Subheading dark>Client Services</Subheading>
         <Heading as="h3" dark className="mt-2 max-w-3xl">
-          Customer outreach has never been easier.
+          Comprehensive real estate solutions powered by technology.
         </Heading>
 
         <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2">
           <BentoCard
             dark
-            eyebrow="Networking"
-            title="Sell at the speed of light"
-            description="Our RadiantAI chat assistants analyze the sentiment of your conversations in real time, ensuring you're always one step ahead."
+            eyebrow="Brokerage Services"
+            title="Expert Real Estate Guidance"
+            description="Our experienced agents leverage cutting-edge market analytics and AI-powered insights to help you buy or sell properties at optimal prices."
             graphic={
               <div className="h-80 bg-[url(/screenshots/networking.png)] bg-size-[851px_344px] bg-no-repeat" />
             }
@@ -199,26 +203,26 @@ function DarkBentoSection() {
           />
           <BentoCard
             dark
-            eyebrow="Integrations"
-            title="Meet leads where they are"
-            description="With thousands of integrations, no one will be able to escape your cold outreach."
+            eyebrow="Technology Stack"
+            title="Seamless Platform Integration"
+            description="Connect with MLS systems, financial institutions, and property databases through our unified technology platform."
             graphic={<LogoTimeline />}
             // `overflow-visible!` is needed to work around a Chrome bug that disables the mask on the graphic.
             className="z-10 overflow-visible! lg:col-span-2 lg:rounded-tr-4xl"
           />
           <BentoCard
             dark
-            eyebrow="Meetings"
-            title="Smart call scheduling"
-            description="Automatically insert intro calls into your leads' calendars without their consent."
+            eyebrow="Client Relations"
+            title="Personalized Service"
+            description="Dedicated account management with 24/7 support, ensuring every client receives tailored attention throughout their real estate journey."
             graphic={<LinkedAvatars />}
             className="lg:col-span-2 lg:rounded-bl-4xl"
           />
           <BentoCard
             dark
-            eyebrow="Engagement"
-            title="Become a thought leader"
-            description="RadiantAI automatically writes LinkedIn posts that relate current events to B2B sales, helping you build a reputation as a thought leader."
+            eyebrow="Property Management"
+            title="Complete Portfolio Solutions"
+            description="From tenant screening to maintenance coordination, our comprehensive property management services maximize your investment returns with minimal effort."
             graphic={
               <div className="h-80 bg-[url(/screenshots/engagement.png)] bg-size-[851px_344px] bg-no-repeat" />
             }
@@ -238,10 +242,13 @@ export default function Home() {
       <main>
        
         <div className="bg-linear-to-b from-white from-50% to-gray-100 py-32">
-     
-          <BentoSection />
+          <HeroFeature1/>
+          <BrokerFeature/>  
+          <ManagementFeature/>    
+          {/* <BentoSection /> */}
         </div>
         <DarkBentoSection />
+        <PropertyProfileCTA/> 
       </main>
       <Testimonials />
       <Footer />

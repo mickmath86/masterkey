@@ -23,7 +23,12 @@ export function AnimatedNumber({
 
   let value = useMotionValue(start)
   let spring = useSpring(value, { damping: 30, stiffness: 100 })
-  let display = useTransform(spring, (num) => num.toFixed(decimals))
+  let display = useTransform(spring, (num) => {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    }).format(num)
+  })
 
   useEffect(() => {
     value.set(isInView ? end : start)

@@ -18,7 +18,7 @@ const variants = {
   ),
   outline: clsx(
     'inline-flex items-center justify-center px-2 py-[calc(--spacing(1.5)-1px)]',
-    'rounded-lg border border-transparent shadow-sm ring-1 ring-black/10',
+    'rounded-sm border border-transparent shadow-sm ring-1 ring-black/10',
     'text-sm font-medium whitespace-nowrap text-gray-950',
     'data-disabled:bg-transparent data-disabled:opacity-40 data-hover:bg-gray-50',
   ),

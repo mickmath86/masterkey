@@ -10,20 +10,20 @@ function CallToAction() {
   return (
     <div className="relative pt-20 pb-16 text-center sm:py-24">
       <hgroup>
-        <Subheading>Get started</Subheading>
+        <Subheading>Ready to make your move?</Subheading>
         <p className="mt-6 text-3xl font-medium tracking-tight text-gray-950 sm:text-5xl">
-          Ready to dive in?
+          Let's find your dream home
           <br />
-          Start your free trial today.
+          or sell for top dollar.
         </p>
       </hgroup>
       <p className="mx-auto mt-6 max-w-xs text-sm/6 text-gray-500">
-        Get the cheat codes for selling and unlock your team&apos;s revenue
-        potential.
+        Experience the MasterKey difference with our expert agents and
+        cutting-edge technology.
       </p>
       <div className="mt-6">
         <Button className="w-full sm:w-auto" href="#">
-          Get started
+          Get Free Consultation
         </Button>
       </div>
     </div>
@@ -53,33 +53,35 @@ function Sitemap() {
   return (
     <>
       <div>
-        <SitemapHeading>Product</SitemapHeading>
+        <SitemapHeading>Services</SitemapHeading>
         <SitemapLinks>
-          <SitemapLink href="/pricing">Pricing</SitemapLink>
-          <SitemapLink href="#">Analysis</SitemapLink>
-          <SitemapLink href="#">API</SitemapLink>
+          <SitemapLink href="/buy-and-sell">Buy & Sell</SitemapLink>
+          <SitemapLink href="/property-management">Property Management</SitemapLink>
+          <SitemapLink href="/property-valuation">Property Valuation</SitemapLink>
         </SitemapLinks>
       </div>
       <div>
         <SitemapHeading>Company</SitemapHeading>
         <SitemapLinks>
-          <SitemapLink href="#">Careers</SitemapLink>
-          <SitemapLink href="/blog">Blog</SitemapLink>
-          <SitemapLink href="/company">Company</SitemapLink>
+          <SitemapLink href="/about">About Us</SitemapLink>
+          <SitemapLink href="/agents">Our Agents</SitemapLink>
+          <SitemapLink href="/careers">Careers</SitemapLink>
         </SitemapLinks>
       </div>
       <div>
-        <SitemapHeading>Support</SitemapHeading>
+        <SitemapHeading>Resources</SitemapHeading>
         <SitemapLinks>
-          <SitemapLink href="#">Help center</SitemapLink>
-          <SitemapLink href="#">Community</SitemapLink>
+          <SitemapLink href="/blog">Market Insights</SitemapLink>
+          <SitemapLink href="/buyers-guide">Buyer's Guide</SitemapLink>
+          <SitemapLink href="/sellers-guide">Seller's Guide</SitemapLink>
         </SitemapLinks>
       </div>
       <div>
-        <SitemapHeading>Company</SitemapHeading>
+        <SitemapHeading>Legal</SitemapHeading>
         <SitemapLinks>
-          <SitemapLink href="#">Terms of service</SitemapLink>
-          <SitemapLink href="#">Privacy policy</SitemapLink>
+          <SitemapLink href="/terms">Terms of Service</SitemapLink>
+          <SitemapLink href="/privacy">Privacy Policy</SitemapLink>
+          <SitemapLink href="/contact">Contact Us</SitemapLink>
         </SitemapLinks>
       </div>
     </>
@@ -148,7 +150,7 @@ function SocialLinks() {
 function Copyright() {
   return (
     <div className="text-sm/6 text-gray-950">
-      &copy; {new Date().getFullYear()} Radiant Inc.
+      &copy; {new Date().getFullYear()} MasterKey Real Estate. All rights reserved.
     </div>
   )
 }
