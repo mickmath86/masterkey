@@ -49,7 +49,8 @@ export function GooglePlacesInput({
         await loader.load();
 
         if (inputRef.current) {
-          // Initialize autocomplete with property-specific restrictions
+          // Initialize legacy Autocomplete API (keeping it simple for now)
+          // Note: Google deprecated the old API but it still works
           autocompleteRef.current = new google.maps.places.Autocomplete(
             inputRef.current,
             {

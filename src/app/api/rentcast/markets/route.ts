@@ -7,17 +7,18 @@ const cache = new Map<string, { data: MarketStatistics; timestamp: number }>()
 const CACHE_DURATION = 1000 * 60 * 60 * 24 // 24 hours in milliseconds
 
 export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const address = searchParams.get('address')
-    const zipcode = searchParams.get('zipcode')
-    const dataType = (searchParams.get('dataType') || 'All') as 'All' | 'Sale' | 'Rental'
+  const { searchParams } = new URL(request.url)
+  const address = searchParams.get('address')
+  const zipcode = searchParams.get('zipcode')
+  const dataType = (searchParams.get('dataType') || 'All') as 'All' | 'Sale' | 'Rental'
 
-    // Extract zipcode from address if not provided directly
-    let targetZipcode = zipcode
-    if (!targetZipcode && address) {
-      targetZipcode = extractZipcode(address)
-    }
+  // Extract zipcode from address if not provided directly
+  let targetZipcode = zipcode
+  if (!targetZipcode && address) {
+    targetZipcode = extractZipcode(address)
+  }
+
+  try {
 
     if (!targetZipcode) {
       return NextResponse.json(
@@ -53,7 +54,26 @@ export async function GET(request: NextRequest) {
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-    console.error('Rentcast markets API error:', errorMessage)
+    const errorStack = error instanceof Error ? error.stack : 'No stack trace'
+    
+    // Enhanced logging for production debugging
+    console.error('Rentcast markets API error details:', {
+      message: errorMessage,
+      stack: errorStack,
+      zipcode: targetZipcode,
+      address,
+      dataType,
+      timestamp: new Date().toISOString(),
+      hasApiKey: !!process.env.RENTCAST_API_KEY,
+      apiKeyLength: process.env.RENTCAST_API_KEY?.length || 0
+    })
+
+    if (errorMessage.includes('RENTCAST_API_KEY environment variable is required')) {
+      return NextResponse.json(
+        { error: 'Rentcast API key not configured in production environment' },
+        { status: 500 }
+      )
+    }
 
     if (errorMessage.includes('Invalid Rentcast API key')) {
       return NextResponse.json(
@@ -76,9 +96,13 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Return generic error for other cases
+    // Return detailed error for debugging in production
     return NextResponse.json(
-      { error: 'Failed to fetch market data from Rentcast API' },
+      { 
+        error: 'Failed to fetch market data from Rentcast API',
+        details: errorMessage,
+        zipcode: targetZipcode
+      },
       { status: 500 }
     )
   }
