@@ -101,9 +101,9 @@ function Hero() {
              
               <h2 className="text-2xl font-medium">How can we help?</h2>
               <p className="text-gray-500">Choose the plan that best fits your needs.</p>
-              <Button className="w-full" href="/real-estate-buy">Looking to Buy</Button>
-              <Button className="w-full" href="/real-estate-sell">Looking to Sell</Button>
-              <Button className="w-full" href="#">Looking for Both</Button>
+              <Button className="w-full" href="/questionnaire/real-estate-buy">Looking to Buy</Button>
+              <Button className="w-full" href="/questionnaire/real-estate-sell">Looking to Sell</Button>
+              <Button className="w-full" href="#">Property Management</Button>
             </div>
           </FadeInUp>
         </div>
