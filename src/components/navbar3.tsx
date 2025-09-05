@@ -33,7 +33,13 @@ import { SparkleIcon } from 'lucide-react'
 // Brokerage
 
 // Buy Links
-const buyLinks = [
+const buyLinks: Array<{
+  name: string;
+  description: string;
+  href: string;
+  icon: any;
+  beta?: boolean;
+}> = [
   {
     name: 'Overview',
     description: 'Step into the market with confidence using data-backed insights and expert guidance',
@@ -41,22 +47,22 @@ const buyLinks = [
     icon: ChartPieIcon,
   },
   {
-    name: 'How it Works',
-    description: 'A clear, five-step process from search to keys in hand',
-    href: '/buy#how-it-works',
+    name: 'How We Buy',
+    description: 'Search, analyze, negotiate, and close—we guide you through every step',
+    href: '/buy#how-we-buy',
     icon: CursorArrowRaysIcon,
   },
-  {
-    name: 'Buyer Services',
-    description: 'Our proprietary platform guides buyers and sellers through every step of their transaction',
-    href: '/buy#services',
-    icon: RectangleGroupIcon
-  },
   { 
-    name: 'Buyer FAQs', 
-    description: 'Answers to financing, inspections, contingencies, and more', 
-    href: '/buy#faqs', 
+    name: 'Buyer Services', 
+    description: 'Market analysis, property tours, and contract-to-close support', 
+    href: '/buy#buyer-services', 
     icon: FingerPrintIcon 
+  },
+  {
+    name: 'Buyer FAQs',
+    description: 'Common questions about financing, inspections, and closing',
+    href: '/buy#faqs',
+    icon: RectangleGroupIcon,
   },
 
   // {
@@ -68,7 +74,13 @@ const buyLinks = [
 ]
 
 // Sell Links
-const sellLinks = [
+const sellLinks: Array<{
+  name: string;
+  description: string;
+  href: string;
+  icon: any;
+  beta?: boolean;
+}> = [
   {
     name: 'Overview',
     description: 'List smart and maximize your return with our pricing strategy',
