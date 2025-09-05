@@ -30,33 +30,69 @@ import { SparkleIcon } from 'lucide-react'
 
 
 
-
 // Brokerage
-const brokerageLinks = [
+
+// Buy Links
+const buyLinks = [
   {
-    name: 'Buy & Sell Services',
-    description: 'Complete real estate solutions for buying and selling properties',
-    href: '/brokerage',
+    name: 'Overview',
+    description: 'Step into the market with confidence using data-backed insights and expert guidance',
+    href: '/buy',
     icon: ChartPieIcon,
   },
   {
-    name: 'Market Analysis',
-    description: 'Comprehensive market research and property valuations',
-    href: '/market-analysis',
+    name: 'How it Works',
+    description: 'A clear, five-step process from search to keys in hand',
+    href: '/buy#how-it-works',
+    icon: CursorArrowRaysIcon,
+  },
+  {
+    name: 'Buyer Services',
+    description: 'Our proprietary platform guides buyers and sellers through every step of their transaction',
+    href: '/buy#services',
+    icon: RectangleGroupIcon
+  },
+  { 
+    name: 'Buyer FAQs', 
+    description: 'Answers to financing, inspections, contingencies, and more', 
+    href: '/buy#faqs', 
+    icon: FingerPrintIcon 
+  },
+
+  // {
+  //   name: 'Investment Services',
+  //   description: 'Expert guidance for real estate investment opportunities',
+  //   href: '#',
+  //   icon: SquaresPlusIcon,
+  // },
+]
+
+// Sell Links
+const sellLinks = [
+  {
+    name: 'Overview',
+    description: 'List smart and maximize your return with our pricing strategy',
+    href: '/sell',
+    icon: ChartPieIcon,
+  },
+  {
+    name: 'How We Sell',
+    description: 'Prep, market, negotiate, and close—transparent at every stage',
+    href: '/sell#how-we-sell',
     icon: CursorArrowRaysIcon,
   },
   { 
-    name: 'Property Lookup', 
-    description: 'Search and analyze properties with detailed insights', 
-    href: '/questionnaire/real-estate-sell', 
+    name: 'Seller Services', 
+    description: 'Staging, marketing, offers, and contract-to-close support', 
+    href: '/sell#seller-services', 
     icon: FingerPrintIcon 
   },
   {
-    name: 'Transaction Management',
-    description: 'Our proprietary platform guides buyers and sellers through every step of their transaction',
-    href: '/brokerage/transaction-management',
+    name: 'Seller FAQs',
+    description: 'Common questions about timing, fees, and disclosures',
+    href: '/sell#faqs',
     icon: RectangleGroupIcon,
-    beta: true,
+    beta: false,
   },
   // {
   //   name: 'Investment Services',
@@ -67,52 +103,102 @@ const brokerageLinks = [
 ]
 
 
-const brokerageCallsToAction = [
+const buyerCallsToAction = [
   { name: 'Get Started', href: '/questionnaire', icon: PlayCircleIcon },
   { name: 'Contact sales', href: '/contact', icon: PhoneIcon },
-  { name: 'View all services', href: '/buy-and-sell', icon: RectangleGroupIcon },
+  { name: 'View all services', href: '/buyer#services', icon: RectangleGroupIcon },
+]
+
+const sellerCallsToAction = [
+  { name: 'Get Started', href: '/questionnaire', icon: PlayCircleIcon },
+  { name: 'Contact sales', href: '/contact', icon: PhoneIcon },
+  { name: 'View all services', href: '/seller#services', icon: RectangleGroupIcon },
 ]
 
 
-// Property Management
+/// Property Management
 const propertyManagementLinks = [
-  { 
-    name: 'Property Management', 
-    description: 'Comprehensive property management services for investors', 
-    href: '/property-management', 
-    icon: ChartPieIcon 
-  },
-  { 
-    name: 'Tenant Screening', 
-    description: 'Thorough background checks and tenant verification services', 
-    href: '#', 
-    icon: CursorArrowRaysIcon 
-  },
-  { 
-    name: 'Rent Collection', 
-    description: 'Automated rent collection and payment processing', 
-    href: '#', 
-    icon: FingerPrintIcon 
-  },
-  { 
-    name: 'Maintenance Services', 
-    description: '24/7 maintenance coordination and emergency response', 
-    href: '#', 
-    icon: SquaresPlusIcon 
-  },
-  { 
-    name: 'Financial Reporting', 
-    description: 'Detailed monthly reports and expense tracking', 
-    href: '#', 
-    icon: ArrowPathIcon 
+  {
+    services: [
+      { 
+        name: 'Overview', 
+        description: 'Comprehensive property management services for investors', 
+        href: '/property-management', 
+        icon: ChartPieIcon 
+      },
+      { 
+        name: 'Single Family Management', 
+        description: 'Thorough background checks and tenant verification services', 
+        href: '#', 
+        icon: CursorArrowRaysIcon 
+      },
+      { 
+        name: 'Multifamily Management', 
+        description: 'Vacancy reduction, turns, and building-level ops', 
+        href: '#', 
+        icon: FingerPrintIcon 
+      },
+      { 
+        name: '24/7 Maintenance Services', 
+        description: '24/7 maintenance coordination and emergency response', 
+        href: '#', 
+        icon: SquaresPlusIcon 
+      },
+      { 
+        name: 'Owner Reporting & Statements', 
+        description: 'Monthly statements, rent roll, year-end docs', 
+        href: '#', 
+        icon: ArrowPathIcon 
+      },
+      { 
+        name: 'Pricing & Fees', 
+        description: 'Simple, transparent pricing; what’s included at each tier', 
+        href: '#', 
+        icon: ArrowPathIcon 
+      },
+    ],
+    resources: [
+      { 
+        name: 'AI Rental Report', 
+        description: 'Instant rent comps, vacancy trend, yield scenarios', 
+        href: '/property-management', 
+        icon: ChartPieIcon 
+      },
+      { 
+        name: 'New Landlord Guide', 
+        description: 'How to switch managers without disrupting tenants', 
+        href: '#', 
+        icon: CursorArrowRaysIcon 
+      },
+      { 
+        name: 'Rent-Ready Checklist', 
+        description: 'What to fix, clean, and document before listing', 
+        href: '#', 
+        icon: FingerPrintIcon 
+      },
+      { 
+        name: 'PM FAQs', 
+        description: 'Fees, pets, inspections, renewals, and notices—quick answers', 
+        href: '#', 
+        icon: SquaresPlusIcon 
+      },
+      { 
+        name: 'Financial Reporting', 
+        description: 'Detailed monthly reports and expense tracking', 
+        href: '#', 
+        icon: ArrowPathIcon 
+      },
+    ], 
+
+
   },
 ]
-
 const propertyManagementCallsToAction = [
   { name: 'Get Started', href: '/questionnaire', icon: PlayCircleIcon },
   { name: 'Contact sales', href: '/contact', icon: PhoneIcon },
 
 ]
+
 
 
 function PropertyManagementNav({ onMouseEnter, onMouseLeave, isActive }: { onMouseEnter: () => void, onMouseLeave: () => void, isActive: boolean }) {
@@ -128,56 +214,111 @@ function PropertyManagementNav({ onMouseEnter, onMouseLeave, isActive }: { onMou
           static
           className="absolute left-1/2 z-10 mt-5 flex w-screen max-w-max -translate-x-1/2 bg-transparent px-4 animate-in slide-in-from-top-1 duration-200"
         >
-        <div className="w-screen max-w-2xl flex-auto overflow-hidden rounded-3xl bg-white text-sm/6 shadow-lg outline-1 outline-gray-900/5 dark:bg-gray-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
-            <div className="space-y-1">
-              {propertyManagementLinks.map((item, index) => (
+        <div className="w-screen max-w-4xl flex-auto overflow-hidden rounded-3xl bg-white text-sm/6 shadow-lg outline-1 outline-gray-900/5 dark:bg-gray-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 p-10">
+            <div className="grid space-y-1 gap-6 grid-cols-1 lg:grid-cols-2">
+              <div>
+                <h3 className="text-lg font-semibold">Services</h3>
+              {propertyManagementLinks[0].services.map((item, index) => (
                 <div
                   key={item.name}
                   className="group relative flex gap-x-6 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-white/5 animate-in slide-in-from-right-2 duration-300"
                 >
-                  <div className="mt-1 flex size-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white dark:bg-gray-700/50 dark:group-hover:bg-gray-700">
+                  <div className="mt-1 flex size-4 flex-none items-center justify-center rounded-sm bg-gray-50 group-hover:bg-white dark:bg-gray-700/50 dark:group-hover:bg-gray-700">
                     <item.icon
                       aria-hidden="true"
-                      className="size-6 text-gray-600 group-hover:text-indigo-600 dark:text-gray-400 dark:group-hover:text-white"
+                      className="size-6 text-gray-600 group-hover:text-emerald-600 dark:text-gray-400 dark:group-hover:text-white"
                     />
                   </div>
                   <div>
-                    <a href={item.href} className="font-semibold text-gray-900 dark:text-white">
+                    <a href={item.href} className=" text-gray-900 dark:text-white">
                       {item.name}
                       <span className="absolute inset-0" />
                     </a>
-                    <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p>
+                    {/* <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p> */}
                   </div>
                 </div>
               ))}
+              </div>
+              <div>
+              <h3 className="text-lg font-semibold">Resources</h3>
+              {propertyManagementLinks[0].resources.map((item, index) => (
+                <div
+                  key={item.name}
+                  className="group relative flex gap-x-6 rounded-sm p-4 hover:bg-gray-50 dark:hover:bg-white/5 animate-in slide-in-from-right-2 duration-300"
+                >
+                  <div className="mt-1 flex size-4 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white dark:bg-gray-700/50 dark:group-hover:bg-gray-700">
+                    <item.icon
+                      aria-hidden="true"
+                      className="size-6 text-gray-600 group-hover:text-emerald-600 dark:text-gray-400 dark:group-hover:text-white"
+                    />
+                  </div>
+                  <div>
+                    <a href={item.href} className=" text-gray-900 dark:text-white">
+                      {item.name}
+                      <span className="absolute inset-0" />
+                    </a>
+                    {/* <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p> */}
+                  </div>
+                </div>
+              ))}
+              </div>
+              
             </div>
             
             {/* Client Portal Featured Section */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 p-6 text-white animate-in slide-in-from-left-2 duration-300">
-              <div className="relative z-10">
-                <div className="mb-4">
-                  <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
-                    Client Access
-                  </span>
+            <div className="flex flex-col gap-4">
+              <a href="#" className="relative overflow-hidden rounded-2xl bg-gray-700 hover:bg-gradient-to-br from-emerald-400 via-green-500 to-green-600 transition ease-in-out p-6 text-white animate-in slide-in-from-left-2 duration-300">
+                <div className="relative z-10">
+                  <div className="mb-4">
+                    <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
+                      Owner Access
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Owner Portal
+                  </h3>
+                  <p className="text-sm text-white/90 mb-4">
+                    Access your property documents, maintenance requests, and financial reports securely.
+                  </p>
+                  <div className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors">
+                    Login Now →
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">
-                  Client Portal
-                </h3>
-                <p className="text-sm text-white/90 mb-4">
-                  Access your property documents, maintenance requests, and financial reports securely.
-                </p>
-                <a href="/client-portal" className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors">
-                  Login Now →
-                </a>
-              </div>
-              <div className="absolute -bottom-4 -right-4 opacity-20">
-                <div className="size-24 rounded-full bg-white/10"></div>
-              </div>
-              <div className="absolute -top-2 -left-2 opacity-10">
-                <div className="size-16 rounded-full bg-white/20"></div>
-              </div>
+                <div className="absolute -bottom-4 -right-4 opacity-20">
+                  <div className="size-24 rounded-full bg-white/10"></div>
+                </div>
+                <div className="absolute -top-2 -left-2 opacity-10">
+                  <div className="size-16 rounded-full bg-white/20"></div>
+                </div>
+              </a>
+              <a href="#" className="relative overflow-hidden rounded-2xl bg-gray-700 hover:bg-gradient-to-br from-emerald-400 via-green-500 to-green-600 p-6 text-white animate-in slide-in-from-left-2 duration-300">
+                <div className="relative z-10">
+                  <div className="mb-4">
+                    <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
+                      Resident Access
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Resident Portal
+                  </h3>
+                  <p className="text-sm text-white/90 mb-4">
+                    Access your property documents, maintenance requests, and financial reports securely.
+                  </p>
+                  <div className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors">
+                    Login Now →
+                  </div>
+                </div>
+                <div className="absolute -bottom-4 -right-4 opacity-20">
+                  <div className="size-24 rounded-full bg-white/10"></div>
+                </div>
+                <div className="absolute -top-2 -left-2 opacity-10">
+                  <div className="size-16 rounded-full bg-white/20"></div>
+                </div>
+              </a>
+
             </div>
+         
           </div>
           <div className="grid grid-cols-2 divide-x divide-gray-900/5 bg-gray-50 dark:divide-white/10 dark:bg-gray-700/50 animate-in slide-in-from-bottom-2 duration-300">
             {propertyManagementCallsToAction.map((item, index) => (
@@ -199,12 +340,13 @@ function PropertyManagementNav({ onMouseEnter, onMouseLeave, isActive }: { onMou
 }
 
 
+
 export default function Navbar3() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [activeMenu, setActiveMenu] = useState<'buy-sell' | 'property-mgmt' | null>(null)
+  const [activeMenu, setActiveMenu] = useState<'buy' | 'sell' | 'property-mgmt' | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const handleMenuEnter = (menu: 'buy-sell' | 'property-mgmt') => {
+  const handleMenuEnter = (menu: 'buy' | 'sell' | 'property-mgmt') => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
@@ -248,20 +390,20 @@ export default function Navbar3() {
           </button>
         </div>
         <PopoverGroup className="hidden lg:flex lg:gap-x-12">
-          <Popover onMouseEnter={() => handleMenuEnter('buy-sell')} onMouseLeave={handleMenuLeave}>
+          <Popover onMouseEnter={() => handleMenuEnter('buy')} onMouseLeave={handleMenuLeave}>
             <PopoverButton className="group flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900 dark:text-white">
-              Buy & Sell
+              Buy
               <ChevronDownIcon aria-hidden="true" className="size-5 flex-none text-gray-400 dark:text-gray-500 transition-transform duration-200 group-hover:rotate-180" />
             </PopoverButton>
 
-            {activeMenu === 'buy-sell' && (
+            {activeMenu === 'buy' && (
               <PopoverPanel
                 static
                 className="absolute left-1/2 z-10 mt-5 flex w-screen max-w-max -translate-x-1/2 bg-transparent px-4 animate-in slide-in-from-top-1 duration-200"
               >
         <div className="w-screen max-w-6xl flex-auto overflow-hidden rounded-3xl bg-white text-sm/6 shadow-lg outline-1 outline-gray-900/5 dark:bg-gray-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
           <div className="grid grid-cols-4 gap-x-4 p-6 lg:grid-cols-5 xl:gap-x-6">
-                  {brokerageLinks.map((item, index) => (
+                  {buyLinks.map((item, index) => (
                     <div
                       key={item.name}
                       className="group relative rounded-lg p-6 text-sm/6 hover:bg-gray-50 dark:hover:bg-white/5 animate-in slide-in-from-left-2 duration-300"
@@ -315,7 +457,91 @@ export default function Navbar3() {
                   </a>
                 </div>
           <div className="grid grid-cols-3 divide-x divide-gray-900/5 bg-gray-50 dark:divide-white/10 dark:bg-gray-700/50 animate-in slide-in-from-bottom-2 duration-300">
-            {brokerageCallsToAction.map((item, index) => (
+            {buyerCallsToAction.map((item, index) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className="flex items-center justify-center gap-x-2.5 p-3 font-semibold text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700/50 animate-in slide-in-from-bottom-1 duration-200"
+              >
+                <item.icon aria-hidden="true" className="size-5 flex-none text-gray-400 dark:text-gray-500" />
+                {item.name}
+              </a>
+            ))}
+          </div>
+        </div>
+              </PopoverPanel>
+            )}
+          </Popover>
+
+          {/* Sell Nav Group */}
+          <Popover onMouseEnter={() => handleMenuEnter('sell')} onMouseLeave={handleMenuLeave}>
+            <PopoverButton className="group flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900 dark:text-white">
+              Sell
+              <ChevronDownIcon aria-hidden="true" className="size-5 flex-none text-gray-400 dark:text-gray-500 transition-transform duration-200 group-hover:rotate-180" />
+            </PopoverButton>
+
+            {activeMenu === 'sell' && (
+              <PopoverPanel
+                static
+                className="absolute left-1/2 z-10 mt-5 flex w-screen max-w-max -translate-x-1/2 bg-transparent px-4 animate-in slide-in-from-top-1 duration-200"
+              >
+        <div className="w-screen max-w-6xl flex-auto overflow-hidden rounded-3xl bg-white text-sm/6 shadow-lg outline-1 outline-gray-900/5 dark:bg-gray-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
+          <div className="grid grid-cols-4 gap-x-4 p-6 lg:grid-cols-5 xl:gap-x-6">
+                  {sellLinks.map((item, index) => (
+                    <div
+                      key={item.name}
+                      className="group relative rounded-lg p-6 text-sm/6 hover:bg-gray-50 dark:hover:bg-white/5 animate-in slide-in-from-left-2 duration-300"
+                    >
+                      <div className="flex size-11 items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white dark:bg-gray-700/50 dark:group-hover:bg-gray-700">
+                        <item.icon
+                          aria-hidden="true"
+                          className="size-6 text-gray-600 group-hover:text-sky-600 dark:text-gray-400 dark:group-hover:text-white"
+                        />
+                      </div>
+                      <a href={item.href} className="mt-6 block font-semibold text-gray-900 dark:text-white">
+                        <div className="flex items-center gap-2">
+                          {item.name}
+                          {item.beta && (
+                            <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                              Beta
+                            </span>
+                          )}
+                        </div>
+                        <span className="absolute inset-0" />
+                      </a>
+                      <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p>
+                    </div>
+                  ))}
+                  
+                  {/* Featured Section */}
+                  <a href="/questionnaire" className="relative overflow-hidden rounded-2xl group bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 p-6 text-white animate-in slide-in-from-right-2 duration-300 hover:bg-blue-900 hover:text-white">
+                    <div className="relative z-10">
+                      <div className="mb-4">
+                        <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
+                          New Feature
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                        <SparkleIcon className="w-5 h-5 group-hover:rotate-90 group-hover:text-white transition-transform duration-300" />
+                        AI Property Insights
+                      </h3>
+                      <p className="text-sm text-white/90 mb-4">
+                        Get instant market analysis and property recommendations powered by advanced AI.
+                      </p>
+                      <div  className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors">
+                        Learn more →
+                      </div>
+                    </div>
+                    <div className="absolute -bottom-4 -right-4 opacity-20">
+                      <div className="size-24 rounded-full bg-white/10"></div>
+                    </div>
+                    <div className="absolute -top-2 -left-2 opacity-10">
+                      <div className="size-16 rounded-full bg-white/20"></div>
+                    </div>
+                  </a>
+                </div>
+          <div className="grid grid-cols-3 divide-x divide-gray-900/5 bg-gray-50 dark:divide-white/10 dark:bg-gray-700/50 animate-in slide-in-from-bottom-2 duration-300">
+            {sellerCallsToAction.map((item, index) => (
               <a
                 key={item.name}
                 href={item.href}
@@ -380,11 +606,29 @@ export default function Navbar3() {
               <div className="space-y-2 py-6">
                 <Disclosure as="div" className="-mx-3">
                   <DisclosureButton className="group flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5">
-                    Product
+                    Buy
                     <ChevronDownIcon aria-hidden="true" className="size-5 flex-none group-data-open:rotate-180" />
                   </DisclosureButton>
                   <DisclosurePanel className="mt-2 space-y-2">
-                    {[...brokerageLinks, ...brokerageCallsToAction].map((item) => (
+                    {[...buyLinks, ...buyerCallsToAction].map((item) => (
+                      <DisclosureButton
+                        key={item.name}
+                        as="a"
+                        href={item.href}
+                        className="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5"
+                      >
+                        {item.name}
+                      </DisclosureButton>
+                    ))}
+                  </DisclosurePanel>
+                </Disclosure>
+                <Disclosure as="div" className="-mx-3">
+                  <DisclosureButton className="group flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5">
+                    Sell
+                    <ChevronDownIcon aria-hidden="true" className="size-5 flex-none group-data-open:rotate-180" />
+                  </DisclosureButton>
+                  <DisclosurePanel className="mt-2 space-y-2">
+                    {[...sellLinks, ...sellerCallsToAction].map((item) => (
                       <DisclosureButton
                         key={item.name}
                         as="a"
@@ -430,5 +674,9 @@ export default function Navbar3() {
     </header>
   )
 }
+
+
+
+
 
 

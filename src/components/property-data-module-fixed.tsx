@@ -292,7 +292,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       </div>
 
       {/* Navigation */}
-      <div className="bg-sky-50 border-b border-sky-200 dark:bg-sky-900/20 dark:border-sky-800 sticky top-0 z-20">
+      <div className="bg-sky-50 border-b border-sky-200 dark:bg-sky-900/20 dark:border-sky-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8 py-4">
             <button

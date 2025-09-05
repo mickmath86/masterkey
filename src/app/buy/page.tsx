@@ -16,29 +16,32 @@ import {
 
 import { Footer } from '@/components/footer'
 import { ArrowRight, Home, Key, DollarSign, Star } from "lucide-react"
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
+import { MinusSmallIcon, PlusSmallIcon } from '@heroicons/react/24/outline'
 
 
-const featredPosts = [
+
+const buyerServices = [
     {
-        title: "Buy a House",
-        link:"/buy-house", 
-        slug: "buy-a-house",
+        title: "Find Your Dream Home",
+        link:"/questionnaire/sell", 
+        slug: "property-search",
         icon: Home,
-        excerpt: "Find your dream home with our expert agents and cutting-edge search technology. We'll guide you through every step of the buying process."
+        excerpt: "Search thousands of listings with our advanced filters and AI-powered matching. Get detailed insights on every property that interests you."
     },
     {
-        title: "Sell Your House",
-        link:"/sell-house", 
-        slug: "sell-your-house",
+        title: "Buyer Consultation",
+        link:"/questionnaire/sell", 
+        slug: "buyer-consultation",
         icon: Key,
-        excerpt: "Get top dollar for your property with our comprehensive marketing strategy and expert pricing analysis."
+        excerpt: "Start your home buying journey with a personalized consultation. We'll understand your needs, budget, and timeline to find the perfect match."
     },
     {
-        title: "See Your Home's Current Value",
-        link:"/questionnaire/real-estate-sell", 
-        slug: "home-valuation",
+        title: "Market Analysis & Insights",
+        link:"/questionnaire/sell", 
+        slug: "market-insights",
         icon: DollarSign,
-        excerpt: "Get an instant, AI-powered valuation of your property based on current market data and comparable sales."
+        excerpt: "Get comprehensive market data, neighborhood trends, and pricing insights to make informed decisions on your home purchase."
     },
 ]
 
@@ -97,19 +100,19 @@ const Hero = () => {
           <div className="mt-24 sm:mt-32 lg:mt-16">
             <a href="#" className="inline-flex space-x-6">
               <span className="rounded-full bg-sky-50 px-3 py-1 text-sm/6 font-semibold text-sky-600 ring-1 ring-sky-600/20 ring-inset dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/25">
-                Expert Agents
+                Buyer Specialists
               </span>
               <span className="inline-flex items-center space-x-2 text-sm/6 font-medium text-gray-600 dark:text-gray-300">
-                <span>Licensed professionals ready to help</span>
+                <span>Dedicated agents focused on your home search</span>
                 <ChevronRightIcon aria-hidden="true" className="size-5 text-gray-400 dark:text-gray-500" />
               </span>
             </a>
           </div>
           <h1 className="mt-10 text-5xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-7xl dark:text-white">
-            Buy and sell with expert guidance
+            Find your dream home with confidence
           </h1>
           <p className="mt-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
-            Our experienced real estate agents combine market expertise with cutting-edge technology to help you navigate every step of your property transaction. From first-time buyers to seasoned investors, we deliver results.
+            Our buyer specialists combine deep market knowledge with advanced search technology to help you find and secure the perfect home. From first-time buyers to move-up purchasers, we make homeownership achievable.
           </p>
           {/* Google Reviews Section */}
           <div className="mt-8 flex items-center gap-x-4">
@@ -132,13 +135,13 @@ const Hero = () => {
           
           <div className="mt-10 flex items-center gap-x-6">
             <a
-              href="#"
+              href="/questionnaire/real-estate-buy"
               className="rounded-md bg-sky-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-sky-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 dark:focus-visible:outline-sky-500"
             >
-           Check Your Property Value
+           Start Your Home Search
             </a>
-            <a href="#" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
-              Contact Us <span aria-hidden="true">→</span>
+            <a href="/contact" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
+              Speak with an Agent <span aria-hidden="true">→</span>
             </a>
           </div>
         </div>
@@ -170,33 +173,33 @@ function ThreeCard() {
 
   return (
     <Container>
-          <Subheading className="mt-16">Expert Brokerage Services</Subheading>
+          <Subheading className="mt-16">Expert Buyer Services</Subheading>
           <Heading as="h1" className="mt-2">
-            Buy and Sell with Confidence
+            Find Your Perfect Home
           </Heading>
           <Lead className="mt-6 max-w-3xl">
-          Whether you're buying your first home or selling your current property, <span className=" text-sky-500">MasterKey</span> provides expert guidance and cutting-edge technology to ensure a smooth, successful transaction at the best possible price.
+          From first-time buyers to seasoned investors, <span className=" text-sky-500">MasterKey</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
           </Lead>
         <div className="mt-16  pb-14">
         <div>
-            <h2 className="text-2xl font-medium tracking-tight">Services</h2>
+            <h2 className="text-2xl font-medium tracking-tight">Buyer Services</h2>
             <FadeInStagger className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
             
-            {featredPosts.map((post) => (
+            {buyerServices.map((service) => (
                 <a
-                key={post.slug}
-                href={post.link}
+                key={service.slug}
+                href={service.link}
                 className="relative flex flex-col h-full rounded-sm bg-white p-8 shadow-md ring-1 hover:bg-gray-50 transition-all duration-300 ease-in-out shadow-black/5 ring-black/5"
                 >
                 <div className="flex items-center justify-center w-12 h-12 bg-sky-100 rounded-lg mb-4">
-                    <post.icon className="w-6 h-6 text-sky-600" />
+                    <service.icon className="w-6 h-6 text-sky-600" />
                 </div>
                 <div className="flex flex-1 flex-col">
                     <div className="text-base/7 font-medium">
-                    {post.title}
+                    {service.title}
                     </div>
                     <div className="mt-2 flex-1 text-sm/6 text-gray-500">
-                    {post.excerpt}
+                    {service.excerpt}
                     </div>
                     <div className="flex items-center gap-1 text-sky-500 mt-4">
                         Get Started 
@@ -213,41 +216,101 @@ function ThreeCard() {
   )
 }
 
+
+const buyingSteps = [
+  {
+    name: 'Get Pre-Approved',
+    description: 'Secure financing and understand your budget with our trusted lender partners.',
+  },
+  { 
+    name: 'Search & Tour Properties', 
+    description: 'Browse listings with our advanced search tools and schedule tours with your dedicated agent.' 
+  },
+  {
+    name: 'Make an Offer',
+    description: 'Submit competitive offers with expert guidance on pricing, terms, and negotiation strategy.',
+  },
+  { 
+    name: 'Close & Move In', 
+    description: 'Navigate inspections, appraisals, and final walkthrough to get your keys.' 
+  },
+]
+function HowItWorks() {
+  return (
+    <div id="how-it-works" className="bg-white py-24 sm:py-32 dark:bg-gray-900">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-5">
+          <div className="col-span-2">
+            <h2 className="text-base/7 font-semibold text-sky-600 dark:text-sky-400">How It Works</h2>
+            <p className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl dark:text-white">
+              Your Path to Homeownership
+            </p>
+            <p className="mt-6 text-base/7 text-gray-700 dark:text-gray-300">
+              Our streamlined 4-step process makes buying your dream home simple and stress-free. From pre-approval to keys in hand, we guide you every step of the way.
+            </p>
+            <div className="mt-8">
+              <a
+                href="/contact"
+                className="rounded-md bg-sky-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-sky-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400"
+              >
+                Get Started Today
+              </a>
+            </div>
+          </div>
+          <dl className="col-span-3 grid grid-cols-1 gap-x-8 gap-y-10 text-base/7 text-gray-600 sm:grid-cols-2 lg:gap-y-16 dark:text-gray-400">
+            {buyingSteps.map((step, index) => (
+              <div key={step.name} className="relative pl-9">
+                <dt className="font-semibold text-gray-900 dark:text-white">
+                  <div className="absolute top-1 left-0 flex h-6 w-6 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white dark:bg-sky-500">
+                    {index + 1}
+                  </div>
+                  {step.name}
+                </dt>
+                <dd className="mt-2">{step.description}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
+    </div>
+  )
+}
+
   
-  const features = [
+  const services = [
     {
-      name: 'Market Analysis',
-      description: 'Comprehensive market research and comparable sales analysis to price your property competitively.',
+      name: 'Buyer Representation',
+      description: 'Dedicated buyer agent to represent your interests and negotiate the best terms on your behalf.',
       icon: CloudArrowUpIcon,
       href: '#',
     },
     {
-      name: 'Secure Transactions',
-      description: 'Protected escrow services and secure document handling throughout the entire buying or selling process.',
+      name: 'Property Search & Tours',
+      description: 'Access to MLS listings, private showings, and guided property tours with market insights.',
       icon: LockClosedIcon,
       href: '#',
     },
     {
-      name: 'Fast Processing',
-      description: 'Streamlined workflows and digital tools to accelerate your property transactions.',
+      name: 'Offer Strategy & Negotiation',
+      description: 'Expert guidance on competitive offers, contract terms, and skilled negotiation to win your dream home.',
       icon: ArrowPathIcon,
       href: '#',
     },
     {
-      name: 'Verified Listings',
-      description: 'All properties are thoroughly vetted and verified for accuracy and legitimacy.',
+      name: 'Due Diligence Support',
+      description: 'Coordination of inspections, appraisals, and title work to protect your investment.',
       icon: FingerPrintIcon,
       href: '#',
     },
     {
-      name: 'Smart Matching',
-      description: 'AI-powered algorithms match buyers with properties that meet their specific criteria and budget.',
+      name: 'Market Analysis & Pricing',
+      description: 'Comprehensive market research and comparable sales analysis to ensure fair pricing.',
       icon: Cog6ToothIcon,
       href: '#',
     },
     {
-      name: 'Complete Support',
-      description: 'Full-service support from initial consultation through closing and beyond.',
+      name: 'Transaction Management',
+      description: 'Full-service coordination from accepted offer through closing, handling all paperwork and deadlines.',
       icon: ServerIcon,
       href: '#',
     },
@@ -260,7 +323,7 @@ function ThreeCard() {
   
   function ServicesList() {
     return (
-      <div className="bg-white py-24 sm:py-32 dark:bg-gray-900">
+      <div id="services"className="bg-white py-24 sm:py-32 dark:bg-gray-900">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl lg:text-center">
             <h2 className="text-base/7 font-semibold text-sky-600 dark:text-sky-400">Complete Brokerage Services</h2>
@@ -273,7 +336,7 @@ function ThreeCard() {
           </div>
           <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
             <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
-              {features.map((feature) => (
+              {services.map((feature) => (
                 <div key={feature.name} className="flex flex-col">
                   <dt className="flex items-center gap-x-3 text-base/7 font-semibold text-gray-900 dark:text-white">
                     <feature.icon aria-hidden="true" className="size-5 flex-none text-sky-600 dark:text-sky-400" />
@@ -286,6 +349,14 @@ function ThreeCard() {
                 </div>
               ))}
             </dl>
+          </div>
+          <div className="mx-auto mt-16 flex justify-center">
+            <a
+              href="/contact"
+              className="rounded-md bg-sky-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400"
+            >
+              Get Started
+            </a>
           </div>
         </div>
       </div>
@@ -307,7 +378,7 @@ const benefits = [
 
 function Testimonial() {
     return (
-      <div className="bg-white min-h-screen my-24 pt-24 pb-16 sm:pt-32 sm:pb-24 xl:pb-32 dark:bg-gray-900">
+      <div className="bg-white min-h-screen  pt-24 pb-16 sm:pt-32 sm:pb-24 xl:pb-32 dark:bg-gray-900">
         <div className="bg-sky-900 pb-20 sm:pb-24 xl:pb-0 dark:bg-gray-800/50 dark:outline dark:outline-white/5">
           <div className="mx-auto flex max-w-7xl flex-col items-center gap-x-8 gap-y-10 px-6 sm:gap-y-8 lg:px-8 xl:flex-row xl:items-stretch">
             <div className="-mt-8 w-full max-w-2xl xl:-mb-8 xl:w-96 xl:flex-none">
@@ -579,18 +650,105 @@ function ValuationCTA() {
   )
 }
 
+const faqs = [
+  {
+    question: "How much money do I need to buy a home?",
+    answer:
+      "Typically, you'll need 3-20% for a down payment, plus closing costs (2-5% of purchase price), and reserves for moving expenses. We'll help you understand all costs upfront and connect you with lenders offering various down payment programs.",
+  },
+  {
+    question: 'How long does the home buying process take?',
+    answer:
+      'From start to finish, the process typically takes 30-60 days once you find a home. Getting pre-approved can take 1-3 days, house hunting varies by market, and closing takes 30-45 days after your offer is accepted.',
+  },
+  {
+    question: 'What is the difference between pre-qualification and pre-approval?',
+    answer:
+      'Pre-qualification is an estimate based on self-reported information, while pre-approval involves verification of your income, assets, and credit. Pre-approval carries more weight with sellers and shows you\'re a serious buyer.',
+  },
+  {
+    question: 'Should I get a home inspection?',
+    answer:
+      "Absolutely. A professional inspection typically costs $300-500 but can save you thousands by identifying potential issues. We'll help you find qualified inspectors and negotiate repairs or credits based on findings.",
+  },
+  {
+    question: "What happens if my offer isn't accepted?",
+    answer:
+      'Don\'t get discouraged! We\'ll analyze why the offer wasn\'t accepted and adjust our strategy. This might mean improving terms, increasing the offer price, or finding properties that better match your budget and preferences.',
+  },
+  {
+    question: 'Do I need to use the seller\'s preferred lender or title company?',
+    answer:
+      "No, you have the right to choose your own lender and in many states, your title company. However, using the seller's preferred providers might make your offer more attractive in competitive situations.",
+  },
+  {
+    question: 'What are closing costs and who pays them?',
+    answer:
+      'Closing costs include loan fees, title insurance, appraisal, and other transaction expenses, typically 2-5% of the purchase price. Both buyers and sellers have closing costs, and some can be negotiated as part of your offer.',
+  },
+  {
+    question: 'Can I back out of a purchase after signing a contract?',
+    answer:
+      'Yes, but only under specific contingency conditions like financing, inspection, or appraisal issues. We\'ll ensure your contract includes appropriate contingencies to protect your interests and earnest money.',
+  },
+  {
+    question: 'How do I know if I\'m making a competitive offer?',
+    answer:
+      'We\'ll provide a comprehensive market analysis showing recent comparable sales, current market conditions, and days on market. This data helps us craft offers that are competitive while protecting your interests.',
+  },
+  {
+    question: 'What should I do to prepare for homeownership?',
+    answer:
+      'Start by checking your credit score, saving for down payment and closing costs, getting pre-approved, and researching neighborhoods. We\'ll guide you through each step and connect you with trusted professionals.',
+  },
+]
 
-export default function BuyAndSell() {
+ function BuyerFAQs() {
+  return (
+    <div id="faqs" className="bg-white dark:bg-gray-900">
+      <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-40">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+            Frequently asked <span className="text-sky-500">buyer</span> questions
+          </h2> 
+          <dl className="mt-16 divide-y divide-gray-900/10 dark:divide-white/10">
+            {faqs.map((faq) => (
+              <Disclosure key={faq.question} as="div" className="py-6 first:pt-0 last:pb-0">
+                <dt>
+                  <DisclosureButton className="group flex w-full items-start justify-between text-left text-gray-900 dark:text-white">
+                    <span className="text-base/7 font-semibold">{faq.question}</span>
+                    <span className="ml-6 flex h-7 items-center">
+                      <PlusSmallIcon aria-hidden="true" className="size-6 group-data-open:hidden" />
+                      <MinusSmallIcon aria-hidden="true" className="size-6 group-not-data-open:hidden" />
+                    </span>
+                  </DisclosureButton>
+                </dt>
+                <DisclosurePanel as="dd" className="mt-2 pr-12">
+                  <p className="text-base/7 text-gray-600 dark:text-gray-400">{faq.answer}</p>
+                </DisclosurePanel>
+              </Disclosure>
+            ))}
+          </dl>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
+export default function Buy() {
   return (
     <>
    
     <Hero/>
     <ThreeCard/>
+    <HowItWorks/>
     <Testimonial/>
     <Stats />   
-    <Bento/>
+    {/* <Bento/> */}
     <ServicesList/>   
-    <ValuationCTA/>
+    {/* <ValuationCTA/> */}
+    <BuyerFAQs/>  
     <Footer/>       
     </>
   )
@@ -598,4 +756,5 @@ export default function BuyAndSell() {
 
 
   
+
 

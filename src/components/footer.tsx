@@ -22,7 +22,7 @@ function CallToAction() {
         cutting-edge technology.
       </p>
       <div className="mt-6">
-        <Button className="w-full sm:w-auto" href="#">
+        <Button className="w-full sm:w-auto" href="/contact">
           Get Free Consultation
         </Button>
       </div>

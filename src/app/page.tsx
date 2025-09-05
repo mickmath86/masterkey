@@ -57,14 +57,13 @@ function Hero() {
         <div className="flex flex-col md:flex-row gap-4 items-center">
           <div className="pt-16 pb-24 sm:pt-24 sm:pb-32 md:pt-32 md:pb-48">
             <FadeInUp delay={0.2}>
-              <h1 className="font-display text-6xl/[0.9] font-medium tracking-tight text-balance text-gray-950 sm:text-8xl/[0.8] md:text-9xl/[0.8]">
-                Close every deal.
+              <h1 className="font-display text-6xl/[0.9] font-medium tracking-tight text-balance text-gray-950 sm:text-8xl/[0.8] md:text-6xl/[0.8]">
+                Your real estate success starts here.
               </h1>
             </FadeInUp>
             <FadeInUp delay={0.4}>
-              <p className="mt-8 max-w-lg text-xl/7 font-medium text-gray-950/75 sm:text-2xl/8">
-                Radiant helps you sell more by revealing sensitive information about
-                your customers.
+              <p className="mt-8 max-w-lg text-xl/7 font-medium text-gray-950/75 sm:text-xl/8">
+                MasterKey combines expert agents with cutting-edge technology to help you buy, sell, and manage properties with confidence.
               </p>
             </FadeInUp>
             
