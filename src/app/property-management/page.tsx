@@ -1,36 +1,41 @@
-import { ArrowPathIcon, ChevronRightIcon, CloudArrowUpIcon, Cog6ToothIcon, FingerPrintIcon, LockClosedIcon } from '@heroicons/react/20/solid'
+"use client";
+
+import { CloudArrowUpIcon, LockClosedIcon, ServerIcon, HomeIcon, UserGroupIcon, CurrencyDollarIcon, ShieldCheckIcon, WrenchScrewdriverIcon, DocumentTextIcon, ChevronRightIcon, ArrowPathIcon, FingerPrintIcon, Cog6ToothIcon } from '@heroicons/react/20/solid'
 import { Container } from "@/components/container"
 import { Heading } from "@/components/text"
+import { useState } from 'react'
 import { Lead } from "@/components/text"
 import { FadeInStagger } from "@/components/animations"
 import { Subheading } from "@/components/text"
-  import Navbar3 from '@/components/navbar3'
+import Navbar3 from '@/components/navbar3'
 import { Footer } from '@/components/footer'
-import { ArrowRight, Building, Users, Wrench, Star, ServerIcon } from "lucide-react"
+import { ArrowRight, Building, Users, Wrench, Star } from "lucide-react"
+import { Button } from '@/components/button'
+import { CheckIcon, CalculatorIcon, MapPinIcon, UserIcon, EnvelopeIcon } from '@heroicons/react/20/solid'
 
 
 const featredPosts = [
     {
         title: "Residential Management",
-        link:"/residential-management", 
+        link:"#residential-management", 
         slug: "residential-management",
         icon: Building,
-        excerpt: "Full-service management for single-family homes, condos, and small multi-family properties with dedicated tenant support."
+        excerpt: "Full-service management for single-family homes with dedicated tenant support."
     },
     {
-        title: "Commercial Management",
-        link:"/commercial-management", 
-        slug: "commercial-management",
+        title: "Multifamily Management",
+        link:"#multifamily-management", 
+        slug: "multifamily-management",
         icon: Users,
-        excerpt: "Professional management services for office buildings, retail spaces, and commercial properties with comprehensive lease administration."
+        excerpt: "Professional management services for multifamily properties with comprehensive lease administration."
     },
-    {
-        title: "Maintenance & Repairs",
-        link:"/maintenance-services", 
-        slug: "maintenance-repairs",
-        icon: Wrench,
-        excerpt: "24/7 maintenance coordination with vetted contractors, emergency response, and preventive maintenance programs."
-    },
+    // {
+    //     title: "Maintenance & Repairs",
+    //     link:"/maintenance-services", 
+    //     slug: "maintenance-repairs",
+    //     icon: Wrench,
+    //     excerpt: "24/7 maintenance coordination with vetted contractors, emergency response, and preventive maintenance programs."
+    // },
 ]
 
 const Hero = () => {
@@ -157,7 +162,7 @@ const Hero = () => {
 }
 
 
-function ThreeCard() {
+function TwoCard() {
 
 
   return (
@@ -172,7 +177,7 @@ function ThreeCard() {
         <div className="mt-16  pb-14">
         <div>
             <h2 className="text-2xl font-medium tracking-tight">Services</h2>
-            <FadeInStagger className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <FadeInStagger className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-2">
             
             {featredPosts.map((post) => (
                 <a
@@ -248,6 +253,593 @@ function Testimonial() {
     </section>
   )
 }
+
+
+
+const residentialFeatures = [
+  {
+    name: 'Tenant Screening & Placement',
+    description:
+      'Comprehensive background checks, credit verification, and income validation to find qualified tenants for your single-family homes.',
+    icon: UserGroupIcon,
+  },
+  {
+    name: 'Rent Collection & Financial Management',
+    description: 'Automated rent collection, detailed financial reporting, and transparent accounting to maximize your rental income.',
+    icon: CurrencyDollarIcon,
+  },
+  {
+    name: 'Property Maintenance & Inspections',
+    description: 'Regular property inspections, preventive maintenance, and 24/7 emergency response with our vetted contractor network.',
+    icon: WrenchScrewdriverIcon,
+  },
+  {
+    name: 'Legal Compliance & Protection',
+    description: 'Stay compliant with local regulations, lease enforcement, and eviction protection services when needed.',
+    icon: ShieldCheckIcon,
+  },
+]
+
+function ResidentialFeature() {
+  return (
+    <div id="residential-management" className="overflow-hidden bg-white py-24 sm:py-32 dark:bg-gray-900">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-2">
+          <div className="lg:pt-4 lg:pr-8">
+            <div className="lg:max-w-lg">
+              <h2 className="text-base/7 font-semibold text-green-600 dark:text-green-400">Residential Properties</h2>
+              <p className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl dark:text-white">
+                Single-Family Home Management
+              </p>
+              <p className="mt-6 text-lg/8 text-gray-700 dark:text-gray-300">
+                Maximize your investment returns with our comprehensive residential property management services. We handle everything from tenant placement to maintenance, so you can enjoy passive income without the hassle.
+              </p>
+              <dl className="mt-10 max-w-xl space-y-8 text-base/7 text-gray-600 lg:max-w-none dark:text-gray-400">
+                {residentialFeatures.map((feature) => (
+                  <div key={feature.name} className="relative pl-9">
+                    <dt className="inline font-semibold text-gray-900 dark:text-white">
+                      <feature.icon
+                        aria-hidden="true"
+                        className="absolute top-1 left-1 size-5 text-green-600 dark:text-green-400"
+                      />
+                      {feature.name}
+                    </dt>{' '}
+                    <dd className="inline">{feature.description}</dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="mt-10">
+                <Button href="/contact" className="bg-green-600 hover:bg-green-700">
+                  Get Started with Residential Management
+                  <ChevronRightIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <img
+            alt="Beautiful single-family home with landscaped yard"
+            src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80"
+            width={2340}
+            height={1560}
+            className="w-3xl max-w-none rounded-xl shadow-xl ring-1 ring-gray-400/10 sm:w-228 md:-ml-4 lg:-ml-0"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
+
+const multifamilyFeatures = [
+  {
+    name: 'Portfolio Management',
+    description:
+      'Comprehensive management of multiple units with centralized operations, bulk purchasing power, and economies of scale.',
+    icon: HomeIcon,
+  },
+  {
+    name: 'Leasing & Marketing',
+    description: 'Professional marketing campaigns, virtual tours, and streamlined leasing processes to minimize vacancy rates.',
+    icon: DocumentTextIcon,
+  },
+  {
+    name: 'Maintenance Coordination',
+    description: 'Dedicated maintenance teams, preventive maintenance schedules, and emergency response for multiple properties.',
+    icon: WrenchScrewdriverIcon,
+  },
+  {
+    name: 'Financial Optimization',
+    description: 'Advanced financial reporting, budget management, and revenue optimization strategies for maximum ROI.',
+    icon: CurrencyDollarIcon,
+  },
+]
+
+function MultifamilyFeature() {
+  return (
+    <div id="multifamily-management" className="overflow-hidden bg-white py-24 sm:py-32 dark:bg-gray-900">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-2">
+          <div className="lg:ml-auto lg:pt-4 lg:pl-4">
+            <div className="lg:max-w-lg">
+              <h2 className="text-base/7 font-semibold text-green-600 dark:text-green-400">Multifamily Properties</h2>
+              <p className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl dark:text-white">
+                Apartment & Complex Management
+              </p>
+              <p className="mt-6 text-lg/8 text-gray-600 dark:text-gray-300">
+                Scale your multifamily investments with our specialized management services. From small apartment buildings to large complexes, we optimize operations and maximize your portfolio's performance.
+              </p>
+              <dl className="mt-10 max-w-xl space-y-8 text-base/7 text-gray-600 lg:max-w-none dark:text-gray-400">
+                {multifamilyFeatures.map((feature) => (
+                  <div key={feature.name} className="relative pl-9">
+                    <dt className="inline font-semibold text-gray-900 dark:text-white">
+                      <feature.icon
+                        aria-hidden="true"
+                        className="absolute top-1 left-1 size-5 text-green-600 dark:text-green-400"
+                      />
+                      {feature.name}
+                    </dt>{' '}
+                    <dd className="inline">{feature.description}</dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="mt-10">
+                <Button href="/contact" className="bg-green-600 hover:bg-green-700">
+                  Get Started with Multifamily Management
+                  <ChevronRightIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-start justify-end lg:order-first">
+            <img
+              alt="Modern apartment building complex with multiple units"
+              src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80"
+              width={2340}
+              height={1560}
+              className="w-3xl max-w-none rounded-xl shadow-xl ring-1 ring-gray-400/10 sm:w-228"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface RentalEstimate {
+  address: string
+  rentEstimate?: number
+  rentRangeLow?: number
+  rentRangeHigh?: number
+  confidence?: string
+  lastUpdated?: string
+  source?: string
+}
+
+const managementServices = [
+  'Tenant Screening & Placement',
+  'Rent Collection & Processing',
+  'Property Inspections',
+  'Maintenance Coordination',
+  'Financial Reporting',
+  'Legal Compliance',
+  'Emergency Response (24/7)',
+  'Lease Management & Renewals',
+]
+
+function Pricing() {
+  const [step, setStep] = useState(1) // 1: Address, 2: Contact Info, 3: Results
+  const [address, setAddress] = useState('')
+  const [propertyType, setPropertyType] = useState('')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [monthlyRent, setMonthlyRent] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [rentalEstimate, setRentalEstimate] = useState<RentalEstimate | null>(null)
+  const [error, setError] = useState('')
+  
+  const rent = parseFloat(monthlyRent) || 0
+  const managementFee = rent * 0.07
+  const annualManagementFee = managementFee * 12
+
+  // Email validation function
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  // Get rental estimate from Zillow API
+  const getRentalEstimate = async (retryCount = 0) => {
+    if (!address.trim()) {
+      setError('Please enter a valid address')
+      return
+    }
+
+    if (!propertyType.trim()) {
+      setError('Please select a property type')
+      return
+    }
+
+    if (!name.trim() || !email.trim()) {
+      setError('Please enter your name and email')
+      return
+    }
+
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/rental-estimate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          address,
+          propertyType,
+          name,
+          email
+        }),
+      })
+
+      if (!response.ok) {
+        // If 404 and this is the first attempt, retry once after a short delay
+        if (response.status === 404 && retryCount === 0) {
+          console.log('API route not ready, retrying in 1 second...')
+          setTimeout(() => getRentalEstimate(1), 1000)
+          return
+        }
+        throw new Error(`Failed to get rental estimate (${response.status})`)
+      }
+
+      const data = await response.json()
+      setRentalEstimate(data)
+      setMonthlyRent(data.rentEstimate?.toString() || '')
+      setStep(3)
+    } catch (err) {
+      setError('Unable to get rental estimate. Please try again or enter rent manually.')
+      console.error('Rental estimate error:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAddressSubmit = () => {
+    if (address.trim() && propertyType.trim()) {
+      setStep(2)
+      setError('')
+    } else {
+      setError('Please enter a valid address and select a property type')
+    }
+  }
+
+  const resetCalculator = () => {
+    setStep(1)
+    setAddress('')
+    setPropertyType('')
+    setName('')
+    setEmail('')
+    setMonthlyRent('')
+    setRentalEstimate(null)
+    setError('')
+  }
+  
+  return (
+    <div className="bg-white py-24 sm:py-32 dark:bg-gray-900">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl sm:text-center">
+          <h2 className="text-5xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-6xl sm:text-balance dark:text-white">
+            Transparent Property Management Pricing
+          </h2>
+          <p className="mx-auto mt-6 max-w-2xl text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
+            Calculate your property management costs with our simple 7% fee structure. No hidden charges, just professional service.
+          </p>
+        </div>
+        
+        {/* Calculator Section */}
+        <div className="mx-auto mt-16 max-w-2xl">
+          <div className="rounded-2xl bg-gray-50 p-8 dark:bg-gray-800/50">
+            <div className="flex items-center gap-3 mb-6">
+              <CalculatorIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {step === 1 ? 'Get Rental Estimate' : step === 2 ? 'Contact Information' : 'Your Rental Analysis'}
+              </h3>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+            
+            {/* Step 1: Address Input */}
+            {step === 1 && (
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Property Address
+                  </label>
+                  <div className="relative">
+                    <MapPinIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type="text"
+                      id="address"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      placeholder="123 Main St, City, State 12345"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="propertyType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Property Type
+                  </label>
+                  <select
+                    id="propertyType"
+                    value={propertyType}
+                    onChange={(e) => setPropertyType(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  >
+                    <option value="">Select property type</option>
+                    <option value="SingleFamily">Single Family</option>
+                    <option value="Condo">Condo</option>
+                    <option value="MultiFamily">Multi Family</option>
+                    <option value="Townhouse">Townhouse</option>
+                    <option value="Apartment">Apartment</option>
+                  </select>
+                </div>
+                <button
+                  onClick={handleAddressSubmit}
+                  className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Get Rental Estimate
+                </button>
+                <div className="text-center">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Or</p>
+                  <button
+                    onClick={() => setStep(3)}
+                    className="text-green-600 hover:text-green-700 text-sm font-medium"
+                  >
+                    Enter rent amount manually
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Contact Information */}
+            {step === 2 && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="text"
+                        id="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="John Doe"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="john@example.com"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg dark:bg-blue-900/20">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    <strong>Address:</strong> {address}
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                    We'll use this information to provide you with an accurate rental estimate and management fee calculation.
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setStep(1)}
+                    className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={() => getRentalEstimate()}
+                    disabled={loading}
+                    className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? 'Getting Estimate...' : 'Get Estimate'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Results */}
+            {step === 3 && (
+              <div className="space-y-6">
+                {rentalEstimate && (
+                  <div className="bg-white p-6 rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                      Rental Estimate for {address}
+                    </h4>
+                    
+                    {rentalEstimate.rentEstimate && (
+                      <div className="mb-6">
+                        <div className="bg-green-50 p-6 rounded-lg border border-green-200 dark:bg-green-900/20 dark:border-green-800">
+                          <div className="text-center">
+                            <p className="text-sm text-green-600 dark:text-green-400 mb-2">Estimated Monthly Rent</p>
+                            <p className="text-3xl font-bold text-green-700 dark:text-green-300">
+                              ${rentalEstimate.rentEstimate?.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4 text-center mt-4">
+                          <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Low</p>
+                            <p className="font-semibold text-gray-900 dark:text-white">
+                              ${rentalEstimate.rentRangeLow?.toLocaleString() || 'N/A'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Estimate</p>
+                            <p className="font-semibold text-green-600 text-lg">
+                              ${rentalEstimate.rentEstimate?.toLocaleString()}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">High</p>
+                            <p className="font-semibold text-gray-900 dark:text-white">
+                              ${rentalEstimate.rentRangeHigh?.toLocaleString() || 'N/A'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div>
+                  <label htmlFor="rent-manual" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {rentalEstimate ? 'Adjust Monthly Rent' : 'Monthly Rent Amount'}
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      id="rent-manual"
+                      value={monthlyRent}
+                      onChange={(e) => setMonthlyRent(e.target.value)}
+                      placeholder="2,500"
+                      className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                  </div>
+                </div>
+                
+                {rent > 0 && (
+                  <div className="p-4 bg-white rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600">
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-300">Monthly Management Fee (7%):</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">${managementFee.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-300">Annual Management Fee:</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">${annualManagementFee.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={resetCalculator}
+                  className="w-full bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Start Over
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="mx-auto mt-16 max-w-5xl lg:flex lg:gap-8">
+          {/* Services Included */}
+          <div className="lg:flex-1">
+            <div className="rounded-2xl bg-white p-8 ring-1 ring-gray-200 dark:bg-gray-800/50 dark:ring-white/10">
+              <h3 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">What's Included</h3>
+              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-300">
+                Our comprehensive property management service includes everything you need to maximize your investment returns.
+              </p>
+              <div className="mt-8 flex items-center gap-x-4">
+                <h4 className="flex-none text-sm/6 font-semibold text-green-600 dark:text-green-400">
+                  Management Services
+                </h4>
+                <div className="h-px flex-auto bg-gray-100 dark:bg-white/10" />
+              </div>
+              <ul
+                role="list"
+                className="mt-6 grid grid-cols-1 gap-4 text-sm/6 text-gray-600 sm:grid-cols-2 sm:gap-6 dark:text-gray-300"
+              >
+                {managementServices.map((service) => (
+                  <li key={service} className="flex gap-x-3">
+                    <CheckIcon aria-hidden="true" className="h-6 w-5 flex-none text-green-600 dark:text-green-400" />
+                    {service}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Additional Fees */}
+          <div className="mt-8 lg:mt-0 lg:w-80">
+            <div className="rounded-2xl bg-gray-50 p-8 dark:bg-gray-900">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Additional Fees</h3>
+              <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                Transparent pricing for additional services when needed.
+              </p>
+              
+              <div className="mt-6 space-y-4">
+                <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">Leasing Fee</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Per new tenant placement</p>
+                  </div>
+                  <span className="font-semibold text-gray-900 dark:text-white">$200</span>
+                </div>
+                
+                <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">Lease Renewal Fee</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Per lease renewal</p>
+                  </div>
+                  <span className="font-semibold text-gray-900 dark:text-white">$200</span>
+                </div>
+                
+                <div className="flex justify-between items-center py-3">
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">Maintenance Markup</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">On managed repairs</p>
+                  </div>
+                  <span className="font-semibold text-gray-900 dark:text-white">10%</span>
+                </div>
+              </div>
+              
+              <div className="mt-8">
+                <Button href="/contact" className="w-full bg-green-600 hover:bg-green-700">
+                  Get Started Today
+                </Button>
+                <p className="mt-4 text-xs text-center text-gray-500 dark:text-gray-400">
+                  No setup fees • Cancel anytime • 30-day money back guarantee
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 
 // Bento
 function Bento() {
@@ -466,13 +1058,15 @@ function ServicesList() {
 export default function PropertyManagement() {
   return (
     <>
-   
-    <Hero/>
-    <ThreeCard/>        
-    <Testimonial/>
-    <Bento/>
-    <ServicesList/>
-    <Footer/>       
+      <Hero/>
+      <TwoCard/>        
+      <Testimonial/>
+      <ResidentialFeature/>
+      <MultifamilyFeature/>
+      <Pricing/>
+      <Bento/>
+      <ServicesList/>
+      <Footer/>       
     </>
   )
 }

@@ -8,20 +8,13 @@ import { FadeIn, FadeInStagger } from "./animations"
 const featredPosts = [
     {
         title: "Buy and Sell Real Estate",
-        link:"/buy-and-sell", 
-        slug: "modern-luxury-home-beverly-hills",
+        link:"/sell", 
+        slug: "sell",
         mainImage: {
             alt: "Modern luxury home with clean lines and large windows",
             url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1170&h=780&fit=crop&crop=center"
         },
-        publishedAt: "2025-09-01T00:00:00.000Z",
-        author: {
-            name: "Sarah Johnson",
-            image: {
-                alt: "Sarah Johnson",
-                url: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=64&h=64&fit=crop&crop=face"
-            }
-        }, 
+       
         excerpt: "Discover this stunning contemporary home featuring floor-to-ceiling windows, open-concept living, and premium finishes throughout."
     },
     {

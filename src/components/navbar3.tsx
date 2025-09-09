@@ -280,7 +280,7 @@ function PropertyManagementNav({ onMouseEnter, onMouseLeave, isActive }: { onMou
             
             {/* Client Portal Featured Section */}
             <div className="flex flex-col gap-4">
-              <a href="#" className="relative overflow-hidden rounded-2xl bg-gray-700 hover:bg-gradient-to-br from-emerald-400 via-green-500 to-green-600 transition ease-in-out p-6 text-white animate-in slide-in-from-left-2 duration-300">
+              <a href="#" className="relative overflow-hidden rounded-2xl bg-gray-700 hover:bg-gradient-to-br from-emerald-400 via-green-500 to-green-600  ease-in-out p-6 text-white animate-in slide-in-from-left-2 transition-all duration-300">
                 <div className="relative z-10">
                   <div className="mb-4">
                     <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
@@ -414,7 +414,7 @@ export default function Navbar3() {
                 className="absolute left-1/2 z-10 mt-5 flex w-screen max-w-max -translate-x-1/2 bg-transparent px-4 animate-in slide-in-from-top-1 duration-200"
               >
         <div className="w-screen max-w-6xl flex-auto overflow-hidden rounded-3xl bg-white text-sm/6 shadow-lg outline-1 outline-gray-900/5 dark:bg-gray-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
-          <div className="grid grid-cols-4 gap-x-4 p-6 lg:grid-cols-5 xl:gap-x-6">
+          <div className="grid grid-cols-4 gap-x-4 p-6 lg:grid-cols-4 xl:gap-x-6">
                   {buyLinks.map((item, index) => (
                     <div
                       key={item.name}
@@ -442,7 +442,7 @@ export default function Navbar3() {
                   ))}
                   
                   {/* Featured Section */}
-                  <a href="/questionnaire" className="relative overflow-hidden rounded-2xl group bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 p-6 text-white animate-in slide-in-from-right-2 duration-300 hover:bg-blue-900 hover:text-white">
+                  {/* <a href="/questionnaire" className="relative overflow-hidden rounded-2xl group bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 p-6 text-white animate-in slide-in-from-right-2 duration-300 hover:bg-blue-900 hover:text-white">
                     <div className="relative z-10">
                       <div className="mb-4">
                         <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
@@ -466,7 +466,7 @@ export default function Navbar3() {
                     <div className="absolute -top-2 -left-2 opacity-10">
                       <div className="size-16 rounded-full bg-white/20"></div>
                     </div>
-                  </a>
+                  </a> */}
                 </div>
           <div className="grid grid-cols-3 divide-x divide-gray-900/5 bg-gray-50 dark:divide-white/10 dark:bg-gray-700/50 animate-in slide-in-from-bottom-2 duration-300">
             {buyerCallsToAction.map((item, index) => (
