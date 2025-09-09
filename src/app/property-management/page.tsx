@@ -12,6 +12,7 @@ import { Footer } from '@/components/footer'
 import { ArrowRight, Building, Users, Wrench, Star } from "lucide-react"
 import { Button } from '@/components/button'
 import { CheckIcon, CalculatorIcon, MapPinIcon, UserIcon, EnvelopeIcon } from '@heroicons/react/20/solid'
+import { GooglePlacesInput } from '@/components/ui/google-places-input'
 
 
 const featredPosts = [
@@ -530,7 +531,7 @@ function Pricing() {
   }
   
   return (
-    <div className="bg-white py-24 sm:py-32 dark:bg-gray-900">
+    <div id="pricing" className="bg-white py-24 sm:py-32 dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-4xl sm:text-center">
           <h2 className="text-5xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-6xl sm:text-balance dark:text-white">
@@ -564,17 +565,13 @@ function Pricing() {
                   <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Property Address
                   </label>
-                  <div className="relative">
-                    <MapPinIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      type="text"
-                      id="address"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      placeholder="123 Main St, City, State 12345"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    />
-                  </div>
+                  <GooglePlacesInput
+                    value={address}
+                    onChange={(value) => setAddress(value)}
+                    placeholder="123 Main St, City, State 12345"
+                    className="dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-green-500 focus:border-green-500"
+                    id="address"
+                  />
                 </div>
                 <div>
                   <label htmlFor="propertyType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -983,39 +980,39 @@ function Bento() {
 // Services List
 const features = [
   {
-    name: 'Market Analysis',
-    description: 'Comprehensive market research and comparable sales analysis to price your property competitively.',
-    icon: CloudArrowUpIcon,
+    name: 'Tenant Screening',
+    description: 'Comprehensive background checks, credit verification, and employment validation to ensure reliable tenants.',
+    icon: UserGroupIcon,
     href: '#',
   },
   {
-    name: 'Secure Transactions',
-    description: 'Protected escrow services and secure document handling throughout the entire buying or selling process.',
-    icon: LockClosedIcon,
+    name: 'Rent Collection',
+    description: 'Automated rent collection with online payment portals, late fee management, and consistent cash flow.',
+    icon: CurrencyDollarIcon,
     href: '#',
   },
   {
-    name: 'Fast Processing',
-    description: 'Streamlined workflows and digital tools to accelerate your property transactions.',
-    icon: ArrowPathIcon,
+    name: 'Maintenance Coordination',
+    description: '24/7 maintenance response with vetted contractors, emergency repairs, and preventive maintenance programs.',
+    icon: WrenchScrewdriverIcon,
     href: '#',
   },
   {
-    name: 'Verified Listings',
-    description: 'All properties are thoroughly vetted and verified for accuracy and legitimacy.',
-    icon: FingerPrintIcon,
+    name: 'Legal Compliance',
+    description: 'Stay compliant with local housing laws, lease enforcement, and eviction proceedings when necessary.',
+    icon: ShieldCheckIcon,
     href: '#',
   },
   {
-    name: 'Smart Matching',
-    description: 'AI-powered algorithms match buyers with properties that meet their specific criteria and budget.',
-    icon: Cog6ToothIcon,
+    name: 'Financial Reporting',
+    description: 'Monthly statements, expense tracking, and detailed analytics to maximize your return on investment.',
+    icon: DocumentTextIcon,
     href: '#',
   },
   {
-    name: 'Complete Support',
-    description: 'Full-service support from initial consultation through closing and beyond.',
-    icon: ServerIcon,
+    name: 'Property Marketing',
+    description: 'Professional photography, online listings, and targeted marketing to minimize vacancy periods.',
+    icon: HomeIcon,
     href: '#',
   },
 ]
@@ -1025,12 +1022,12 @@ function ServicesList() {
     <div className="bg-white py-24 sm:py-32 dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:text-center">
-          <h2 className="text-base/7 font-semibold text-green-600 dark:text-green-400">Complete Brokerage Services</h2>
+          <h2 className="text-base/7 font-semibold text-green-600 dark:text-green-400">Full-Service Property Management</h2>
           <p className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl lg:text-balance dark:text-white">
-            Everything you need to succeed
+            Everything you need for successful property management
           </p>
           <p className="mt-6 text-lg/8 text-gray-600 dark:text-gray-300">
-            From initial property search to final closing, our comprehensive brokerage services provide expert guidance and cutting-edge technology to ensure your real estate success.
+            From tenant placement to maintenance coordination, our comprehensive property management services maximize your rental income while minimizing your stress and workload.
           </p>
         </div>
         <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
@@ -1054,6 +1051,49 @@ function ServicesList() {
   )
 }
 
+ function Cta() {
+  return (
+    <div className="bg-white dark:bg-gray-900">
+      <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8">
+        <div className="relative isolate overflow-hidden bg-gray-900 px-6 py-24 text-center shadow-2xl sm:rounded-3xl sm:px-16 dark:bg-gray-800 dark:shadow-none dark:after:pointer-events-none dark:after:absolute dark:after:inset-0 dark:after:inset-ring dark:after:inset-ring-white/10 dark:after:sm:rounded-3xl">
+          <h2 className="text-4xl font-semibold tracking-tight text-balance text-white sm:text-5xl">
+            Ready to maximize your rental income?
+          </h2>
+          <p className="mx-auto mt-6 max-w-xl text-lg/8 text-pretty text-gray-300">
+            Let our expert property management team handle the day-to-day operations while you enjoy consistent cash flow and peace of mind. Get started with a free consultation today.
+          </p>
+          <div className="mt-10 flex items-center justify-center gap-x-6">
+            <a
+              href="/contact"
+              className="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-xs hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white dark:bg-white/10 dark:text-white dark:shadow-none dark:inset-ring dark:inset-ring-white/5 dark:hover:bg-white/15 dark:focus-visible:outline-white"
+            >
+              {' '}
+              Get Free Consultation{' '}
+            </a>
+            <a href="#pricing" className="text-sm/6 font-semibold text-white">
+              View Pricing
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+          <svg
+            viewBox="0 0 1024 1024"
+            aria-hidden="true"
+            className="absolute top-1/2 left-1/2 -z-10 size-256 -translate-x-1/2 mask-[radial-gradient(closest-side,white,transparent)]"
+          >
+            <circle r={512} cx={512} cy={512} fill="url(#827591b1-ce8c-4110-b064-7cb85a0b1217)" fillOpacity="0.7" />
+            <defs>
+              <radialGradient id="827591b1-ce8c-4110-b064-7cb85a0b1217">
+                <stop stopColor="#10b981" />
+                <stop offset={1} stopColor="#059669" />
+              </radialGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 
 export default function PropertyManagement() {
   return (
@@ -1064,8 +1104,9 @@ export default function PropertyManagement() {
       <ResidentialFeature/>
       <MultifamilyFeature/>
       <Pricing/>
-      <Bento/>
+      {/* <Bento/> */}
       <ServicesList/>
+      <Cta/>
       <Footer/>       
     </>
   )

@@ -151,6 +151,12 @@ const propertyManagementLinks = [
         icon: FingerPrintIcon 
       },
       { 
+        name: 'Pricing', 
+        description: 'Simple, transparent pricing; what’s included at each tier', 
+        href: '/property-management#pricing', 
+        icon: SparkleIcon 
+      },
+      { 
         name: '24/7 Maintenance Services', 
         description: '24/7 maintenance coordination and emergency response', 
         href: '#', 
@@ -162,12 +168,7 @@ const propertyManagementLinks = [
         href: '#', 
         icon: ArrowPathIcon 
       },
-      { 
-        name: 'Pricing & Fees', 
-        description: 'Simple, transparent pricing; what’s included at each tier', 
-        href: '#', 
-        icon: ArrowPathIcon 
-      },
+   
     ],
     resources: [
       { 
