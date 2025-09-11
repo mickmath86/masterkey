@@ -9,6 +9,12 @@
     "lint": "next lint",
     "typegen": "sanity schema extract --path=src/sanity/extract.json && sanity typegen generate && rm ./src/sanity/extract.json"
   },
+  "overrides": {
+    "react-gauge-component": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
+  },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.10",
     "@headlessui/react": "^2.2.6",
@@ -33,7 +39,6 @@
     "radix-ui": "^1.4.3",
     "react": "^19.1.1",
     "react-dom": "^19",
-    "react-gauge-chart": "^0.5.1",
     "react-gauge-component": "^1.2.64",
     "react-is": "^19.1.1",
     "react-use-measure": "^2.1.7",
