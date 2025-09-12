@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Make API request
-    const apiKey = process.env.NEXT_PUBLIC_ZILLOW_API_KEY
+    const apiKey = process.env.RAPIDAPI_KEY
     const apiHost = process.env.ZILLOW_API_HOST || 'zillow-com1.p.rapidapi.com'
 
     if (!apiKey) {

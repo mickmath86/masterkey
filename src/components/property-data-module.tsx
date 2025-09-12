@@ -273,10 +273,19 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   const avgDaysOnMarket = marketData?.saleData?.averageDaysOnMarket
   const marketSpeed = avgDaysOnMarket ? getMarketSpeedIndicator(avgDaysOnMarket) : null
   
-  // Calculate maxPrice based on average price per square foot x square footage
-  const maxPrice = (marketData?.saleData?.averagePricePerSquareFoot && propertyData?.squareFootage) 
-    ? marketData.saleData.averagePricePerSquareFoot * propertyData.squareFootage 
-    : 1800000
+  // Calculate maxPrice as 1.25x the property price from Zillow API
+  const propertyPrice = propertyData?.zestimate || propertyData?.price || 0
+  const maxPrice = propertyPrice > 0 ? propertyPrice * 1.25 : 1800000
+
+  // Console log to verify maxPrice calculation
+  console.log('MaxPrice Calculation Debug:', {
+    propertyPrice: propertyPrice,
+    zestimate: propertyData?.zestimate,
+    price: propertyData?.price,
+    calculatedMaxPrice: propertyPrice > 0 ? propertyPrice * 1.25 : 'Using fallback: 1800000',
+    finalMaxPrice: maxPrice,
+    isUsingFallback: propertyPrice <= 0
+  })
   
   // Set minimum value to 0 as requested
   const minPrice = 0

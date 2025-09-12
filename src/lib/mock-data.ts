@@ -57,7 +57,7 @@ export const MOCK_MARKET_DATA = {
 // Set FORCE_USE_MOCK_DATA to true to always use mock data in development
 // Set to false to always use real APIs in development
 // Leave undefined to auto-detect based on NODE_ENV
-export const FORCE_USE_MOCK_DATA: boolean | undefined = true // Change this to toggle!
+export const FORCE_USE_MOCK_DATA: boolean | undefined = false // Change this to toggle!
 
 // Final determination of whether to use mock data
 export const USE_MOCK_DATA = FORCE_USE_MOCK_DATA !== undefined 
