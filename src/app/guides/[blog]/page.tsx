@@ -33,6 +33,7 @@ const components = {
   img: (props: any) => (
     <div className="mt-16">
       <img
+        alt={props.alt || ""}
         className="aspect-video rounded-xl bg-gray-50 object-cover dark:bg-gray-800 w-full"
         {...props}
       />
@@ -62,8 +63,9 @@ export async function generateStaticParams() {
   }))
 }
 
-export default function BlogPost({ params }: { params: { blog: string } }) {
-  const post = getPostBySlug(params.blog)
+export default async function BlogPost({ params }: { params: Promise<{ blog: string }> }) {
+  const { blog } = await params
+  const post = getPostBySlug(blog)
 
   if (!post) {
     notFound()
