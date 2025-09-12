@@ -9,7 +9,7 @@ import { FadeInStagger } from "@/components/animations"
 import { Subheading } from "@/components/text"
 import Navbar3 from '@/components/navbar3'
 import { Footer } from '@/components/footer'
-import { ArrowRight, Building, Users, Wrench, Star } from "lucide-react"
+import { ArrowRight, Building, Users, Star } from "lucide-react"
 import { Button } from '@/components/button'
 import { CheckIcon, CalculatorIcon, MapPinIcon, UserIcon, EnvelopeIcon } from '@heroicons/react/20/solid'
 import { GooglePlacesInput } from '@/components/ui/google-places-input'
