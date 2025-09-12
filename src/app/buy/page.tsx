@@ -21,30 +21,6 @@ import { MinusSmallIcon, PlusSmallIcon } from '@heroicons/react/24/outline'
 
 
 
-const buyerServices = [
-    {
-        title: "Find Your Dream Home",
-        link:"/questionnaire/sell", 
-        slug: "property-search",
-        icon: Home,
-        excerpt: "Search thousands of listings with our advanced filters and AI-powered matching. Get detailed insights on every property that interests you."
-    },
-    {
-        title: "Buyer Consultation",
-        link:"/questionnaire/sell", 
-        slug: "buyer-consultation",
-        icon: Key,
-        excerpt: "Start your home buying journey with a personalized consultation. We'll understand your needs, budget, and timeline to find the perfect match."
-    },
-    {
-        title: "Market Analysis & Insights",
-        link:"/questionnaire/sell", 
-        slug: "market-insights",
-        icon: DollarSign,
-        excerpt: "Get comprehensive market data, neighborhood trends, and pricing insights to make informed decisions on your home purchase."
-    },
-]
-
 const Hero = () => {
     return (
         <div className="relative isolate overflow-hidden bg-white dark:bg-gray-900">
@@ -87,7 +63,7 @@ const Hero = () => {
       </div>
       <div className="mx-auto max-w-7xl px-6 pt-10 pb-24 sm:pb-32 lg:flex lg:px-8 lg:py-40">
         <div className="mx-auto max-w-2xl shrink-0 lg:mx-0 lg:pt-8">
-          <img
+          {/* <img
             alt="Your Company"
             src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=sky&shade=600"
             className="h-11 dark:hidden"
@@ -96,7 +72,7 @@ const Hero = () => {
             alt="Your Company"
             src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=sky&shade=500"
             className="h-11 not-dark:hidden"
-          />
+          /> */}
           <div className="mt-24 sm:mt-32 lg:mt-16">
             <a href="#" className="inline-flex space-x-6">
               <span className="rounded-full bg-sky-50 px-3 py-1 text-sm/6 font-semibold text-sky-600 ring-1 ring-sky-600/20 ring-inset dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/25">
@@ -168,6 +144,31 @@ const Hero = () => {
     )
 }
 
+
+const buyerServices = [
+  {
+      title: "Find Your Dream Home",
+      link:"/questionnaire/real-estate-buy", 
+      slug: "property-search",
+      icon: Home,
+      excerpt: "Search thousands of listings with our advanced filters and AI-powered matching. Get detailed insights on every property that interests you."
+  },
+  {
+      title: "Buyer Consultation",
+      link:"/contact", 
+      slug: "buyer-consultation",
+      icon: Key,
+      excerpt: "Start your home buying journey with a personalized consultation. We'll understand your needs, budget, and timeline to find the perfect match."
+  },
+  {
+      title: "Market Analysis & Insights",
+      link:"/questionnaire/real-estate-buy", 
+      slug: "market-insights",
+      icon: DollarSign,
+      excerpt: "Get comprehensive market data, neighborhood trends, and pricing insights to make informed decisions on your home purchase."
+  },
+]
+
 function ThreeCard() {
 
 
@@ -237,7 +238,7 @@ const buyingSteps = [
 ]
 function HowItWorks() {
   return (
-    <div id="how-it-works" className="bg-white py-24 sm:py-32 dark:bg-gray-900">
+    <div id="how-to-buy" className="bg-white py-24 sm:py-32 dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-5">
           <div className="col-span-2">
@@ -323,7 +324,7 @@ function HowItWorks() {
   
   function ServicesList() {
     return (
-      <div id="services"className="bg-white py-24 sm:py-32 dark:bg-gray-900">
+      <div id="services" className="bg-white py-24 sm:py-32 dark:bg-gray-900">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl lg:text-center">
             <h2 className="text-base/7 font-semibold text-sky-600 dark:text-sky-400">Complete Brokerage Services</h2>
@@ -744,7 +745,7 @@ export default function Buy() {
     <ThreeCard/>
     <HowItWorks/>
     <Testimonial/>
-    <Stats />   
+    {/* <Stats />    */}
     {/* <Bento/> */}
     <ServicesList/>   
     {/* <ValuationCTA/> */}

@@ -53,35 +53,39 @@ function Sitemap() {
   return (
     <>
       <div>
-        <SitemapHeading>Services</SitemapHeading>
+        <SitemapHeading>Buy</SitemapHeading>
         <SitemapLinks>
-          <SitemapLink href="/buy-and-sell">Buy & Sell</SitemapLink>
-          <SitemapLink href="/property-management">Property Management</SitemapLink>
-          <SitemapLink href="/property-valuation">Property Valuation</SitemapLink>
+          <SitemapLink href="/buy">Overview</SitemapLink>
+          <SitemapLink href="/buy#how-to-buy">How To Buy</SitemapLink>
+          <SitemapLink href="/buy#services">Buyer Services</SitemapLink>
+          <SitemapLink href="/buy#faqs">Buyer FAQs</SitemapLink>
         </SitemapLinks>
       </div>
       <div>
-        <SitemapHeading>Company</SitemapHeading>
+        <SitemapHeading>Sell</SitemapHeading>
         <SitemapLinks>
-          <SitemapLink href="/about">About Us</SitemapLink>
-          <SitemapLink href="/agents">Our Agents</SitemapLink>
-          <SitemapLink href="/careers">Careers</SitemapLink>
+          <SitemapLink href="/sell">Overview</SitemapLink>
+          <SitemapLink href="/sell#how-we-sell">How We Sell</SitemapLink>
+          <SitemapLink href="/sell#seller-services">Seller Services</SitemapLink>
+          <SitemapLink href="/sell#faqs">Seller FAQs</SitemapLink>
+        </SitemapLinks>
+      </div>
+      <div>
+        <SitemapHeading>Property Management</SitemapHeading>
+        <SitemapLinks>
+          <SitemapLink href="/property-management">Overview</SitemapLink>
+          <SitemapLink href="/property-management#services">Services</SitemapLink>
+          <SitemapLink href="/property-management#pricing">Pricing</SitemapLink>
+          <SitemapLink href="/property-management#faqs">PM FAQs</SitemapLink>
         </SitemapLinks>
       </div>
       <div>
         <SitemapHeading>Resources</SitemapHeading>
         <SitemapLinks>
-          <SitemapLink href="/blog">Market Insights</SitemapLink>
-          <SitemapLink href="/buyers-guide">Buyer's Guide</SitemapLink>
-          <SitemapLink href="/sellers-guide">Seller's Guide</SitemapLink>
-        </SitemapLinks>
-      </div>
-      <div>
-        <SitemapHeading>Legal</SitemapHeading>
-        <SitemapLinks>
-          <SitemapLink href="/terms">Terms of Service</SitemapLink>
-          <SitemapLink href="/privacy">Privacy Policy</SitemapLink>
-          <SitemapLink href="/contact">Contact Us</SitemapLink>
+          <SitemapLink href="/guides/new-landlord-guide">New Landlord Guide</SitemapLink>
+          <SitemapLink href="/guides/rent-ready-checklist">Rent-Ready Checklist</SitemapLink>
+          <SitemapLink href="/company">Company</SitemapLink>
+          <SitemapLink href="/contact">Contact</SitemapLink>
         </SitemapLinks>
       </div>
     </>
@@ -167,7 +171,8 @@ export function Footer() {
               <div className="grid grid-cols-2 gap-y-10 pb-6 lg:grid-cols-6 lg:gap-8">
                 <div className="col-span-2 flex">
                   <PlusGridItem className="pt-6 lg:pb-6">
-                    <Logo className="h-9" />
+                    {/* <Logo className="h-9" /> */}
+                    <h1 className="text-2xl font-bold text-gray-950">MasterKey</h1>
                   </PlusGridItem>
                 </div>
                 <div className="col-span-2 grid grid-cols-2 gap-x-8 gap-y-12 lg:col-span-4 lg:grid-cols-subgrid lg:pt-6">
@@ -182,9 +187,9 @@ export function Footer() {
                 </PlusGridItem>
               </div>
               <div className="flex">
-                <PlusGridItem className="flex items-center gap-8 py-3">
+                {/* <PlusGridItem className="flex items-center gap-8 py-3">
                   <SocialLinks />
-                </PlusGridItem>
+                </PlusGridItem> */}
               </div>
             </PlusGridRow>
           </PlusGrid>

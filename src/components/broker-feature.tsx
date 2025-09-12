@@ -58,15 +58,15 @@ export default function BrokerFeature() {
           </div>
        
           <img
-            alt="Modern real estate office with technology displays"
-            src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=2432&h=1442&fit=crop&crop=center"
+            alt="Modern luxury home exterior with professional landscaping"
+            src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=2432&h=1442&fit=crop&crop=center"
             width={2432}
             height={1442}
             className="w-3xl max-w-none rounded-xl shadow-xl ring-1 ring-gray-400/10 not-dark:hidden sm:w-228 md:-ml-4 lg:-ml-0 dark:ring-white/10"
           />
           <img
-            alt="Professional real estate team using tablets and technology"
-            src="https://images.unsplash.com/photo-1556761175-b413da4baf72?w=2432&h=1442&fit=crop&crop=center"
+            alt="Contemporary single-family home with modern architecture"
+            src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=2432&h=1442&fit=crop&crop=center"
             width={2432}
             height={1442}
             className="w-3xl max-w-none rounded-xl shadow-xl ring-1 ring-gray-400/10 sm:w-228 md:-ml-4 lg:-ml-0 dark:hidden dark:ring-white/10"

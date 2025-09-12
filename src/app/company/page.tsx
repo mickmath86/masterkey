@@ -3,76 +3,78 @@ import { Button } from '@/components/button'
 import { Container } from '@/components/container'
 import { Footer } from '@/components/footer'
 import { GradientBackground } from '@/components/gradient'
-import { Navbar } from '@/components/navbar'
+import  Navbar3  from '@/components/navbar3'
 import { Heading, Lead, Subheading } from '@/components/text'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'Company',
+  title: 'MasterKey Real Estate',
   description:
-    'We’re on a mission to transform revenue organizations by harnessing vast amounts of illegally acquired customer data.',
+    'MasterKey is a full-service property management and real estate brokerage firm in Ventura County, helping investors maximize returns through tech-driven solutions.',
 }
 
 function Header() {
   return (
     <Container className="mt-16">
-      <Heading as="h1">Helping companies generate revenue.</Heading>
+      <Heading as="h1">Your Partner in Property <br />From Leasing to Legacy</Heading>
       <Lead className="mt-6 max-w-3xl">
-        We’re on a mission to transform revenue organizations by harnessing vast
-        amounts of illegally acquired customer data.
+      We simplify property ownership with tech-driven management and brokerage solutions that maximize returns and peace of mind.
       </Lead>
       <section className="mt-16 grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
         <div className="max-w-lg">
           <h2 className="text-2xl font-medium tracking-tight">Our mission</h2>
           <p className="mt-6 text-sm/6 text-gray-600">
-            At Radiant, we are dedicated to transforming the way revenue
-            organizations source and close deals. Our mission is to provide our
-            customers with an unfair advantage over both their competitors and
-            potential customers through insight and analysis. We’ll stop at
-            nothing to get you the data you need to close a deal.
+          MasterKey is a full-service property management and real estate brokerage firm based in Ventura County, dedicated to helping investors unlock the true potential of their real estate portfolios. We specialize in managing single-family homes and small multifamily properties with a modern, tech-forward approach that provides transparency, efficiency, and peace of mind.
+
           </p>
           <p className="mt-8 text-sm/6 text-gray-600">
-            We’re customer-obsessed — putting the time in to build a detailed
-            financial picture of every one of our customers so that we know more
-            about your business than you do. We are in this together, mostly
-            because we are all implicated in large-scale financial crime. In our
-            history as a company, we’ve never lost a customer, because if any
-            one of us talks, we all go down.
+          Our team combines deep local market expertise with cutting-edge technology to streamline every aspect of property ownership—from leasing and tenant relations to maintenance coordination and financial reporting. As licensed brokers, we also guide clients through acquisitions and sales, offering a comprehensive solution for building and managing wealth through real estate.
+          </p>
+          <p className="mt-8 text-sm/6 text-gray-600">At MasterKey, we believe property ownership should be simple, profitable, and stress-free. By focusing on high-touch service, proactive communication, and investor-focused strategies, we help clients maximize returns while protecting their long-term investments.
           </p>
         </div>
         <div className="pt-20 lg:row-span-2 lg:-mr-16 xl:mr-auto">
           <div className="-mx-8 grid grid-cols-2 gap-4 sm:-mx-16 sm:grid-cols-4 lg:mx-0 lg:grid-cols-2 lg:gap-4 xl:gap-8">
             <div className="aspect-square overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-black/10">
-              <img
-                alt=""
-                src="/company/1.jpg"
+              <Image
+                alt="Modern single-family home with professional landscaping"
+                src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=1200&auto=format&fit=crop"
+                width={400}
+                height={400}
                 className="block size-full object-cover"
               />
             </div>
             <div className="-mt-8 aspect-square overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-black/10 lg:-mt-32">
-              <img
-                alt=""
-                src="/company/2.jpg"
+              <Image
+                alt="Real estate professionals reviewing property documents and market data"
+                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=1200&auto=format&fit=crop"
+                width={400}
+                height={400}
                 className="block size-full object-cover"
               />
             </div>
             <div className="aspect-square overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-black/10">
-              <img
-                alt=""
-                src="/company/3.jpg"
+              <Image
+                alt="Beautifully staged modern living room with natural lighting"
+                src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1200&auto=format&fit=crop"
+                width={400}
+                height={400}
                 className="block size-full object-cover"
               />
             </div>
             <div className="-mt-8 aspect-square overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-black/10 lg:-mt-32">
-              <img
-                alt=""
-                src="/company/4.jpg"
+              <Image
+                alt="Luxury apartment complex with modern amenities and pool area"
+                src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1200&auto=format&fit=crop"
+                width={400}
+                height={400}
                 className="block size-full object-cover"
               />
             </div>
           </div>
         </div>
-        <div className="max-lg:mt-16 lg:col-span-1">
+        {/* <div className="max-lg:mt-16 lg:col-span-1">
           <Subheading>The Numbers</Subheading>
           <hr className="mt-6 border-t border-gray-200" />
           <dl className="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
@@ -101,7 +103,7 @@ function Header() {
               </dd>
             </div>
           </dl>
-        </div>
+        </div> */}
       </section>
     </Container>
   )
@@ -127,9 +129,23 @@ function Person({
   )
 }
 
+const  people = [
+  {
+    name: "Mark Mathias",
+    description: "Co-Founder / Principal / Broker",
+    img: "/team/michael-foster.jpg",
+  },
+  {
+    name: "Michael Mathias",
+    description: "Co-Founder / CTO/ roker",
+    img: "/team/dries-vincent.jpg",
+  },
+
+]
+
 function Team() {
   return (
-    <Container className="mt-32">
+    <Container className="my-32">
       <Subheading>Meet the team</Subheading>
       <Heading as="h3" className="mt-2">
         Founded by an all-star team.
@@ -157,8 +173,8 @@ function Team() {
             through a single integrated platform.
           </p>
           <div className="mt-6">
-            <Button className="w-full sm:w-auto" href="#">
-              Join us
+            <Button className="w-full sm:w-auto" href="/contact">
+              Connect with Us
             </Button>
           </div>
         </div>
@@ -180,51 +196,15 @@ function Team() {
         role="list"
         className="mx-auto mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"
       >
-        <Person
-          name="Michael Foster"
-          description="Co-Founder / CTO"
-          img="/team/michael-foster.jpg"
-        />
-        <Person
-          name="Dries Vincent"
-          description="Business Relations"
-          img="/team/dries-vincent.jpg"
-        />
-        <Person
-          name="Celeste Vandermark"
-          description="Front-end Developer"
-          img="/team/celeste-vandermark.jpg"
-        />
-        <Person
-          name="Courtney Henry"
-          description="Designer"
-          img="/team/courtney-henry.jpg"
-        />
-        <Person
-          name="Marcus Eldridge"
-          description="Director of Product"
-          img="/team/marcus-eldridge.jpg"
-        />
-        <Person
-          name="Whitney Francis"
-          description="Copywriter"
-          img="/team/whitney-francis.jpg"
-        />
-        <Person
-          name="Leonard Krasner"
-          description="Senior Designer"
-          img="/team/leonard-krasner.jpg"
-        />
-        <Person
-          name="Nolan Sheffield"
-          description="Principal Designer"
-          img="/team/nolan-sheffield.jpg"
-        />
-        <Person
-          name="Emily Selman"
-          description="VP, User Experience"
-          img="/team/emily-selman.jpg"
-        />
+        {people.map((person) => (
+          <Person
+            key={person.name}
+            name={person.name}
+            description={person.description}
+            img={person.img}
+          />
+        ))}
+      
       </ul>
     </Container>
   )
@@ -461,12 +441,12 @@ export default function Company() {
     <main className="overflow-hidden">
       <GradientBackground />
       <Container>
-        <Navbar />
+        <Navbar3 />
       </Container>
       <Header />
       <Team />
-      <Investors />
-      <Careers />
+      {/* <Investors />
+      <Careers /> */}
       <Footer />
     </main>
   )

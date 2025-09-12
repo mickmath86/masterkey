@@ -1,6 +1,6 @@
 "use client";
 
-import { CloudArrowUpIcon, LockClosedIcon, ServerIcon, HomeIcon, UserGroupIcon, CurrencyDollarIcon, ShieldCheckIcon, WrenchScrewdriverIcon, DocumentTextIcon, ChevronRightIcon, ArrowPathIcon, FingerPrintIcon, Cog6ToothIcon } from '@heroicons/react/20/solid'
+import { CloudArrowUpIcon, LockClosedIcon, ServerIcon, HomeIcon, UserGroupIcon, CurrencyDollarIcon, ShieldCheckIcon, WrenchScrewdriverIcon, DocumentTextIcon, ChevronRightIcon, ArrowPathIcon, FingerPrintIcon, Cog6ToothIcon, PlusSmallIcon, MinusSmallIcon } from '@heroicons/react/20/solid'
 import { Container } from "@/components/container"
 import { Heading } from "@/components/text"
 import { useState } from 'react'
@@ -13,7 +13,7 @@ import { ArrowRight, Building, Users, Wrench, Star } from "lucide-react"
 import { Button } from '@/components/button'
 import { CheckIcon, CalculatorIcon, MapPinIcon, UserIcon, EnvelopeIcon } from '@heroicons/react/20/solid'
 import { GooglePlacesInput } from '@/components/ui/google-places-input'
-
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
 
 const featredPosts = [
     {
@@ -81,7 +81,7 @@ const Hero = () => {
       </div>
       <div className="mx-auto max-w-7xl px-6 pt-10 pb-24 sm:pb-32 lg:flex lg:px-8 lg:py-40">
         <div className="mx-auto max-w-2xl shrink-0 lg:mx-0 lg:pt-8">
-          <img
+          {/* <img
             alt="Your Company"
             src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=green&shade=600"
             className="h-11 dark:hidden"
@@ -90,14 +90,14 @@ const Hero = () => {
             alt="Your Company"
             src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=green&shade=500"
             className="h-11 not-dark:hidden"
-          />
+          /> */}
           <div className="mt-24 sm:mt-32 lg:mt-16">
             <a href="#" className="inline-flex space-x-6">
               <span className="rounded-full bg-green-50 px-3 py-1 text-sm/6 font-semibold text-green-600 ring-1 ring-green-600/20 ring-inset dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/25">
                 Professional Management
               </span>
               <span className="inline-flex items-center space-x-2 text-sm/6 font-medium text-gray-600 dark:text-gray-300">
-                <span>Trusted by property owners nationwide</span>
+                <span>Trusted by California property owners</span>
                 <ChevronRightIcon aria-hidden="true" className="size-5 text-gray-400 dark:text-gray-500" />
               </span>
             </a>
@@ -1051,6 +1051,143 @@ function ServicesList() {
   )
 }
 
+
+const faqs = [
+  {
+    question: "What percentage do you charge for property management?",
+    answer:
+      "We charge 7% of monthly rent for our comprehensive property management services. This includes tenant screening, rent collection, maintenance coordination, financial reporting, and 24/7 emergency support.",
+  },
+  {
+    question: "How do you screen potential tenants?",
+    answer:
+      "We conduct thorough background checks including credit reports, employment verification, rental history, and criminal background checks. We also verify income to ensure tenants earn at least 3x the monthly rent.",
+  },
+  {
+    question: "What happens if a tenant doesn't pay rent?",
+    answer:
+      "We handle all rent collection and follow California's legal process for late payments. This includes serving notices, coordinating with attorneys if needed, and managing the eviction process while keeping you informed throughout.",
+  },
+  {
+    question: "Do you handle maintenance and repairs?",
+    answer:
+      "Yes, we coordinate all maintenance and repairs using our network of licensed, insured contractors. We handle emergency repairs immediately and get your approval for non-emergency work over $500.",
+  },
+  {
+    question: "How quickly can you find a tenant for my property?",
+    answer:
+      "On average, we lease properties within 30-45 days. This depends on market conditions, property condition, and competitive pricing. We use professional photography and list on all major rental platforms.",
+  },
+  {
+    question: "What are the upfront costs to get started?",
+    answer:
+      "There's a one-time setup fee of $500 which covers property inspection, professional photos, marketing setup, and lease preparation. No monthly fees until we place a tenant.",
+  },
+  {
+    question: "Do I need to make any repairs before renting?",
+    answer:
+      "We'll conduct a thorough inspection and provide a detailed report of any necessary repairs or improvements to maximize rent and attract quality tenants. Most items are optional, but safety issues must be addressed.",
+  },
+  {
+    question: "How do you determine the right rental price?",
+    answer:
+      "We provide a comprehensive market analysis comparing similar properties in your area, considering size, amenities, condition, and current market trends to optimize your rental income.",
+  },
+  {
+    question: "What reports will I receive as an owner?",
+    answer:
+      "You'll receive monthly statements showing rent collected, expenses paid, and net proceeds. We also provide annual tax summaries and detailed maintenance reports with photos and receipts.",
+  },
+  {
+    question: "Can I still have input on tenant selection?",
+    answer:
+      "Absolutely. We present you with qualified applicants and our recommendations, but the final decision is always yours. We'll explain our screening results and reasoning for each candidate.",
+  },
+  {
+    question: "What if I want to sell the property later?",
+    answer:
+      "We can help coordinate showings with proper tenant notice, or assist with selling to investors who want to keep existing tenants. Our brokerage services can also handle the sale transaction.",
+  },
+  {
+    question: "Are pets allowed in rental properties?",
+    answer:
+      "Pet policies are up to you as the owner. We can help you set appropriate pet deposits and monthly pet rent to offset any additional wear while expanding your tenant pool.",
+  },
+  {
+    question: "How do you handle emergency maintenance calls?",
+    answer:
+      "We have a 24/7 emergency hotline for tenants. True emergencies (plumbing leaks, no heat, security issues) are handled immediately. We'll contact you after addressing urgent situations.",
+  },
+  {
+    question: "What happens when a tenant moves out?",
+    answer:
+      "We conduct move-out inspections, coordinate any necessary repairs or cleaning, handle security deposit disposition per California law, and immediately begin marketing for new tenants.",
+  },
+  {
+    question: "Do you require long-term management contracts?",
+    answer:
+      "No, we work on a month-to-month basis after the initial lease placement. We believe in earning your business through excellent service, not binding contracts.",
+  },
+  {
+    question: "How do you handle rent increases?",
+    answer:
+      "We monitor market rates and recommend appropriate increases annually, ensuring compliance with local rent control laws. We handle all tenant notifications and legal requirements.",
+  },
+  {
+    question: "What if my property is in an HOA?",
+    answer:
+      "We're experienced with HOA requirements and will ensure all rental applications, tenant communications, and property modifications comply with your HOA's rules and regulations.",
+  },
+  {
+    question: "Can you help with insurance claims?",
+    answer:
+      "Yes, we can coordinate with your insurance company for property damage claims, document damages with photos, and manage repairs using approved contractors while keeping you informed throughout the process.",
+  },
+  {
+    question: "What areas do you serve?",
+    answer:
+      "We provide property management services throughout Ventura County, including Thousand Oaks, Simi Valley, Camarillo, Oxnard, Ventura, and surrounding communities.",
+  },
+  {
+    question: "How do I get started with MasterKey?",
+    answer:
+      "Simply contact us for a free consultation. We'll inspect your property, provide a market analysis, discuss our services, and create a customized management plan for your investment property.",
+  },
+]
+
+function FaqSection() {
+  return (
+    <div id="faqs" className="bg-white dark:bg-gray-900">
+      <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-40">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+            Frequently asked questions
+          </h2>
+          <dl className="mt-16 divide-y divide-gray-900/10 dark:divide-white/10">
+            {faqs.map((faq) => (
+              <Disclosure key={faq.question} as="div" className="py-6 first:pt-0 last:pb-0">
+                <dt>
+                  <DisclosureButton className="group flex w-full items-start justify-between text-left text-gray-900 dark:text-white">
+                    <span className="text-base/7 font-semibold">{faq.question}</span>
+                    <span className="ml-6 flex h-7 items-center">
+                      <PlusSmallIcon aria-hidden="true" className="size-6 group-data-open:hidden" />
+                      <MinusSmallIcon aria-hidden="true" className="size-6 group-not-data-open:hidden" />
+                    </span>
+                  </DisclosureButton>
+                </dt>
+                <DisclosurePanel as="dd" className="mt-2 pr-12">
+                  <p className="text-base/7 text-gray-600 dark:text-gray-400">{faq.answer}</p>
+                </DisclosurePanel>
+              </Disclosure>
+            ))}
+          </dl>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
  function Cta() {
   return (
     <div className="bg-white dark:bg-gray-900">
@@ -1106,6 +1243,7 @@ export default function PropertyManagement() {
       <Pricing/>
       {/* <Bento/> */}
       <ServicesList/>
+      <FaqSection/>
       <Cta/>
       <Footer/>       
     </>

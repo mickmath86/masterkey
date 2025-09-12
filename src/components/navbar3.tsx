@@ -39,6 +39,7 @@ const buyLinks: Array<{
   href: string;
   icon: any;
   beta?: boolean;
+  color?: string;
 }> = [
   {
     name: 'Overview',
@@ -47,15 +48,15 @@ const buyLinks: Array<{
     icon: ChartPieIcon,
   },
   {
-    name: 'How We Buy',
+    name: 'How To Buy',
     description: 'Search, analyze, negotiate, and close—we guide you through every step',
-    href: '/buy#how-we-buy',
+    href: '/buy#how-to-buy',
     icon: CursorArrowRaysIcon,
   },
   { 
     name: 'Buyer Services', 
     description: 'Market analysis, property tours, and contract-to-close support', 
-    href: '/buy#buyer-services', 
+    href: '/buy#services', 
     icon: FingerPrintIcon 
   },
   {
@@ -80,6 +81,7 @@ const sellLinks: Array<{
   href: string;
   icon: any;
   beta?: boolean;
+  color?: string;
 }> = [
   {
     name: 'Overview',
@@ -118,18 +120,29 @@ const sellLinks: Array<{
 const buyerCallsToAction = [
   { name: 'Get Started', href: '/questionnaire', icon: PlayCircleIcon },
   { name: 'Contact sales', href: '/contact', icon: PhoneIcon },
-  { name: 'View all services', href: '/buyer#services', icon: RectangleGroupIcon },
+  { name: 'View all services', href: '/buy#services', icon: RectangleGroupIcon },
 ]
 
 const sellerCallsToAction = [
   { name: 'Get Started', href: '/questionnaire', icon: PlayCircleIcon },
   { name: 'Contact sales', href: '/contact', icon: PhoneIcon },
-  { name: 'View all services', href: '/seller#services', icon: RectangleGroupIcon },
+  { name: 'View all services', href: '/sell#services', icon: RectangleGroupIcon },
 ]
 
 
 /// Property Management
-const propertyManagementLinks = [
+type PropertyManagementItem = {
+  name: string;
+  description: string;
+  href: string;
+  icon: any;
+  color?: string;
+};
+
+const propertyManagementLinks: Array<{
+  services: PropertyManagementItem[];
+  resources: PropertyManagementItem[];
+}> = [
   {
     services: [
       { 
@@ -150,57 +163,54 @@ const propertyManagementLinks = [
         href: '#', 
         icon: FingerPrintIcon 
       },
+     
+      { 
+        name: 'Property Management Services', 
+        description: '24/7 maintenance coordination and emergency response', 
+        href: '/property-management#services', 
+        icon: SquaresPlusIcon 
+      },
       { 
         name: 'Pricing', 
         description: 'Simple, transparent pricing; what’s included at each tier', 
         href: '/property-management#pricing', 
         icon: SparkleIcon 
       },
-      { 
-        name: '24/7 Maintenance Services', 
-        description: '24/7 maintenance coordination and emergency response', 
-        href: '#', 
-        icon: SquaresPlusIcon 
-      },
-      { 
-        name: 'Owner Reporting & Statements', 
-        description: 'Monthly statements, rent roll, year-end docs', 
-        href: '#', 
-        icon: ArrowPathIcon 
-      },
+      // { 
+      //   name: 'Owner Reporting & Statements', 
+      //   description: 'Monthly statements, rent roll, year-end docs', 
+      //   href: '#', 
+      //   icon: ArrowPathIcon 
+      // },
    
     ],
     resources: [
       { 
         name: 'AI Rental Report', 
         description: 'Instant rent comps, vacancy trend, yield scenarios', 
-        href: '/property-management', 
-        icon: ChartPieIcon 
+        href: '/property-management#pricing', 
+        icon: SparkleIcon, 
+        color: 'text-sky-600 font-semibold',
       },
       { 
         name: 'New Landlord Guide', 
-        description: 'How to switch managers without disrupting tenants', 
-        href: '#', 
+        description: 'Essential steps before renting your property for the first time', 
+        href: '/guides/new-landlord-guide', 
         icon: CursorArrowRaysIcon 
       },
       { 
         name: 'Rent-Ready Checklist', 
-        description: 'What to fix, clean, and document before listing', 
-        href: '#', 
+        description: 'Complete checklist to prepare your property for new tenants', 
+        href: '/guides/rent-ready-checklist', 
         icon: FingerPrintIcon 
       },
       { 
         name: 'PM FAQs', 
         description: 'Fees, pets, inspections, renewals, and notices—quick answers', 
-        href: '#', 
+        href: '/property-management#faqs', 
         icon: SquaresPlusIcon 
       },
-      { 
-        name: 'Financial Reporting', 
-        description: 'Detailed monthly reports and expense tracking', 
-        href: '#', 
-        icon: ArrowPathIcon 
-      },
+  
     ], 
 
 
@@ -240,11 +250,11 @@ function PropertyManagementNav({ onMouseEnter, onMouseLeave, isActive }: { onMou
                   <div className="mt-1 flex size-4 flex-none items-center justify-center rounded-sm bg-gray-50 group-hover:bg-white dark:bg-gray-700/50 dark:group-hover:bg-gray-700">
                     <item.icon
                       aria-hidden="true"
-                      className="size-6 text-gray-600 group-hover:text-emerald-600 dark:text-gray-400 dark:group-hover:text-white"
+                      className={`size-6 ${item.color || 'text-gray-600'} group-hover:text-emerald-600 dark:text-gray-400 dark:group-hover:text-white`}
                     />
                   </div>
                   <div>
-                    <a href={item.href} className=" text-gray-900 dark:text-white">
+                    <a href={item.href} className={` dark:text-white ${item.color || 'text-gray-600'}`}>
                       {item.name}
                       <span className="absolute inset-0" />
                     </a>
@@ -263,7 +273,7 @@ function PropertyManagementNav({ onMouseEnter, onMouseLeave, isActive }: { onMou
                   <div className="mt-1 flex size-4 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white dark:bg-gray-700/50 dark:group-hover:bg-gray-700">
                     <item.icon
                       aria-hidden="true"
-                      className="size-6 text-gray-600 group-hover:text-emerald-600 dark:text-gray-400 dark:group-hover:text-white"
+                      className={`size-6 ${item.color || 'text-gray-600'} group-hover:text-emerald-600 dark:text-gray-400 dark:group-hover:text-white`}
                     />
                   </div>
                   <div>
@@ -281,7 +291,7 @@ function PropertyManagementNav({ onMouseEnter, onMouseLeave, isActive }: { onMou
             
             {/* Client Portal Featured Section */}
             <div className="flex flex-col gap-4">
-              <a href="#" className="relative overflow-hidden rounded-2xl bg-gray-700 hover:bg-gradient-to-br from-emerald-400 via-green-500 to-green-600  ease-in-out p-6 text-white animate-in slide-in-from-left-2 transition-all duration-300">
+              <a href="https://account.rentvine.com/auth/login?access_type=account&redirect_uri=%2Fauth%2Fselect" target="_blank" className="relative overflow-hidden rounded-2xl bg-gray-700 hover:bg-gradient-to-br from-emerald-400 via-green-500 to-green-600  ease-in-out p-6 text-white animate-in slide-in-from-left-2 transition-all duration-300">
                 <div className="relative z-10">
                   <div className="mb-4">
                     <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
@@ -305,7 +315,7 @@ function PropertyManagementNav({ onMouseEnter, onMouseLeave, isActive }: { onMou
                   <div className="size-16 rounded-full bg-white/20"></div>
                 </div>
               </a>
-              <a href="#" className="relative overflow-hidden rounded-2xl bg-gray-700 hover:bg-gradient-to-br from-emerald-400 via-green-500 to-green-600 p-6 text-white animate-in slide-in-from-left-2 duration-300">
+              <a href="https://account.rentvine.com/auth/login?access_type=account&redirect_uri=%2Fauth%2Fselect" target="_blank" className="relative overflow-hidden rounded-2xl bg-gray-700 hover:bg-gradient-to-br from-emerald-400 via-green-500 to-green-600 p-6 text-white animate-in slide-in-from-left-2 duration-300">
                 <div className="relative z-10">
                   <div className="mb-4">
                     <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">
@@ -583,7 +593,7 @@ export default function Navbar3() {
          
         </PopoverGroup>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-          <a href="#" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
+          <a href="https://account.rentvine.com/auth/login?access_type=account&redirect_uri=%2Fauth%2Fselect" target="_blank" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
             Log in <span aria-hidden="true">&rarr;</span>
           </a>
         </div>

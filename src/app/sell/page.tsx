@@ -37,13 +37,13 @@ const sellerServices = [
         icon: Key,
         excerpt: "Schedule a personalized consultation to discuss your selling goals, timeline, and strategy for maximizing your home's value."
     },
-    {
-        title: "Market Preparation",
-        link:"/market-analysis", 
-        slug: "market-preparation",
-        icon: Home,
-        excerpt: "Learn what improvements and staging will give you the best return on investment and help your home sell faster."
-    },
+    // {
+    //     title: "Market Preparation",
+    //     link:"/market-analysis", 
+    //     slug: "market-preparation",
+    //     icon: Home,
+    //     excerpt: "Learn what improvements and staging will give you the best return on investment and help your home sell faster."
+    // },
 ]
 
 const Hero = () => {
@@ -88,7 +88,7 @@ const Hero = () => {
       </div>
       <div className="mx-auto max-w-7xl px-6 pt-10 pb-24 sm:pb-32 lg:flex lg:px-8 lg:py-40">
         <div className="mx-auto max-w-2xl shrink-0 lg:mx-0 lg:pt-8">
-          <img
+          {/* <img
             alt="Your Company"
             src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=sky&shade=600"
             className="h-11 dark:hidden"
@@ -97,7 +97,7 @@ const Hero = () => {
             alt="Your Company"
             src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=sky&shade=500"
             className="h-11 not-dark:hidden"
-          />
+          /> */}
           <div className="mt-24 sm:mt-32 lg:mt-16">
             <a href="#" className="inline-flex space-x-6">
               <span className="rounded-full bg-sky-50 px-3 py-1 text-sm/6 font-semibold text-sky-600 ring-1 ring-sky-600/20 ring-inset dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/25">
@@ -184,7 +184,7 @@ function ThreeCard() {
         <div className="mt-16  pb-14">
         <div>
             <h2 className="text-2xl font-medium tracking-tight">Seller Services</h2>
-            <FadeInStagger className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <FadeInStagger className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-2">
             
             {sellerServices.map((service) => (
                 <a
@@ -623,7 +623,7 @@ function ValuationCTA() {
               </ul>
               <div className="mt-10 flex">
                 <a
-                  href="#"
+                  href="/questionnaire/real-estate-sell"
                   className="text-sm/6 font-semibold text-sky-600 hover:text-sky-300 dark:text-sky-400 dark:hover:text-sky-300"
                 >
                   Get Your Property Valuation

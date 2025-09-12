@@ -89,7 +89,7 @@ export default function HeroFeature1() {
         <Container>
           <Subheading className="mt-16">Technology-Driven Real-Estate Solutions</Subheading>
           <Heading as="h1" className="mt-2">
-            MASTERKEY Real Estate Services
+        Real Estate & Property Management Services
           </Heading>
           <Lead className="mt-6 max-w-3xl">
           <span className=" text-sky-500">MasterKey</span> combines cutting-edge technology with expert real estate knowledge to deliver comprehensive brokerage and property management solutions. Our AI-powered platform transforms how you buy, sell, and manage properties.
