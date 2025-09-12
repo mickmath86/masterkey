@@ -51,6 +51,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   const [error, setError] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [selectedTimeframe, setSelectedTimeframe] = useState<"1" | "3" | "5">("1")
+  const [isTaxHistoryExpanded, setIsTaxHistoryExpanded] = useState(false)
   
   useEffect(() => {
     if (!address) return
@@ -372,6 +373,14 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
             >
               Market Data
             </button>
+            {propertyData?.taxHistory && propertyData.taxHistory.length > 0 && (
+              <button
+                onClick={() => scrollToSection("tax-history")}
+                className="text-sky-700 hover:text-sky-900 hover:bg-sky-100 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Tax History
+              </button>
+            )}
           </nav>
         </div>
       </div>
@@ -662,6 +671,73 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                 )}
               </div>
             </div>
+
+            {/* Tax History */}
+            {propertyData.taxHistory && propertyData.taxHistory.length > 0 && (
+              <div id="tax-history" className="bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <div className="p-6">
+                  <button
+                    onClick={() => setIsTaxHistoryExpanded(!isTaxHistoryExpanded)}
+                    className="w-full flex items-center justify-between text-left"
+                  >
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                      Tax History
+                    </h3>
+                    <svg 
+                      className={`h-5 w-5 text-gray-500 transition-transform duration-200 ${isTaxHistoryExpanded ? 'rotate-180' : ''}`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {isTaxHistoryExpanded && (
+                    <div className="mt-4 overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-200 dark:border-gray-700">
+                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Tax Year</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Tax Amount</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Assessed Value</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Land Value</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Building Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {propertyData.taxHistory.map((tax: any, index: number) => (
+                            <tr key={index} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                              <td className="py-3 px-4 text-gray-900 dark:text-white font-medium">{tax.taxYear || tax.year}</td>
+                              <td className="py-3 px-4 text-gray-700 dark:text-gray-300">
+                                {tax.taxPaid || tax.taxAmount ? usd.format(tax.taxPaid || tax.taxAmount) : 'N/A'}
+                              </td>
+                              <td className="py-3 px-4 text-gray-700 dark:text-gray-300">
+                                {tax.value || tax.assessedValue ? usd.format(tax.value || tax.assessedValue) : 'N/A'}
+                              </td>
+                              <td className="py-3 px-4 text-gray-700 dark:text-gray-300">
+                                {tax.landValue ? usd.format(tax.landValue) : 'N/A'}
+                              </td>
+                              <td className="py-3 px-4 text-gray-700 dark:text-gray-300">
+                                {tax.buildingValue || tax.improvementValue ? usd.format(tax.buildingValue || tax.improvementValue) : 'N/A'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {propertyData.taxHistory.length === 0 && (
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                          <p>No tax history available for this property.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

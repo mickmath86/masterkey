@@ -142,6 +142,7 @@ function processZillowData(data: any, location: string) {
       rentZestimate: property.rentZestimate || null,
       pricePerSquareFoot: property.resoFacts?.pricePerSquareFoot || null,
       taxAnnualAmount: property.resoFacts?.taxAnnualAmount || null,
+      taxHistory: property.taxHistory || [],
       rawData: property
     }
   }
