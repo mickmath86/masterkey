@@ -23,7 +23,11 @@ import type { MarketStatistics } from "@/lib/api/rentcast"
 import { MOCK_PROPERTY_DATA, MOCK_MARKET_DATA, USE_MOCK_DATA } from "@/lib/mock-data"
 import GaugeComponent from 'react-gauge-component';
 
-
+const usd = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0, // or 2 if you want cents
+});
 
 const agentData = {
   name: "Mike Mathias",
@@ -151,9 +155,24 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   }, [address])
 
   const getMarketSpeedIndicator = (days: number) => {
-    if (days < 30) return { label: "Fast Market", color: "bg-green-100 text-green-800", icon: TrendingUp }
-    if (days > 60) return { label: "Slow Market", color: "bg-red-100 text-red-800", icon: TrendingDown }
-    return { label: "Balanced Market", color: "bg-blue-100 text-blue-800", icon: Calendar }
+    if (days < 30) return { 
+      label: "Fast Market", 
+      color: "bg-green-100 text-green-800", 
+      icon: TrendingUp,
+      description: "Properties sell quickly with high demand. As a seller, you can expect competitive offers, potentially above asking price, and a faster closing timeline. This is an excellent time to list your property."
+    }
+    if (days > 60) return { 
+      label: "Slow Market", 
+      color: "bg-red-100 text-red-800", 
+      icon: TrendingDown,
+      description: "Properties take longer to sell with lower demand. As a seller, you may need to price competitively, consider staging improvements, and be prepared for longer marketing periods and potential price negotiations."
+    }
+    return { 
+      label: "Balanced Market", 
+      color: "bg-blue-100 text-blue-800", 
+      icon: Calendar,
+      description: "Supply and demand are relatively equal. As a seller, you can expect reasonable market activity with standard negotiation processes. Proper pricing and presentation are key to attracting qualified buyers."
+    }
   }
 
   const nextImage = () => {
@@ -410,6 +429,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
                     <GaugeComponent 
                         type="semicircle"
+                        style={{
+                            
+                        }}
                         arc={{
                           subArcs: [
                             {
@@ -432,6 +454,20 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                         minValue={minPrice}
                         maxValue={maxPrice}
                         value={propertyData.zestimate || propertyData.price || 0}
+                        labels={{
+                          valueLabel: {
+                            // Center number (inside the gauge)
+                            formatTextValue: (v: number) => usd.format(v),
+                            matchColorWithArc: true,
+                          },
+                          tickLabels: {
+                            // Axis tick numbers
+                            defaultTickValueConfig: {
+                              formatTextValue: (v: number) => usd.format(v),
+                            },
+                          },
+                        }}
+                  
                         // value={80}
                     />
                   </div>
@@ -469,52 +505,55 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                 </div>
 
                 {marketSpeed && (
-                  <div className="mt-6 flex justify-center">
+                  <div className="mt-6 flex items-center flex-col gap-2 justify-center">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${marketSpeed.color}`}>
                       <marketSpeed.icon className="h-4 w-4 mr-1" />
                       {marketSpeed.label}
                     </span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 max-w-md text-center">{marketSpeed.description}</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Property Photos */}
-            <div id="property-photos" className="bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Property Photos</h3>
-                <div className="relative">
-                  <img
-                    src={propertyData.photos?.[currentImageIndex] || "/placeholder.svg"}
-                    alt={`Property photo ${currentImageIndex + 1}`}
-                    className="w-full h-80 object-cover rounded-lg"
-                  />
-                  <button
-                    onClick={prevImage}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white/90 p-2 rounded-full shadow-md"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={nextImage}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white/90 p-2 rounded-full shadow-md"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                    {(propertyData.photos || []).map((_: any, index: number) => (
-                      <button
-                        key={index}
-                        className={`w-2 h-2 rounded-full transition-colors ${
-                          index === currentImageIndex ? "bg-sky-500" : "bg-white/60"
-                        }`}
-                        onClick={() => setCurrentImageIndex(index)}
-                      />
-                    ))}
+            {/* Property Photos - Only render if photos exist */}
+            {propertyData.photos && propertyData.photos.length > 0 && (
+              <div id="property-photos" className="bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Property Photos</h3>
+                  <div className="relative">
+                    <img
+                      src={propertyData.photos[currentImageIndex]}
+                      alt={`Property photo ${currentImageIndex + 1}`}
+                      className="w-full h-80 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={prevImage}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white/90 p-2 rounded-full shadow-md"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white/90 p-2 rounded-full shadow-md"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                      {propertyData.photos.map((_: any, index: number) => (
+                        <button
+                          key={index}
+                          className={`w-2 h-2 rounded-full transition-colors ${
+                            index === currentImageIndex ? "bg-sky-500" : "bg-white/60"
+                          }`}
+                          onClick={() => setCurrentImageIndex(index)}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Property Details */}
             <div id="property-details" className="bg-white rounded-lg shadow-sm border border-emerald-200 dark:bg-gray-800 dark:border-emerald-700">
