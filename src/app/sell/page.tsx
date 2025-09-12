@@ -136,7 +136,7 @@ const Hero = () => {
           
           <div className="mt-10 flex items-center gap-x-6">
             <a
-              href="/property-lookup"
+              href="/questionnaire/real-estate-sell"
               className="rounded-md bg-sky-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-sky-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 dark:focus-visible:outline-sky-500"
             >
            Get Your Home Value

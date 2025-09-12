@@ -53,7 +53,7 @@ function Hero() {
           }
         /> */}
         <Navbar3 />
-       {/* <Navbar4 />   */}
+       
         <div className="flex flex-col md:flex-row gap-4 items-center">
           <div className="pt-16 pb-24 sm:pt-24 sm:pb-32 md:pt-32 md:pb-48">
             <FadeInUp delay={0.2}>
@@ -103,7 +103,7 @@ function Hero() {
               <p className="text-gray-500">Choose the plan that best fits your needs.</p>
               <Button className="w-full" href="/questionnaire/real-estate-buy">Looking to Buy</Button>
               <Button className="w-full" href="/questionnaire/real-estate-sell">Looking to Sell</Button>
-              <Button className="w-full" href="#">Property Management</Button>
+              <Button className="w-full" href="/questionnaire/property-management">Property Management</Button>
             </div>
           </FadeInUp>
         </div>
@@ -260,7 +260,7 @@ export default function Home() {
       <Hero />
       <main>
        
-        <div className="bg-linear-to-b from-white from-50% to-gray-100 py-32">
+        <div className="bg-linear-to-b from-white from-50% to-white py-32">
           <HeroFeature1/>
           <BrokerFeature/>  
           <ManagementFeature/>    

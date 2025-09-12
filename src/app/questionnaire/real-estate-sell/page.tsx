@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
-import { ChevronRightIcon } from '@heroicons/react/16/solid';
+import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/16/solid';
 import { GooglePlacesInput } from '@/components/ui/google-places-input';
 import { PropertyLookup } from '@/components/ui/property-lookup';
 import { PropertyVerification } from '@/components/ui/property-verification';
@@ -223,7 +223,9 @@ Selling Details:
   if (currentStep === 'address') {
     return (
       <div className="h-screen flex flex-row">
-        <div className=" hidden md:flex items-center justify-center w-1/2 relative">
+        <div className="hidden md:flex items-center justify-center w-1/2 relative">
+         {/* Back Button */}
+         
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
@@ -231,7 +233,16 @@ Selling Details:
             }}
           />
           <Gradient className="absolute inset-0 opacity-90" />
-          
+          <div className="absolute top-6 left-6 z-10">
+            <Button
+              variant="secondary"
+              href="/"
+              className="flex items-center gap-2 text-sm"
+            >
+              <ChevronLeftIcon className="w-4 h-4" />
+              Back to Home
+            </Button>
+          </div>
           <div className="relative h-full flex items-center justify-center p-8">
             <div className="text-center text-white max-w-lg">
               <h1 className="text-5xl font-bold mb-6">
@@ -244,7 +255,9 @@ Selling Details:
           </div>
         </div>
 
-        <div className=" max-w-md bg-white p-8 flex flex-col justify-center w-full mx-auto ">
+        <div className=" max-w-md bg-white p-8 flex flex-col justify-center w-full mx-auto relative">
+         
+          
           <div className="mb-8">
             <h2 className="text-3xl font-semibold text-gray-900 mb-2">
               Enter Your Property Address
@@ -343,7 +356,18 @@ Selling Details:
         </div>
       </div>
 
-      <div className="w-full max-w-md bg-white p-8 flex flex-col justify-center overflow-y-auto mx-auto">
+      <div className="w-full max-w-md bg-white p-8 flex flex-col justify-center overflow-y-auto mx-auto relative">
+        {/* Back Button */}
+        <div className="absolute top-6 left-6">
+          <Button
+            variant="secondary"
+            href="/"
+            className="flex items-center gap-2 text-sm"
+          >
+            <ChevronLeftIcon className="w-4 h-4" />
+            Back to Home
+          </Button>
+        </div>
         {currentStep === 'motivation' && (
           <div className="space-y-6">
             <div>

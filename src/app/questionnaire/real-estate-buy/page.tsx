@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, HomeIcon, PhoneIcon, EnvelopeIcon, XMarkIcon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/16/solid';
+import { GooglePlacesInput } from '@/components/ui/google-places-input';
 import {
   Stepper,
   StepperIndicator,
@@ -287,7 +288,7 @@ export default function RealEstateBuyPage() {
   return (
     <div className="h-screen flex">
       {/* Left Side - Hero Image */}
-      <div className="flex-1 relative">
+      <div className="hidden md:flex flex-1 relative">
         {/* Background image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -312,11 +313,11 @@ export default function RealEstateBuyPage() {
       {/* Right Side - Form */}
       <div className="flex-1 bg-white flex flex-col">
         {/* Back Button */}
-        <div className="p-6 border-b border-gray-100">
+        <div className="absolute top-6 left-6 z-10">
           <Button
             variant="secondary"
             href="/"
-            className="flex items-center gap-2 text-sm"
+            className="flex items-center gap-2 text-sm bg-white/90 backdrop-blur-sm"
           >
             <ChevronLeftIcon className="w-4 h-4" />
             Back to Home
@@ -362,11 +363,9 @@ export default function RealEstateBuyPage() {
                 <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
                   Location
                 </label>
-                <input
-                  type="text"
-                  id="location"
+                <GooglePlacesInput
                   value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  onChange={(address) => setFormData({ ...formData, location: address })}
                   placeholder="e.g., San Francisco, CA or 94102"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
                 />
