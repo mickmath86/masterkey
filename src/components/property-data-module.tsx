@@ -21,6 +21,9 @@ import {
 import { extractZipcode } from "@/lib/utils/address"
 import type { MarketStatistics } from "@/lib/api/rentcast"
 import { MOCK_PROPERTY_DATA, MOCK_MARKET_DATA, USE_MOCK_DATA } from "@/lib/mock-data"
+import GaugeComponent from 'react-gauge-component';
+
+
 
 const agentData = {
   name: "Mike Mathias",
@@ -269,7 +272,29 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
   const avgDaysOnMarket = marketData?.saleData?.averageDaysOnMarket
   const marketSpeed = avgDaysOnMarket ? getMarketSpeedIndicator(avgDaysOnMarket) : null
+  
+  // Calculate maxPrice based on average price per square foot x square footage
+  const maxPrice = (marketData?.saleData?.averagePricePerSquareFoot && propertyData?.squareFootage) 
+    ? marketData.saleData.averagePricePerSquareFoot * propertyData.squareFootage 
+    : 1800000
+  
+  // Set minimum value to 0 as requested
+  const minPrice = 0
+  
+  // Calculate gauge limits as percentages of maxPrice (must be in ascending order)
+  const limit50Percent = maxPrice * 0.50 // 50% of maxPrice
+  const limit75Percent = maxPrice * 0.75 // 75% of maxPrice  
+  const limit80Percent = maxPrice * 0.80 // 80% of maxPrice
 
+  // Console log the calculated values for debugging
+  console.log('Gauge Values:', {
+    minPrice,
+    limit50Percent,
+    limit75Percent,
+    limit80Percent,
+    maxPrice
+  })
+ 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header with navigation */}
@@ -371,13 +396,43 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
             <div id="home-value" className="bg-white rounded-lg shadow-sm border-2 border-sky-200 dark:bg-gray-800 dark:border-sky-700">
               <div className="p-6">
                 <div className="text-center mb-6">
-                  <h2 className="text-3xl font-bold text-sky-600 dark:text-sky-400">
+                <p className="text-xl font-semibold text-gray-600 dark:text-gray-400">Estimated Home Value</p>
+                  <div className="z-20">
+
+                    <GaugeComponent 
+                        type="semicircle"
+                        arc={{
+                          subArcs: [
+                            {
+                              limit: limit50Percent,
+                              color: "#f97316"
+                            }, 
+                            {
+                              limit: limit75Percent,
+                              color: "#10b981"
+                            },
+                            {
+                              limit: limit80Percent,
+                              color: "#0ea5e9"
+                            },
+             
+                          ]
+                        }}
+
+                        pointer={{type: "blob"}}
+                        minValue={minPrice}
+                        maxValue={maxPrice}
+                        value={propertyData.zestimate || propertyData.price || 0}
+                        // value={80}
+                    />
+                  </div>
+                  {/* <h2 className="text-3xl font-bold text-sky-600 dark:text-sky-400">
                     {formatCurrency(propertyData.zestimate || propertyData.price)}
-                  </h2>
-                  <p className="text-lg text-gray-600 dark:text-gray-400">Estimated Home Value</p>
+                  </h2> */}
+                  
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center bg-transparent">
                   <div className="space-y-1">
                     <div className="text-2xl font-semibold text-sky-600 dark:text-sky-400">
                       {marketData?.saleData?.averageDaysOnMarket || 'N/A'}

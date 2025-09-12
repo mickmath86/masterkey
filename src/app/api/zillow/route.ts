@@ -134,7 +134,7 @@ function processZillowData(data: any, location: string) {
       bathrooms: property.bathrooms || 0,
       livingArea: property.livingArea || 0,
       zestimate: property.zestimate || property.price || 0,
-      propertyType: property.homeType || 'Single Family Home',
+      propertyType: property.homeType || 'Unknown',
       homeStatus: property.homeStatus || 'Unknown',
       yearBuilt: property.resoFacts?.yearBuilt || null,
       lotSize: property.resoFacts?.lotSize || null,

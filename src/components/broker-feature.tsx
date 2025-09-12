@@ -71,7 +71,6 @@ export default function BrokerFeature() {
             height={1442}
             className="w-3xl max-w-none rounded-xl shadow-xl ring-1 ring-gray-400/10 sm:w-228 md:-ml-4 lg:-ml-0 dark:hidden dark:ring-white/10"
           />
-        <Link href="/real-estate-buy" className="flex flew-row items-center gap-2 text-sky-500">Get Started <ArrowRight /></Link>
         </div>
         </FadeInUp>
       </div>
