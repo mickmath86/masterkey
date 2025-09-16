@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import {
   Dialog,
@@ -27,6 +28,7 @@ import {
   RectangleGroupIcon,
 } from '@heroicons/react/24/outline'
 import { SparkleIcon } from 'lucide-react'
+import { MasterKeyLogo } from './logo'
 
 
 
@@ -384,22 +386,20 @@ export default function Navbar3() {
 
   return (
     <header className="relative isolate z-10 ">
-      <nav aria-label="Global" className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
+      <nav aria-label="Global" className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-0">
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5">
             <span className="sr-only">MasterKey</span>
-            {/* <img
+       
+            {/* <Image
               alt=""
-              src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=sky&shade=600"
+              src="/logos/logo.svg"
+              width={100}
+              height={100}
               className="h-8 w-auto dark:hidden"
-            />
-            */}
-            <h1 className="text-3xl font-bold capitalize">MasterKey</h1> 
-            <img
-              alt=""
-              src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=sky&shade=500"
-              className="h-8 w-auto not-dark:hidden"
-            />
+            /> */}
+            <MasterKeyLogo/>
+       
           </Link>
         </div>
         <div className="flex lg:hidden">

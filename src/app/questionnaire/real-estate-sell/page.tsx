@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon } from '@heroicons/react/16/solid';
 import { GooglePlacesInput } from '@/components/ui/google-places-input';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Stepper,
   StepperIndicator,
@@ -76,6 +76,7 @@ const contactMethods = [
 
 export default function RealEstateSellPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -92,6 +93,23 @@ export default function RealEstateSellPage() {
     phone: '',
     preferredContact: ''
   });
+
+  // Handle URL parameters for pre-filling address and setting step
+  useEffect(() => {
+    const address = searchParams.get('address');
+    const step = searchParams.get('step');
+    
+    if (address) {
+      setFormData(prev => ({ ...prev, propertyAddress: decodeURIComponent(address) }));
+    }
+    
+    if (step) {
+      const stepNumber = parseInt(step, 10);
+      if (stepNumber >= 1 && stepNumber <= totalSteps) {
+        setCurrentStep(stepNumber);
+      }
+    }
+  }, [searchParams]);
 
   const totalSteps = 6;
   
@@ -209,9 +227,9 @@ export default function RealEstateSellPage() {
         {/* Content overlay */}
         <div className="relative z-10 h-full flex items-center justify-center p-12">
           <div className="text-center text-white">
-            <h1 className="text-5xl font-bold mb-6">Ready to Sell Your Home?</h1>
+            <h1 className="text-5xl font-bold mb-6">Sell Your Home with Confidence</h1>
             <p className="text-xl mx-auto opacity-90 max-w-md">
-              Let's unlock your property's maximum potential with our expert market analysis and personalized selling strategy.
+              Get maximum value for your property with our expert guidance and proven marketing strategies.
             </p>
           </div>
         </div>
@@ -224,7 +242,7 @@ export default function RealEstateSellPage() {
         <div className="p-8 border-b border-gray-200">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold text-gray-900">
-              Let's create your personalized selling plan
+              Tell us about your selling goals
             </h2>
             <span className="text-sm text-gray-500">
               Step {currentStep} of {totalSteps}
@@ -248,10 +266,10 @@ export default function RealEstateSellPage() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-3xl font-semibold text-gray-900 mb-2">
-                  Where is your property located?
+                  What's the address of the property you want to sell?
                 </h3>
                 <p className="text-gray-600 mb-8">
-                  We'll use this to pull current market data and provide you with an accurate property valuation and selling strategy.
+                  Enter the full address so we can provide you with accurate market insights and pricing guidance.
                 </p>
               </div>
               
@@ -273,10 +291,10 @@ export default function RealEstateSellPage() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-3xl font-semibold text-gray-900 mb-2">
-                  What's your ideal timeline for selling?
+                  When are you looking to sell?
                 </h3>
                 <p className="text-gray-600 mb-8">
-                  Your timeline helps us determine the best marketing approach - whether you need a quick sale or want to maximize your return.
+                  Understanding your timeline helps us create the right marketing strategy for your situation.
                 </p>
               </div>
               
@@ -309,10 +327,10 @@ export default function RealEstateSellPage() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-3xl font-semibold text-gray-900 mb-2">
-                  What's driving your decision to sell?
+                  What's motivating you to sell?
                 </h3>
                 <p className="text-gray-600 mb-8">
-                  Understanding your motivation helps us prioritize what matters most to you - speed, price, or convenience.
+                  This helps us understand your priorities and tailor our approach to meet your specific needs.
                 </p>
               </div>
               
@@ -345,10 +363,10 @@ export default function RealEstateSellPage() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-3xl font-semibold text-gray-900 mb-2">
-                  How would you describe your home's condition?
+                  What's the current condition of your home?
                 </h3>
                 <p className="text-gray-600 mb-8">
-                  This helps us recommend any strategic improvements that could boost your sale price and craft the perfect marketing message.
+                  This helps us advise on any improvements that could maximize your sale price and determine the best marketing approach.
                 </p>
               </div>
               
@@ -381,10 +399,10 @@ export default function RealEstateSellPage() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-3xl font-semibold text-gray-900 mb-2">
-                  What's most important to you in pricing?
+                  What's your pricing priority?
                 </h3>
                 <p className="text-gray-600 mb-8">
-                  Your pricing priorities help us balance market positioning with your financial goals for the best outcome.
+                  Understanding your pricing goals helps us develop the right strategy for your sale.
                 </p>
               </div>
               
@@ -417,10 +435,10 @@ export default function RealEstateSellPage() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-3xl font-semibold text-gray-900 mb-2">
-                  Almost done! Let's connect
+                  Let's get your contact information
                 </h3>
                 <p className="text-gray-600 mb-8">
-                  We'll use this to send you a detailed market analysis and schedule your complimentary consultation.
+                  We'll use this information to provide you with a customized market analysis and selling strategy.
                 </p>
               </div>
               
@@ -554,7 +572,7 @@ export default function RealEstateSellPage() {
               Thank you for your submission!
             </DialogTitle>
             <DialogDescription className="text-center text-gray-600">
-              Your personalized property analysis is being prepared! We'll contact you within 24 hours with your market report and next steps.
+              We've received your property information and will be in touch soon with a customized market analysis and selling strategy.
             </DialogDescription>
           </DialogHeader>
 
@@ -570,7 +588,7 @@ export default function RealEstateSellPage() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-gray-700">
-                    <strong>Within 24 hours:</strong> You'll receive your personalized market analysis and a call from our expert team.
+                    <strong>Within 24 hours:</strong> Our real estate team will review your submission and contact you.
                   </p>
                 </div>
               </div>
@@ -583,7 +601,7 @@ export default function RealEstateSellPage() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-gray-700">
-                    <strong>Property valuation:</strong> Get an accurate estimate of your home's current market value with comparable sales data.
+                    <strong>Market analysis:</strong> We'll prepare a comprehensive market analysis for your property.
                   </p>
                 </div>
               </div>
@@ -596,7 +614,7 @@ export default function RealEstateSellPage() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-gray-700">
-                    <strong>Custom strategy:</strong> We'll create a tailored marketing plan designed to get you the best price in the shortest time.
+                    <strong>Selling strategy:</strong> Receive a detailed plan to maximize your home's value and minimize time on market.
                   </p>
                 </div>
               </div>

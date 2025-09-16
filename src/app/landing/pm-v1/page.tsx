@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link"
@@ -17,7 +16,9 @@ import { useState } from 'react'
 import { CheckBadgeIcon } from "@heroicons/react/16/solid";
 import { Gradient } from "@/components/gradient";
 import { PlusGrid } from "@/components/plus-grid";
-import { MasterKeyMark } from '@/components/logo'
+import {MasterKeyMark} from '@/components/logo'
+
+
 
 
 function AddressTest() {
@@ -27,10 +28,10 @@ function AddressTest() {
   const handleGetStarted = () => {
     if (address.trim()) {
       // Redirect to questionnaire with pre-filled address, starting at step 2 (timeline)
-      window.location.href = `/questionnaire/real-estate-sell?address=${encodeURIComponent(address)}&step=2`;
+      window.location.href = `/questionnaire/property-management?address=${encodeURIComponent(address)}&step=2`;
     } else {
       // Redirect to questionnaire without pre-filled address
-      window.location.href = '/questionnaire/real-estate-sell';
+      window.location.href = '/questionnaire/property-management';
     }
   };
   return (
@@ -40,36 +41,31 @@ function AddressTest() {
           <div className="px-6 lg:px-0 lg:pt-4">
             <div className="mx-auto max-w-2xl">
               <div className="max-w-lg">
-                {/* <img
-                  alt="Masterkey"
-                  src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=sky&shade=600"
-                  className="h-11 dark:hidden"
-                /> */}
-                <MasterKeyMark className="h-11  dark:hidden"/>
-                <MasterKeyMark className="h-11  not-dark:hidden"/>
+               <MasterKeyMark className="h-11  dark:hidden"/>
+            <MasterKeyMark className="h-11  not-dark:hidden"/>  
                 <div className="mt-24 sm:mt-32 lg:mt-16">
-                  <a href="/questionnaire/real-estate-sell" className="inline-flex space-x-6">
+                  <a href="/questionnaire/property-management" className="inline-flex space-x-6">
                     <span className="rounded-full bg-sky-50 px-3 py-1 text-sm/6 font-semibold text-sky-600 ring-1 ring-sky-600/20 ring-inset dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/25">
-                      Selling Made Simple
+                      Property Management Made Easy
                     </span>
                     <span className="inline-flex items-center space-x-2 text-sm/6 font-medium text-gray-600 dark:text-gray-300">
-                      <span>Get your free market analysis</span>
+                      <span>Get your free rental analysis</span>
                       <ChevronRightIcon aria-hidden="true" className="size-5 text-gray-400 dark:text-gray-500" />
                     </span>
                   </a>
                 </div>
                 <h1 className="mt-10 text-5xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-7xl dark:text-white">
-                  Sell Your Home for Maximum Value
+                  Maximize Your Rental Income
                 </h1>
                 <p className="mt-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
-                  Get expert guidance, proven marketing strategies, and personalized support to sell your home quickly and for the best price possible.
+                  Professional property management services that maximize your rental income while minimizing your stress. Let us handle everything from tenant screening to maintenance.
                 </p>
                 <div className="mt-10 flex flex-col md:flex-row md:items-start mx-auto  gap-6">
                   <div className="flex-1 top-0">
                       <GooglePlacesInput
                         value={address}
                         onChange={setAddress}
-                        placeholder="Enter your property address..."
+                        placeholder="Enter your rental property address..."
                         className="w-full px-4  py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-base"
                       />
                   </div>
@@ -98,8 +94,8 @@ function AddressTest() {
                   <div className="mx-auto max-w-2xl md:mx-0 md:max-w-none">
                     <div className="w-200 h-100 overflow-hidden rounded-tl-xl bg-gray-900">
                       <img
-                        src="https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800&q=80"
-                        alt="Luxury modern house"
+                        src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800&q=80"
+                        alt="Modern rental property"
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -120,25 +116,25 @@ function AddressTest() {
 }
 const landingCards = [
   {
-      title: "Property Valuation",
-      link:"/questionnaire/real-estate-sell", 
-      slug: "property-valuation",
+      title: "Rental Analysis",
+      link:"/questionnaire/property-management", 
+      slug: "rental-analysis",
       icon: Home,
-      excerpt: "Get an accurate market valuation of your property with comprehensive analysis of recent sales and current market trends."
+      excerpt: "Get a comprehensive rental market analysis to determine optimal pricing and maximize your property's income potential."
   },
   {
-      title: "Seller Consultation",
+      title: "Property Management Consultation",
       link:"/contact", 
-      slug: "seller-consultation",
+      slug: "pm-consultation",
       icon: Key,
-      excerpt: "Schedule a personalized consultation to discuss your selling goals, timeline, and develop a custom marketing strategy for your home."
+      excerpt: "Schedule a personalized consultation to discuss your property management needs and develop a custom strategy for your investment."
   },
   {
-      title: "Marketing Strategy",
-      link:"/questionnaire/real-estate-sell", 
-      slug: "marketing-strategy",
+      title: "Tenant Placement Services",
+      link:"/questionnaire/property-management", 
+      slug: "tenant-placement",
       icon: DollarSign,
-      excerpt: "Receive a detailed marketing plan designed to maximize your home's exposure and attract qualified buyers quickly."
+      excerpt: "Professional tenant screening and placement services to find qualified, reliable tenants for your rental property."
   },
 ]
 
@@ -148,16 +144,16 @@ function LandingHero() {
   <> 
     
     <Container className="mx-auto max-w-7xl py-16 text-center md:text-left bg-gray-50 ">
-          <Subheading className=" text-sky-500">Expert Seller Services</Subheading>
+          <Subheading className=" text-sky-500">Expert Property Management Services</Subheading>
           <Heading as="h1" className="mt-2">
-            Sell Your Home with Confidence
+            Stress-Free Property Management
           </Heading>
           <Lead className="mt-6 max-w-3xl">
-             Whether you're upgrading, downsizing, or relocating, <span className=" text-sky-500">MasterKey</span> provides expert guidance and proven marketing strategies to help you sell your home quickly and for maximum value.
+             Whether you're a first-time landlord or experienced investor, <span className=" text-sky-500">MasterKey</span> provides comprehensive property management services to maximize your rental income and minimize your workload.
           </Lead>
         <div className="mt-16  pb-14">
         <div>
-            <h2 className="text-2xl font-medium tracking-tight">Seller Services</h2>
+            <h2 className="text-2xl font-medium tracking-tight">Property Management Services</h2>
             <FadeInStagger className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
             
             {landingCards.map((service) => (
@@ -185,8 +181,8 @@ function LandingHero() {
         <div className="mt-16 mx-auto text-center flex flex-col items-center justify-center  gap-y-4">
           <SparkleIcon className="w-12 h-12 text-sky-500 mb-4"/>  
           <h2 className="text-2xl font-medium tracking-tight">Ready to Get Started?</h2>
-          <p className="my-2 text-sm text-gray-500">Start your journey to finding your dream home today.</p>
-          <Link  className="mx-auto flex items-center justify-center w-100 bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/real-estate-sell">Get Started</Link>
+          <p className="my-2 text-sm text-gray-500">Start maximizing your rental property's potential today.</p>
+          <Link  className="mx-auto flex items-center justify-center w-100 bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/property-management">Get Started</Link>
         </div>
         </div>
        
@@ -200,25 +196,25 @@ function LandingHero() {
 
 const testimonials = [
   {
-      title: "Sarah Martinez",
-      link:"/questionnaire/real-estate-sell", 
-      slug: "seller-testimonial-1",
+      title: "Michael Rodriguez",
+      link:"/questionnaire/property-management", 
+      slug: "pm-testimonial-1",
       icon: Home,
-      quote: "MasterKey helped us sell our home in just 12 days for 8% above asking price! Their marketing strategy and expert guidance made all the difference."
+      quote: "MasterKey increased my rental income by 15% and handles everything seamlessly. I haven't had to deal with a single tenant issue in over a year!"
   },
   {
-      title: "David Chen",
-      link:"/questionnaire/real-estate-sell", 
-      slug: "seller-testimonial-2",
+      title: "Lisa Thompson",
+      link:"/questionnaire/property-management", 
+      slug: "pm-testimonial-2",
       icon: Key,
-      quote: "The team provided exceptional support throughout our selling process. From pricing strategy to closing, they exceeded our expectations at every step."
+      quote: "Their tenant screening process is thorough and professional. We've had the same reliable tenants for 3 years now with zero problems."
   },
   {
-      title: "Jennifer Williams",
-      link:"/questionnaire/real-estate-sell", 
-      slug: "seller-testimonial-3",
+      title: "Robert Kim",
+      link:"/questionnaire/property-management", 
+      slug: "pm-testimonial-3",
       icon: DollarSign,
-      quote: "Their market analysis was spot-on and helped us price our home perfectly. We received multiple offers within the first week of listing!"
+      quote: "The monthly reports are detailed and transparent. I always know exactly how my properties are performing financially."
   },
 ]
 function Testimonials() {
@@ -228,7 +224,7 @@ function Testimonials() {
     <Container className="mx-auto max-w-7xl py-16 text-center md:text-left bg-gray-50 ">
           <Subheading className=" text-sky-500">Success Stories</Subheading>
           <Heading as="h1" className="mt-2">
-            Hear from our satisfied sellers
+            Hear from our satisfied property owners
           </Heading>
           {/* <Lead className="mt-6 max-w-3xl">
              From first-time buyers to seasoned investors, <span className=" text-sky-500">MasterKey</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
@@ -268,8 +264,8 @@ function Testimonials() {
         <div className="mt-16 mx-auto text-center flex flex-col items-center justify-center gap-y-4 ">
           <SparkleIcon className="w-12 h-12 text-sky-500 mb-4"/>  
           <h2 className="text-2xl font-medium tracking-tight">Become a Future Success Story</h2>
-          <p className="my-2 text-sm text-gray-500">Start your journey to finding your dream home today.</p>
-          <Link  className="mx-auto flex items-center justify-center w-100 bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/real-estate-sell">Get Started</Link>
+          <p className="my-2 text-sm text-gray-500">Start your property management journey today.</p>
+          <Link  className="mx-auto flex items-center justify-center w-100 bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/property-management">Get Started</Link>
         </div>
         </div>
        
@@ -285,19 +281,19 @@ function Testimonials() {
 
 const features = [
   {
-    name: 'Expert Market Analysis',
+    name: 'Comprehensive Tenant Screening',
     description:
-      'Get comprehensive market data and pricing insights to position your home competitively and attract serious buyers.',
+      'Thorough background checks, credit verification, and employment validation to ensure you get reliable, qualified tenants.',
     icon: CloudArrowUpIcon,
   },
   {
-    name: 'Professional Marketing',
-    description: 'High-quality photography, virtual tours, and strategic online marketing to showcase your home to qualified buyers.',
+    name: '24/7 Maintenance Coordination',
+    description: 'Round-the-clock maintenance support with our network of trusted contractors to keep your property in top condition.',
     icon: LockClosedIcon,
   },
   {
-    name: 'Dedicated Support',
-    description: 'Personal guidance through every step of the selling process, from listing to closing, ensuring a smooth transaction.',
+    name: 'Financial Reporting & Analytics',
+    description: 'Detailed monthly reports with income tracking, expense management, and performance analytics for your investment.',
     icon: ServerIcon,
   },
 ]
@@ -310,13 +306,13 @@ const features = [
             <div className="lg:max-w-lg">
               <h2 className="text-base/7 font-semibold text-sky-600 dark:text-sky-400">About Us</h2>
               <p className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl dark:text-white">
-               Your trusted partner for selling homes in Southern California
+               Your trusted property management partner in Southern California
               </p>
               <p className="mt-6 text-lg/8 text-gray-700 dark:text-gray-300">
-                With years of experience and deep local market knowledge, we help homeowners achieve their selling goals through innovative marketing strategies and personalized service.
+                With extensive experience in property management and deep local market knowledge, we help property owners maximize their rental income through professional management and innovative technology solutions.
               </p>
               <h3 className="mt-6 text-lg font-semibold text-gray-700 dark:text-gray-300">
-               We will...
+               We provide...
               </h3>
               <dl className="mt-10 max-w-xl space-y-8 text-base/7 text-gray-600 lg:max-w-none dark:text-gray-400">
                 {features.map((feature) => (
@@ -359,25 +355,25 @@ const features = [
 
 const nextSteps = [
   {
-      title: "Get Your Property Valued",
-      link:"/questionnaire/real-estate-sell", 
-      slug: "property-valuation",
+      title: "Get Your Rental Analysis",
+      link:"/questionnaire/property-management", 
+      slug: "rental-analysis",
       stepElement: <div className="flex items-center justify-center w-12 h-12 bg-sky-300 rounded-lg"><span className="font-bold text-sky-600 text-lg">1</span></div>,
-      excerpt: "Start with our comprehensive questionnaire to receive an accurate market valuation and personalized selling strategy for your home."
+      excerpt: "Start with our comprehensive questionnaire to receive an accurate rental market analysis and property management strategy."
   },
   {
       title: "Schedule Your Consultation",
       link:"/contact", 
-      slug: "seller-consultation",
+      slug: "pm-consultation",
       stepElement: <div className="flex items-center justify-center w-12 h-12 bg-sky-300 rounded-lg"><span className=" font-bold text-sky-600 text-lg">2</span></div>,
-      excerpt: "Meet with our expert team to discuss your selling goals, timeline, and develop a custom marketing strategy tailored to your property."
+      excerpt: "Meet with our property management experts to discuss your goals and develop a customized management plan for your property."
   },
   {
-      title: "List and Sell Successfully",
-      link:"/questionnaire/real-estate-sell", 
-      slug: "successful-sale",
+      title: "Start Earning More",
+      link:"/questionnaire/property-management", 
+      slug: "start-earning",
       stepElement: <div className="flex items-center justify-center w-12 h-12 bg-green-300 rounded-lg"><CheckBadgeIcon className="w-6 h-6 text-green-600" /></div>,
-      excerpt: "Launch your listing with professional marketing, manage showings, and close the sale with our expert guidance every step of the way."
+      excerpt: "Launch your property management service with professional tenant placement, maintenance coordination, and ongoing support."
   },
 ]
 
@@ -387,9 +383,9 @@ function NextSteps() {
   <> 
     
     <Container className="mx-auto max-w-7xl py-16 text-center md:text-left bg-gray-50 ">
-          <Subheading className=" text-sky-500">Your selling journey</Subheading>
+          <Subheading className=" text-sky-500">Your property management journey</Subheading>
           <Heading as="h1" className="mt-2">
-            Ready to Sell Your Home?
+            Ready to Maximize Your Rental Income?
           </Heading>
           {/* <Lead className="mt-6 max-w-3xl">
              From first-time buyers to seasoned investors, <span className=" text-sky-500">MasterKey</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
@@ -424,8 +420,8 @@ function NextSteps() {
         <div className="mt-16 mx-auto text-center flex flex-col items-center justify-center  gap-y-4">
           {/* <SparkleIcon className="w-12 h-12 text-sky-500 mb-4"/>   */}
           {/* <h2 className="text-2xl font-medium tracking-tight">Ready to Get Started?</h2> */}
-          <p className="my-2 text-sm text-gray-500">Start your journey to finding your dream home today.</p>
-          <Link  className="mx-auto font-semibold flex items-center justify-center w-100 bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/real-estate-sell">Get Started</Link>
+          <p className="my-2 text-sm text-gray-500">Start maximizing your property's potential today.</p>
+          <Link  className="mx-auto font-semibold flex items-center justify-center w-100 bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/property-management">Get Started</Link>
         </div>
         </div>
        
@@ -441,20 +437,20 @@ function CallToAction() {
   return (
     <div className="relative pt-20 pb-16 text-center sm:py-24">
       <hgroup>
-        <Subheading>Ready to sell your home?</Subheading>
+        <Subheading>Ready to maximize your rental income?</Subheading>
         <p className="mt-6 text-3xl font-medium tracking-tight text-gray-950 sm:text-5xl">
-          Get maximum value
+          Professional property management
           <br />
-          for your property.
+          that works for you.
         </p>
       </hgroup>
       <p className="mx-auto mt-6 max-w-xs text-sm/6 text-gray-500">
-        Experience the MasterKey difference with our expert selling strategies and
-        personalized marketing approach.
+        Experience the MasterKey difference with our comprehensive property management services and
+        personalized approach.
       </p>
       <div className="mt-6">
-        <Button className="w-full sm:w-auto" href="/questionnaire/real-estate-sell">
-          Get Free Market Analysis
+        <Button className="w-full sm:w-auto" href="/questionnaire/property-management">
+          Get Free Rental Analysis
         </Button>
       </div>
     </div>
@@ -475,7 +471,7 @@ function Footer() {
   )
 }
 
-export default function SellV1Page() {
+export default function PMV1Page() {
   return (
     <div className="bg-gray-50" >
       <AddressTest/>

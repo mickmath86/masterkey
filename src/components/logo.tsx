@@ -1,6 +1,7 @@
 'use client'
 
 import { clsx } from 'clsx'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 
 export function Logo({ className }: { className?: string }) {
@@ -108,5 +109,31 @@ export function Mark({ className }: { className?: string }) {
       <path d="M16.0001 1C16.0001 0.447715 16.4478 -4.87226e-08 17.0001 0C17.5524 4.87226e-08 18.0001 0.447715 18.0001 1C18.0001 1.55228 17.5524 2 17.0001 2C16.4478 2 16.0001 1.55228 16.0001 1Z" />
       <path d="M8.13398 3.64371C7.85783 3.16542 8.02171 2.55383 8.5 2.27768C8.97829 2.00154 9.58988 2.16542 9.86603 2.64371C10.1422 3.122 9.97829 3.73359 9.5 4.00973C9.02171 4.28588 8.41012 4.122 8.13398 3.64371Z" />
     </svg>
+  )
+}
+
+export function MasterKeyLogo({ className }: { className?: string }) {
+  return (<>
+     <Image 
+        alt=""
+        src="/logos/logo.svg"
+        width={100}
+        height={100}
+        className="h-8 w-auto dark:hidden"
+      />
+  </>
+  
+  )
+}
+
+export function MasterKeyMark({ className }: { className?: string }) {
+  return (
+    <Image 
+        alt=""
+        src="/logos/mark.svg"
+        width={100}
+        height={100}
+        className={`w-auto dark:hidden ${className}`}
+      />
   )
 }

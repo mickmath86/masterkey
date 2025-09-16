@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2237.5 531">
+  <defs>
+    <style>
+      .cls-1 {
+        letter-spacing: 0em;
+      }
+
+      .cls-2 {
+        letter-spacing: 0em;
+      }
+
+      .cls-3 {
+        letter-spacing: 0em;
+      }
+
+      .cls-4 {
+        font-family: Futura-Bold, Futura;
+        font-size: 296.22px;
+        font-weight: 700;
+      }
+
+      .cls-5 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-6 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-7 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-8 {
+        letter-spacing: .01em;
+      }
+
+      .cls-9 {
+        letter-spacing: 0em;
+      }
+    </style>
+  </defs>
+  <g>
+    <polygon points="49.17 156.68 119.51 278.01 186.64 156.68 235.69 156.68 235.69 386.44 266.67 386.44 266.67 436.78 235.69 436.78 235.69 456.14 266.67 456.14 266.67 506.48 235.69 506.48 235.69 531 186.64 531 186.64 249.62 118.88 369.65 49.82 248.33 49.82 374.82 .77 374.82 .77 156.68 49.17 156.68"/>
+    <polygon points="421.56 75.36 421.56 126.99 211.7 52.2 .77 126.99 .77 75.36 210.53 .41 421.56 75.36"/>
+    <polygon points="420.27 156.68 309.24 265.77 420.27 377.4 351.21 377.4 238.29 267.04 351.21 156.68 420.27 156.68"/>
+  </g>
+  <text class="cls-4" transform="translate(547.9 375.94)"><tspan class="cls-6" x="0" y="0">M</tspan><tspan class="cls-1" x="298.59" y="0">a</tspan><tspan class="cls-8" x="506.24" y="0">s</tspan><tspan class="cls-9" x="661.15" y="0">t</tspan><tspan x="774.6" y="0">e</tspan><tspan class="cls-3" x="966.25" y="0">r</tspan><tspan class="cls-7" x="1104.29" y="0">k</tspan><tspan class="cls-5" x="1301.87" y="0">e</tspan><tspan class="cls-2" x="1485.53" y="0">y</tspan></text>
+</svg>

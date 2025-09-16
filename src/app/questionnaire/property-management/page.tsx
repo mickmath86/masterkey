@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon } from '@heroicons/react/16/solid';
 import { GooglePlacesInput } from '@/components/ui/google-places-input';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Stepper,
   StepperIndicator,
@@ -84,6 +84,7 @@ const contactMethods = [
 
 export default function PropertyManagementPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -100,6 +101,23 @@ export default function PropertyManagementPage() {
     phone: '',
     preferredContact: ''
   });
+
+  // Handle URL parameters for pre-filling address and setting step
+  useEffect(() => {
+    const address = searchParams.get('address');
+    const step = searchParams.get('step');
+    
+    if (address) {
+      setFormData(prev => ({ ...prev, propertyAddress: decodeURIComponent(address) }));
+    }
+    
+    if (step) {
+      const stepNumber = parseInt(step, 10);
+      if (stepNumber >= 1 && stepNumber <= totalSteps) {
+        setCurrentStep(stepNumber);
+      }
+    }
+  }, [searchParams]);
 
   const totalSteps = 6;
   
@@ -227,7 +245,7 @@ export default function PropertyManagementPage() {
         <div className="relative z-10 h-full flex items-center justify-center p-12">
           <div className="text-center text-white">
             <h1 className="text-5xl font-bold mb-6">Professional Property Management</h1>
-            <p className="text-xl opacity-90 max-w-md">
+            <p className="text-xl opacity-90 mx-automax-w-md">
               Let our experts handle your rental property while you enjoy the returns.
             </p>
           </div>
