@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Make API request
-    const apiKey = process.env.RAPIDAPI_KEY
+    const apiKey = process.env.NEXT_PUBLIC_ZILLOW_API_KEY
     const apiHost = process.env.ZILLOW_API_HOST || 'zillow-com1.p.rapidapi.com'
 
     if (!apiKey) {
@@ -142,7 +142,6 @@ function processZillowData(data: any, location: string) {
       rentZestimate: property.rentZestimate || null,
       pricePerSquareFoot: property.resoFacts?.pricePerSquareFoot || null,
       taxAnnualAmount: property.resoFacts?.taxAnnualAmount || null,
-      taxHistory: property.taxHistory || [],
       rawData: property
     }
   }

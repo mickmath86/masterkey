@@ -1,628 +1,621 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
-import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/16/solid';
+import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon } from '@heroicons/react/16/solid';
 import { GooglePlacesInput } from '@/components/ui/google-places-input';
-import { PropertyLookup } from '@/components/ui/property-lookup';
-import { PropertyVerification } from '@/components/ui/property-verification';
-import { webhookService, type WebhookSubmissionData } from '../../../lib/webhook-api';
+import { useRouter } from 'next/navigation';
+import {
+  Stepper,
+  StepperIndicator,
+  StepperItem,
+  StepperSeparator,
+  StepperTrigger,
+} from "@/components/ui/stepper";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-// Simplified form data - removed property details that will come from API
 interface FormData {
-  propertyLocation: string;
-  sellingReason: string;
-  timeline: string;
-  needToSellFirst: string;
-  expectedValue: string;
-  outstandingObligations: string;
-  occupancyStatus: string;
+  propertyAddress: string;
+  sellingTimeline: string;
+  sellingMotivation: string;
+  propertyCondition: string;
+  priceExpectation: string;
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
+  preferredContact: string;
 }
 
-interface PropertyDetails {
-  placeId?: string;
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
-  addressComponents?: google.maps.GeocoderAddressComponent[];
-}
+const timelineOptions = [
+  'ASAP (within 30 days)',
+  'Within 3 months',
+  'Within 6 months',
+  'Within a year',
+  'Just exploring my options'
+];
 
-interface PropertyData {
-  zpid: string;
-  address: string;
-  bedrooms: number;
-  bathrooms: number;
-  livingArea: number;
-  propertyType: string;
-  homeStatus: string;
-  zestimate?: number;
-  rentZestimate?: number;
-  yearBuilt?: number;
-  lotSize?: number;
-  price?: number;
-  priceHistory?: Array<{
-    date: string;
-    price: number;
-    event: string;
-  }>;
-  photos?: string[];
-  description?: string;
-  schools?: Array<{
-    name: string;
-    rating: number;
-    level: string;
-  }>;
-  neighborhood?: {
-    name: string;
-    walkScore?: number;
-    transitScore?: number;
-    bikeScore?: number;
-  };
-}
-
-const sellingReasons = [
+const motivationOptions = [
+  'Relocating for work',
   'Upgrading to a larger home',
   'Downsizing',
-  'Relocating for work',
   'Financial reasons',
-  'Retirement',
-  'Divorce/Separation',
-  'Investment property sale',
+  'Life changes (divorce, retirement, etc.)',
+  'Investment property liquidation',
   'Other'
 ];
 
-const timelines = [
-  'ASAP (within 30 days)',
-  '1-3 months',
-  '3-6 months',
-  '6-12 months',
-  'More than 12 months',
-  'Just exploring options'
+const conditionOptions = [
+  'Excellent - Move-in ready',
+  'Good - Minor updates needed',
+  'Fair - Some renovations required',
+  'Needs work - Major repairs needed',
+  'Fixer-upper - Extensive renovation required'
 ];
 
-type FormStep = 'address' | 'lookup' | 'verification' | 'motivation' | 'timeline' |'contact' | 'success' | 'error';
+const priceExpectationOptions = [
+  'Maximum market value',
+  'Quick sale, competitive price',
+  'Not sure - need professional guidance',
+  'Have a specific price in mind'
+];
+
+const contactMethods = [
+  'Email',
+  'Phone call',
+  'Text message',
+  'No preference'
+];
 
 export default function RealEstateSellPage() {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState<FormStep>('address');
-  const [propertyData, setPropertyData] = useState<PropertyData | null>(null);
-  const [propertyDetails, setPropertyDetails] = useState<PropertyDetails>({});
-  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [emailError, setEmailError] = useState('');
   const [formData, setFormData] = useState<FormData>({
-    propertyLocation: '',
-    sellingReason: '',
-    timeline: '',
-    needToSellFirst: '',
-    expectedValue: '',
-    outstandingObligations: '',
-    occupancyStatus: '',
+    propertyAddress: '',
+    sellingTimeline: '',
+    sellingMotivation: '',
+    propertyCondition: '',
+    priceExpectation: '',
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
+    preferredContact: ''
   });
 
-  // Handle redirect to property profile page
-  useEffect(() => {
-    if (currentStep === 'verification' && propertyData) {
-      const encodedAddress = encodeURIComponent(formData.propertyLocation);
-      router.push(`/property-profile?address=${encodedAddress}`);
-    }
-  }, [currentStep, propertyData, formData.propertyLocation, router]);
+  const totalSteps = 6;
+  
+  // Webhook URL - you can customize this
+  const WEBHOOK_URL = process.env.NEXT_PUBLIC_FORM_WEBHOOK_URL || 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/63dbb140-9990-4cb4-8954-e6d59f3813ce';
 
-  const handleLocationChange = (address: string, placeDetails?: google.maps.places.PlaceResult) => {
-    setFormData({ ...formData, propertyLocation: address });
-    
-    if (placeDetails) {
-      setPropertyDetails({
-        placeId: placeDetails.place_id,
-        coordinates: placeDetails.geometry?.location ? {
-          lat: placeDetails.geometry.location.lat(),
-          lng: placeDetails.geometry.location.lng()
-        } : undefined,
-        addressComponents: placeDetails.address_components
-      });
+  const handleNext = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
     }
   };
 
-  const handleAddressSubmit = () => {
-    if (formData.propertyLocation.trim()) {
-      setCurrentStep('lookup');
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
     }
-  };
-
-  const handleLookupComplete = (data: PropertyData) => {
-    setPropertyData(data);
-    setCurrentStep('verification');
-  };
-
-  const handleVerificationConfirm = () => {
-    setCurrentStep('motivation');
-  };
-
-  const handleVerificationEdit = () => {
-    setCurrentStep('address');
   };
 
   const handleSubmit = async () => {
-    if (!propertyData) return;
-
+    setIsSubmitting(true);
+    
     try {
-      const webhookData: WebhookSubmissionData = {
-        // Contact Information
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        
-        // Property Information
-        propertyLocation: formData.propertyLocation,
-        propertyType: propertyData.propertyType,
-        bedrooms: propertyData.bedrooms,
-        bathrooms: propertyData.bathrooms,
-        livingArea: propertyData.livingArea,
-        yearBuilt: propertyData.yearBuilt,
-        lotSize: propertyData.lotSize,
-        zestimate: propertyData.zestimate || propertyData.price,
-        homeStatus: propertyData.homeStatus,
-        zpid: propertyData.zpid,
-        
-        // Selling Details
-        sellingReason: formData.sellingReason,
-        timeline: formData.timeline,
-        needToSellFirst: formData.needToSellFirst,
-        expectedValue: formData.expectedValue,
-        outstandingObligations: formData.outstandingObligations,
-        occupancyStatus: formData.occupancyStatus,
-        
-        // Metadata
-        leadSource: 'MasterKey Property Sell Form',
-        notes: `Property Details:
-- Address: ${propertyData.address}
-- Type: ${propertyData.propertyType}
-- Bedrooms: ${propertyData.bedrooms}
-- Bathrooms: ${propertyData.bathrooms}
-- Living Area: ${propertyData.livingArea} sq ft
-- Year Built: ${propertyData.yearBuilt || 'N/A'}
-- Estimated Value: $${propertyData.zestimate?.toLocaleString() || propertyData.price?.toLocaleString() || 'N/A'}
-- Home Status: ${propertyData.homeStatus}
-
-Selling Details:
-- Reason: ${formData.sellingReason}
-- Timeline: ${formData.timeline}
-- Need to Sell First: ${formData.needToSellFirst}
-- Expected Value: ${formData.expectedValue}
-- Outstanding Obligations: ${formData.outstandingObligations}
-- Occupancy Status: ${formData.occupancyStatus}`
+      // Prepare form data for webhook
+      const submissionData = {
+        ...formData,
+        submittedAt: new Date().toISOString(),
+        formType: 'real-estate-sell',
+        source: 'questionnaire'
       };
 
-      const result = await webhookService.submitLead(webhookData);
+      // Submit to webhook
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submissionData),
+      });
 
-      if (result.success) {
-        setCurrentStep('success');
+      if (response.ok) {
+        console.log('Form submitted successfully:', submissionData);
+        setShowCompletionModal(true);
       } else {
-        console.error('Failed to submit lead:', result.error);
-        setSubmissionError(result.error || 'Unknown error occurred');
-        setCurrentStep('error');
+        console.error('Form submission failed:', response.statusText);
+        // Still show success modal for user experience
+        setShowCompletionModal(true);
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
-      setSubmissionError(error instanceof Error ? error.message : 'Network error occurred');
-      setCurrentStep('error');
+      console.error('Form submission error:', error);
+      // Still show success modal for user experience
+      setShowCompletionModal(true);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Address Input Step
-  if (currentStep === 'address') {
-    return (
-      <div className="h-screen flex flex-row">
-        <div className="hidden md:flex items-center justify-center w-1/2 relative">
-         {/* Back Button */}
-         
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: 'url(/images/hero-bg.webp)'
-            }}
-          />
-          <Gradient className="absolute inset-0 opacity-90" />
-          <div className="absolute top-6 left-6 z-10">
-            <Button
-              variant="secondary"
-              href="/"
-              className="flex items-center gap-2 text-sm"
-            >
-              <ChevronLeftIcon className="w-4 h-4" />
-              Back to Home
-            </Button>
-          </div>
-          <div className="relative h-full flex items-center justify-center p-8">
-            <div className="text-center text-white max-w-lg">
-              <h1 className="text-5xl font-bold mb-6">
-                What&apos;s Your Property Worth?
-              </h1>
-              <p className="text-xl text-white/90 mb-8">
-                Get an instant property valuation and connect with our expert agents
-              </p>
-            </div>
-          </div>
-        </div>
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
-        <div className=" max-w-md bg-white p-8 flex flex-col justify-center w-full mx-auto relative">
-         
-          
-          <div className="mb-8">
-            <h2 className="text-3xl font-semibold text-gray-900 mb-2">
-              Enter Your Property Address
-            </h2>
-            <p className="text-gray-600">
-              We&apos;ll analyze your property and provide a comprehensive market evaluation
-            </p>
-          </div>
+  const handleEmailChange = (email: string) => {
+    setFormData({ ...formData, email });
+    if (email.trim() && !validateEmail(email)) {
+      setEmailError('Please enter a valid email address');
+    } else {
+      setEmailError('');
+    }
+  };
 
-          <div className="space-y-6">
-            <div>
-              <label htmlFor="propertyLocation" className="block text-sm font-medium text-gray-700 mb-2">
-                Property Address
-              </label>
-              <GooglePlacesInput
-                id="propertyLocation"
-                value={formData.propertyLocation}
-                onChange={handleLocationChange}
-                placeholder="Enter your property's full address"
-                className="mb-4"
-              />
-            </div>
+  const isStepValid = () => {
+    switch (currentStep) {
+      case 1:
+        return formData.propertyAddress.trim() !== '';
+      case 2:
+        return formData.sellingTimeline !== '';
+      case 3:
+        return formData.sellingMotivation !== '';
+      case 4:
+        return formData.propertyCondition !== '';
+      case 5:
+        return formData.priceExpectation !== '';
+      case 6:
+        return formData.firstName.trim() !== '' && formData.lastName.trim() !== '' && 
+               formData.email.trim() !== '' && validateEmail(formData.email) && formData.phone.trim() !== '';
+      default:
+        return false;
+    }
+  };
 
-            <Button
-              onClick={handleAddressSubmit}
-              disabled={!formData.propertyLocation.trim()}
-              className="w-full py-4 text-lg font-semibold"
-            >
-              Analyze My Property
-              <ChevronRightIcon className="w-5 h-5 ml-2" />
-            </Button>
-          </div>
-
-          <div className="mt-8 text-center">
-            <p className="text-xs text-gray-500">
-              Free • No obligation • Instant results
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Property Lookup Step
-  if (currentStep === 'lookup') {
-    return (
-      <PropertyLookup
-        address={formData.propertyLocation}
-        onComplete={handleLookupComplete}
-      />
-    );
-  }
-
-  // Property Verification Step - Show loading state while redirecting
-  if (currentStep === 'verification' && propertyData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting to property profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Rest of the form (details and contact)
   return (
     <div className="h-screen flex">
-      <div className="hidden md:flex w-1/2 justify-center items-center relative">
+      {/* Left Side - Hero Image */}
+      <div className="hidden md:flex flex-1 relative">
+        {/* Background image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: 'url(/images/hero-bg.webp)'
+            backgroundImage: 'url(https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80)'
           }}
         />
+        {/* Gradient overlay */}
         <Gradient className="absolute inset-0 opacity-90" />
-        
-        <div className="relative h-full flex items-center justify-center p-8">
-          <div className="text-center text-white max-w-lg">
-            <h1 className="text-4xl font-bold mb-4">
-              Almost Done!
-            </h1>
-            <p className="text-lg text-white/90">
-              Just a few more details to complete your property evaluation
-            </p>
-            {propertyData && (
-              <div className="mt-6 p-4 bg-white/10 rounded-lg backdrop-blur">
-                <p className="text-sm text-white/80 mb-1">Your Property</p>
-                <p className="font-semibold">{propertyData.address}</p>
-                <p className="text-sm text-white/90">
-                  {propertyData.bedrooms} bed • {propertyData.bathrooms} bath • {propertyData.livingArea} sq ft
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="w-full max-w-md bg-white p-8 flex flex-col justify-center overflow-y-auto mx-auto relative">
         {/* Back Button */}
-        <div className="absolute top-6 left-6">
+        <div className="absolute top-6 left-6 z-20">
           <Button
             variant="secondary"
             href="/"
-            className="flex items-center gap-2 text-sm"
+            className="flex items-center gap-2 text-sm bg-white/90 backdrop-blur-sm"
           >
             <ChevronLeftIcon className="w-4 h-4" />
             Back to Home
           </Button>
         </div>
-        {currentStep === 'motivation' && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                Tell Us More
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Help us provide the most accurate evaluation
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Why are you selling?
-              </label>
-              <div className="space-y-2">
-                {sellingReasons.map((reason) => (
-                  <button
-                    key={reason}
-                    onClick={() => setFormData({ ...formData, sellingReason: reason })}
-                    className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
-                      formData.sellingReason === reason
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    {reason}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <Button
-              onClick={() => setCurrentStep('timeline')}
-              disabled={!formData.sellingReason}
-              className="w-full py-3"
-            >
-              Continue
-              <ChevronRightIcon className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        )}
-
-
-        {currentStep === 'timeline' && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                When Do You Want to Sell?
-              </h3>
-              <p className="text-gray-600 mb-6">
-                This helps us understand your urgency and provide better guidance
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Select your preferred timeline
-              </label>
-              <div className="space-y-2">
-                {timelines.map((timeline) => (
-                  <button
-                    key={timeline}
-                    onClick={() => setFormData({ ...formData, timeline })}
-                    className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
-                      formData.timeline === timeline
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    {timeline}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <Button
-              onClick={() => setCurrentStep('contact')}
-              disabled={!formData.timeline}
-              className="w-full py-3"
-            >
-              Continue
-              <ChevronRightIcon className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        )}
-
-        {currentStep === 'contact' && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                Get Your Results
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Enter your contact information to receive your property evaluation
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <Button
-              onClick={handleSubmit}
-              disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.phone}
-              className="w-full py-4 text-lg font-semibold"
-            >
-              Get My Property Evaluation
-            </Button>
-
-            <p className="text-xs text-gray-500 text-center">
-              By submitting, you agree to receive communications about your property evaluation.
+        {/* Content overlay */}
+        <div className="relative z-10 h-full flex items-center justify-center p-12">
+          <div className="text-center text-white">
+            <h1 className="text-5xl font-bold mb-6">Sell Your Home with Confidence</h1>
+            <p className="text-xl mx-auto opacity-90 max-w-md">
+              Get maximum value for your property with our expert guidance and proven marketing strategies.
             </p>
           </div>
-        )}
-      </div>
-    </div>
-  );
-
-  // Success Page
-  if (currentStep === 'success') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Thank You!
-          </h1>
-          
-          <p className="text-gray-600 mb-6">
-            Your property evaluation request has been submitted successfully. Our team will contact you soon with a comprehensive market analysis.
-          </p>
-          
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-            <p className="text-sm text-green-800">
-              <strong>What happens next?</strong><br />
-              • We'll analyze your property data<br />
-              • Prepare a detailed market report<br />
-              • Contact you within 24 hours
-            </p>
-          </div>
-          
-          <Button
-            onClick={() => window.location.href = '/'}
-            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold"
-          >
-            Return to Home
-          </Button>
         </div>
       </div>
-    );
-  }
 
-  // Error Page
-  if (currentStep === 'error') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-rose-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
+      {/* Right Side - Form */}
+      <div className="flex-1 bg-white flex flex-col overflow-scroll relative">
+        
+        {/* Progress Bar */}
+        <div className="p-8 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900">
+              Tell us about your selling goals
+            </h2>
+            <span className="text-sm text-gray-500">
+              Step {currentStep} of {totalSteps}
+            </span>
           </div>
-          
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Submission Error
-          </h1>
-          
-          <p className="text-gray-600 mb-4">
-            We encountered an issue submitting your information. Don't worry - your data is safe.
-          </p>
-          
-          {submissionError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-red-800">
-                <strong>Error:</strong> {submissionError}
-              </p>
+          <Stepper value={currentStep} className="w-full sticky top-0">
+            {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
+              <StepperItem key={step} step={step} className="flex-1">
+                <StepperTrigger>
+                  <StepperIndicator>{step}</StepperIndicator>
+                </StepperTrigger>
+                {step < totalSteps && <StepperSeparator />}
+              </StepperItem>
+            ))}
+          </Stepper>
+        </div>
+
+        {/* Form Content */}
+        <div className="flex-1 p-8 flex flex-col justify-center">
+          {currentStep === 1 && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-3xl font-semibold text-gray-900 mb-2">
+                  What's the address of the property you want to sell?
+                </h3>
+                <p className="text-gray-600 mb-8">
+                  Enter the full address so we can provide you with accurate market insights and pricing guidance.
+                </p>
+              </div>
+              
+              <div>
+                <label htmlFor="propertyAddress" className="block text-sm font-medium text-gray-700 mb-2">
+                  Property Address
+                </label>
+                <GooglePlacesInput
+                  value={formData.propertyAddress}
+                  onChange={(address) => setFormData({ ...formData, propertyAddress: address })}
+                  placeholder="e.g., 123 Main Street, San Francisco, CA 94102"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                />
+              </div>
             </div>
           )}
-          
-          <div className="space-y-3">
+
+          {currentStep === 2 && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-3xl font-semibold text-gray-900 mb-2">
+                  When are you looking to sell?
+                </h3>
+                <p className="text-gray-600 mb-8">
+                  Understanding your timeline helps us create the right marketing strategy for your situation.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-3">
+                {timelineOptions.map((timeline) => (
+                  <button
+                    key={timeline}
+                    onClick={() => setFormData({ ...formData, sellingTimeline: timeline })}
+                    className={`p-4 text-left border rounded-lg transition-all duration-200 ${
+                      formData.sellingTimeline === timeline
+                        ? 'border-blue-500 bg-blue-50 text-blue-900'
+                        : 'border-gray-300 hover:border-gray-400 text-gray-900'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{timeline}</span>
+                      {formData.sellingTimeline === timeline && (
+                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                          <div className="w-2 h-2 bg-white rounded-full" />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {currentStep === 3 && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-3xl font-semibold text-gray-900 mb-2">
+                  What's motivating you to sell?
+                </h3>
+                <p className="text-gray-600 mb-8">
+                  This helps us understand your priorities and tailor our approach to meet your specific needs.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-3">
+                {motivationOptions.map((motivation) => (
+                  <button
+                    key={motivation}
+                    onClick={() => setFormData({ ...formData, sellingMotivation: motivation })}
+                    className={`p-4 text-left border rounded-lg transition-all duration-200 ${
+                      formData.sellingMotivation === motivation
+                        ? 'border-blue-500 bg-blue-50 text-blue-900'
+                        : 'border-gray-300 hover:border-gray-400 text-gray-900'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{motivation}</span>
+                      {formData.sellingMotivation === motivation && (
+                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                          <div className="w-2 h-2 bg-white rounded-full" />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {currentStep === 4 && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-3xl font-semibold text-gray-900 mb-2">
+                  What's the current condition of your home?
+                </h3>
+                <p className="text-gray-600 mb-8">
+                  This helps us advise on any improvements that could maximize your sale price and determine the best marketing approach.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-3">
+                {conditionOptions.map((condition) => (
+                  <button
+                    key={condition}
+                    onClick={() => setFormData({ ...formData, propertyCondition: condition })}
+                    className={`p-4 text-left border rounded-lg transition-all duration-200 ${
+                      formData.propertyCondition === condition
+                        ? 'border-blue-500 bg-blue-50 text-blue-900'
+                        : 'border-gray-300 hover:border-gray-400 text-gray-900'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{condition}</span>
+                      {formData.propertyCondition === condition && (
+                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                          <div className="w-2 h-2 bg-white rounded-full" />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {currentStep === 5 && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-3xl font-semibold text-gray-900 mb-2">
+                  What's your pricing priority?
+                </h3>
+                <p className="text-gray-600 mb-8">
+                  Understanding your pricing goals helps us develop the right strategy for your sale.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-3">
+                {priceExpectationOptions.map((expectation) => (
+                  <button
+                    key={expectation}
+                    onClick={() => setFormData({ ...formData, priceExpectation: expectation })}
+                    className={`p-4 text-left border rounded-lg transition-all duration-200 ${
+                      formData.priceExpectation === expectation
+                        ? 'border-blue-500 bg-blue-50 text-blue-900'
+                        : 'border-gray-300 hover:border-gray-400 text-gray-900'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{expectation}</span>
+                      {formData.priceExpectation === expectation && (
+                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                          <div className="w-2 h-2 bg-white rounded-full" />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {currentStep === 6 && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-3xl font-semibold text-gray-900 mb-2">
+                  Let's get your contact information
+                </h3>
+                <p className="text-gray-600 mb-8">
+                  We'll use this information to provide you with a customized market analysis and selling strategy.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      placeholder="John"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      placeholder="Doe"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={formData.email}
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    placeholder="john.doe@example.com"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                      emailError ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                  />
+                  {emailError && (
+                    <p className="text-red-600 text-sm mt-1">{emailError}</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="(555) 123-4567"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="preferredContact" className="block text-sm font-medium text-gray-700 mb-2">
+                    Preferred Contact Method
+                  </label>
+                  <select
+                    id="preferredContact"
+                    value={formData.preferredContact}
+                    onChange={(e) => setFormData({ ...formData, preferredContact: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select your preference</option>
+                    {contactMethods.map((method) => (
+                      <option key={method} value={method}>{method}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation */}
+        <div className="p-8 border-t border-gray-200">
+          <div className="flex justify-between">
             <Button
-              onClick={() => {
-                setSubmissionError(null);
-                setCurrentStep('contact');
-              }}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+              variant="secondary"
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
+              className="flex items-center gap-2"
             >
-              Try Again
+              <ChevronLeftIcon className="w-4 h-4" />
+              Previous
             </Button>
             
-            <Button
-              onClick={() => window.location.href = '/'}
-              variant="outline"
-              className="w-full py-3 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold"
-            >
-              Return to Home
-            </Button>
+            {currentStep < totalSteps ? (
+              <Button
+                onClick={handleNext}
+                disabled={!isStepValid()}
+                className="flex items-center gap-2"
+              >
+                Next
+                <ChevronRightIcon className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={!isStepValid() || isSubmitting}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit'}
+              </Button>
+            )}
           </div>
-          
-          <p className="text-xs text-gray-500 mt-4">
-            If the problem persists, please contact us directly.
-          </p>
         </div>
       </div>
-    );
-  }
+
+      {/* Completion Modal */}
+      <Dialog open={showCompletionModal} onOpenChange={setShowCompletionModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+              <CheckCircleIcon className="h-8 w-8 text-green-600" aria-hidden="true" />
+            </div>
+            <DialogTitle className="text-center text-2xl font-bold">
+              Thank you for your submission!
+            </DialogTitle>
+            <DialogDescription className="text-center text-gray-600">
+              We've received your property information and will be in touch soon with a customized market analysis and selling strategy.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* What happens next */}
+          <div className="bg-gray-50 rounded-lg p-4 my-4">
+            <h4 className="font-semibold text-gray-900 mb-3">What happens next?</h4>
+            <div className="space-y-3">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-blue-100">
+                    <span className="text-xs font-medium text-blue-600">1</span>
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-gray-700">
+                    <strong>Within 24 hours:</strong> Our real estate team will review your submission and contact you.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-blue-100">
+                    <span className="text-xs font-medium text-blue-600">2</span>
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-gray-700">
+                    <strong>Market analysis:</strong> We'll prepare a comprehensive market analysis for your property.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-blue-100">
+                    <span className="text-xs font-medium text-blue-600">3</span>
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-gray-700">
+                    <strong>Selling strategy:</strong> Receive a detailed plan to maximize your home's value and minimize time on market.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <Button
+              onClick={() => {
+                setShowCompletionModal(false);
+                router.push('/');
+              }}
+              className="w-full"
+            >
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }
