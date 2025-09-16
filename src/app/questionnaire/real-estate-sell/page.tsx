@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon } from '@heroicons/react/16/solid';
@@ -74,7 +74,7 @@ const contactMethods = [
   'No preference'
 ];
 
-export default function RealEstateSellPage() {
+function RealEstateSellPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
@@ -635,5 +635,13 @@ export default function RealEstateSellPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function RealEstateSellPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RealEstateSellPageContent />
+    </Suspense>
   );
 }

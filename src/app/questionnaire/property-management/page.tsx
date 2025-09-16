@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon } from '@heroicons/react/16/solid';
@@ -82,7 +82,7 @@ const contactMethods = [
   'No preference'
 ];
 
-export default function PropertyManagementPage() {
+function PropertyManagementPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
@@ -663,5 +663,13 @@ export default function PropertyManagementPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function PropertyManagementPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PropertyManagementPageContent />
+    </Suspense>
   );
 }
