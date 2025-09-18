@@ -3,8 +3,34 @@
 import { BuildingOffice2Icon, EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline'
 import Navbar3 from '@/components/navbar3'
 import { Footer } from '@/components/footer'
+import { Button } from '@/components/ui/button'
+
+// Declare gtag function for TypeScript
+declare global {
+  interface Window {
+    gtag: (
+      command: 'config' | 'event' | 'js' | 'set',
+      targetId: string | Date,
+      config?: Record<string, any>
+    ) => void;
+  }
+}
 
 function ContactForm() {
+  const handlePhoneClick = (phoneNumber: string) => {
+    // Track conversion first
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'conversion', {
+        'send_to': 'AW-17527173682/2s_nCLi7lZwbELLkzaVB',
+        'value': 1.0,
+        'currency': 'USD'
+      });
+    }
+    
+    // Then navigate to phone number (this preserves user gesture)
+    window.location.href = phoneNumber;
+  };
+
     return (
         <div className="relative isolate bg-white dark:bg-gray-900">
             <Navbar3 /> 
@@ -71,9 +97,14 @@ function ContactForm() {
                       <PhoneIcon aria-hidden="true" className="h-7 w-6 text-gray-400" />
                     </dt>
                     <dd>
-                      <a href="tel:+1 (555) 234-5678" className="hover:text-gray-900 dark:hover:text-white">
-                        +1 (805) 490-2486
-                      </a>
+                      <Button 
+                        variant="link" 
+                        className="text-gray-900 dark:text-white p-0 h-auto font-normal" 
+                        onClick={() => handlePhoneClick('tel:+1 (805) 410-8748')}
+                      >
+                        +1 (805) 410-8748
+                      </Button>
+                      
                     </dd>
                   </div>
                   <div className="flex gap-x-4">
@@ -83,7 +114,7 @@ function ContactForm() {
                     </dt>
                     <dd>
                       <a href="mailto:hello@usemasterkey.com" className="hover:text-gray-900 dark:hover:text-white">
-                        hello@usemasterkey.com
+                        mike@usemasterkey.com
                       </a>
                     </dd>
                   </div>

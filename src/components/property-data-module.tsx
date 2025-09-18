@@ -17,11 +17,18 @@ import {
   Video,
   UserCheck,
   Star,
+  DownloadCloudIcon,
+  ListCheckIcon,
+  HouseIcon,
+  ShowerHead,
+  Scan,
+  LandPlot
 } from "lucide-react"
 import { extractZipcode } from "@/lib/utils/address"
 import type { MarketStatistics } from "@/lib/api/rentcast"
 import { MOCK_PROPERTY_DATA, MOCK_MARKET_DATA, USE_MOCK_DATA } from "@/lib/mock-data"
 import GaugeComponent from 'react-gauge-component';
+import { Separator } from "@/components/ui/separator"
 
 const usd = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -47,6 +54,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   const router = useRouter()
   const [propertyData, setPropertyData] = useState<any>(null)
   const [marketData, setMarketData] = useState<MarketStatistics | null>(null)
+  const [avmData, setAvmData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -60,100 +68,230 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     if (USE_MOCK_DATA) {
       console.log('Using mock data for development')
       setMarketData(MOCK_MARKET_DATA as MarketStatistics)
+      setPropertyData(MOCK_PROPERTY_DATA)
+      // Hardcoded AVM data to prevent page breaks
+      setAvmData({
+        "price": 250000,
+        "priceRangeLow": 195000,
+        "priceRangeHigh": 304000,
+        "subjectProperty": {
+          "id": "5500-Grand-Lake-Dr,-San-Antonio,-TX-78244",
+          "formattedAddress": "5500 Grand Lake Dr, San Antonio, TX 78244",
+          "addressLine1": "5500 Grand Lake Dr",
+          "addressLine2": null,
+          "city": "San Antonio",
+          "state": "TX",
+          "stateFips": "48",
+          "zipCode": "78244",
+          "county": "Bexar",
+          "countyFips": "029",
+          "latitude": 29.476011,
+          "longitude": -98.351454,
+          "propertyType": "Single Family",
+          "bedrooms": 3,
+          "bathrooms": 2,
+          "squareFootage": 1878,
+          "lotSize": 8843,
+          "yearBuilt": 1973,
+          "lastSaleDate": "2024-11-18T00:00:00.000Z",
+          "lastSalePrice": 270000
+        },
+        "comparables": [
+          {
+            "id": "5207-Pine-Lake-Dr,-San-Antonio,-TX-78244",
+            "formattedAddress": "5207 Pine Lake Dr, San Antonio, TX 78244",
+            "addressLine1": "5207 Pine Lake Dr",
+            "addressLine2": null,
+            "city": "San Antonio",
+            "state": "TX",
+            "stateFips": "48",
+            "zipCode": "78244",
+            "county": "Bexar",
+            "countyFips": "029",
+            "latitude": 29.47046,
+            "longitude": -98.351561,
+            "propertyType": "Single Family",
+            "bedrooms": 3,
+            "bathrooms": 2,
+            "squareFootage": 1895,
+            "lotSize": 6882,
+            "yearBuilt": 1988,
+            "status": "Active",
+            "price": 289444,
+            "listingType": "Standard",
+            "listedDate": "2025-04-11T00:00:00.000Z",
+            "removedDate": null,
+            "lastSeenDate": "2025-09-03T10:57:39.532Z",
+            "daysOnMarket": 146,
+            "distance": 0.384,
+            "daysOld": 1,
+            "correlation": 0.9916
+          },
+          {
+            "id": "6707-Lake-Cliff-St,-San-Antonio,-TX-78244",
+            "formattedAddress": "6707 Lake Cliff St, San Antonio, TX 78244",
+            "addressLine1": "6707 Lake Cliff St",
+            "addressLine2": null,
+            "city": "San Antonio",
+            "state": "TX",
+            "stateFips": "48",
+            "zipCode": "78244",
+            "county": "Bexar",
+            "countyFips": "029",
+            "latitude": 29.47617,
+            "longitude": -98.356908,
+            "propertyType": "Single Family",
+            "bedrooms": 3,
+            "bathrooms": 2,
+            "squareFootage": 1811,
+            "lotSize": 8146,
+            "yearBuilt": 1977,
+            "status": "Inactive",
+            "price": 279000,
+            "listingType": "Standard",
+            "listedDate": "2025-06-06T00:00:00.000Z",
+            "removedDate": "2025-07-12T00:00:00.000Z",
+            "lastSeenDate": "2025-07-11T13:21:20.968Z",
+            "daysOnMarket": 36,
+            "distance": 0.3286,
+            "daysOld": 55,
+            "correlation": 0.9887
+          },
+          {
+            "id": "6917-Deep-Lake-Dr,-San-Antonio,-TX-78244",
+            "formattedAddress": "6917 Deep Lake Dr, San Antonio, TX 78244",
+            "addressLine1": "6917 Deep Lake Dr",
+            "addressLine2": null,
+            "city": "San Antonio",
+            "state": "TX",
+            "stateFips": "48",
+            "zipCode": "78244",
+            "county": "Bexar",
+            "countyFips": "029",
+            "latitude": 29.479375,
+            "longitude": -98.351978,
+            "propertyType": "Single Family",
+            "bedrooms": 3,
+            "bathrooms": 2,
+            "squareFootage": 1753,
+            "lotSize": 11151,
+            "yearBuilt": 1974,
+            "status": "Inactive",
+            "price": 199900,
+            "listingType": "Standard",
+            "listedDate": "2025-05-22T00:00:00.000Z",
+            "removedDate": "2025-08-27T00:00:00.000Z",
+            "lastSeenDate": "2025-08-26T12:36:31.859Z",
+            "daysOnMarket": 97,
+            "distance": 0.2348,
+            "daysOld": 9,
+            "correlation": 0.9863
+          },
+          {
+            "id": "5314-Lost-Tree,-San-Antonio,-TX-78244",
+            "formattedAddress": "5314 Lost Tree, San Antonio, TX 78244",
+            "addressLine1": "5314 Lost Tree",
+            "addressLine2": null,
+            "city": "San Antonio",
+            "state": "TX",
+            "stateFips": "48",
+            "zipCode": "78244",
+            "county": "Bexar",
+            "countyFips": "029",
+            "latitude": 29.477064,
+            "longitude": -98.343686,
+            "propertyType": "Single Family",
+            "bedrooms": 3,
+            "bathrooms": 2,
+            "squareFootage": 1948,
+            "lotSize": 9017,
+            "yearBuilt": 2000,
+            "status": "Inactive",
+            "price": 159900,
+            "listingType": "Standard",
+            "listedDate": "2025-06-23T00:00:00.000Z",
+            "removedDate": "2025-06-28T00:00:00.000Z",
+            "lastSeenDate": "2025-06-27T11:02:28.080Z",
+            "daysOnMarket": 5,
+            "distance": 0.4734,
+            "daysOld": 69,
+            "correlation": 0.9859
+          },
+          {
+            "id": "7207-Solar-Eclipse,-Converse,-TX-78109",
+            "formattedAddress": "7207 Solar Eclipse, Converse, TX 78109",
+            "addressLine1": "7207 Solar Eclipse",
+            "addressLine2": null,
+            "city": "Converse",
+            "state": "TX",
+            "stateFips": "48",
+            "zipCode": "78109",
+            "county": "Bexar",
+            "countyFips": "029",
+            "latitude": 29.463689,
+            "longitude": -98.348663,
+            "propertyType": "Single Family",
+            "bedrooms": 3,
+            "bathrooms": 2,
+            "squareFootage": 1883,
+            "lotSize": 5140,
+            "yearBuilt": 2022,
+            "status": "Active",
+            "price": 320000,
+            "listingType": "Standard",
+            "listedDate": "2025-03-10T00:00:00.000Z",
+            "removedDate": null,
+            "lastSeenDate": "2025-09-03T10:33:44.607Z",
+            "daysOnMarket": 178,
+            "distance": 0.8687,
+            "daysOld": 1,
+            "correlation": 0.9835
+          }
+        ]
+      })
       setIsLoading(false)
       return
     }
 
-    const fetchMarketData = async () => {
+    const fetchData = async () => {
       setIsLoading(true)
       setError(null)
 
       try {
-        const marketZipcode = zipcode || extractZipcode(address || '')
-        if (!marketZipcode) {
-          setError('Unable to determine zipcode for market data')
-          return
+        // Fetch AVM data
+        const avmResponse = await fetch(`/api/rentcast/value?address=${encodeURIComponent(address)}`)
+        if (avmResponse.ok) {
+          const avmResult = await avmResponse.json()
+          setAvmData(avmResult)
         }
 
-        const response = await fetch(`/api/rentcast/markets?zipcode=${encodeURIComponent(marketZipcode)}`)
-        
-        if (response.ok) {
-          const data = await response.json()
-          setMarketData(data)
-        } else {
-          const errorData = await response.json()
-          setError(errorData.error || 'Failed to fetch market data')
+        // Fetch market data
+        const marketZipcode = zipcode || extractZipcode(address || '')
+        if (marketZipcode) {
+          const marketResponse = await fetch(`/api/rentcast/markets?zipcode=${encodeURIComponent(marketZipcode)}`)
+          if (marketResponse.ok) {
+            const marketResult = await marketResponse.json()
+            setMarketData(marketResult)
+          }
         }
+
+        // Set property data with hardcoded values to prevent breaks
+        setPropertyData({
+          ...MOCK_PROPERTY_DATA,
+          zestimate: avmData?.price || 850000,
+          address: address
+        })
+
       } catch (err) {
-        setError('Network error while fetching market data')
-        console.error('Market data fetch error:', err)
+        setError('Network error while fetching data')
+        console.error('Data fetch error:', err)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchMarketData()
+    fetchData()
   }, [address, zipcode])
-
-  useEffect(() => {
-    if (!address) return
-
-    // Use mock data in development to avoid API calls
-    if (USE_MOCK_DATA) {
-      console.log('Using mock property data for development')
-      setPropertyData(MOCK_PROPERTY_DATA)
-      setIsLoading(false)
-      return
-    }
-
-    let didCancel = false
-
-    const fetchPropertyData = async () => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const response = await fetch(`/api/zillow?location=${encodeURIComponent(address)}`)
-        
-        if (!response.ok) {
-          throw new Error(`API request failed: ${response.status}`)
-        }
-
-        const propertyResult = await response.json()
-
-        if (!didCancel) {
-          setPropertyData(propertyResult)
-        }
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error'
-        console.warn('API failed, using fallback data:', errorMessage)
-        if (!didCancel) {
-          setError(errorMessage)
-          setPropertyData({
-            address: address,
-            price: 1250000,
-            bedrooms: 3,
-            bathrooms: 2,
-            livingArea: 2100,
-            zestimate: 1250000,
-            propertyType: 'Single Family Home',
-            homeStatus: 'For Sale',
-            isFallback: true
-          })
-        }
-      } finally {
-        if (!didCancel) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    fetchPropertyData()
-
-    return () => {
-      didCancel = true
-    }
-  }, [address])
 
   const getMarketSpeedIndicator = (days: number) => {
     if (days < 30) return { 
@@ -307,6 +445,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     isUsingFallback: propertyPrice <= 0
   })
   
+  const pricePerSquareFoot = Math.round((avmData.price / avmData.subjectProperty.squareFootage) * 100) / 100
   // Set minimum value to 0 as requested
   const minPrice = 0
   
@@ -387,44 +526,78 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row gap-8">
+          {/* Card Sidebar */}
+          <div className="md:flex flex-col gap-8 hidden">
+
           {/* Agent Card Sidebar */}
-          <div className="w-full md:w-80 flex-shrink-0">
-            <div className="sticky top-20">
-              <div className="bg-white rounded-lg shadow-sm border border-sky-200 dark:bg-gray-800 dark:border-sky-700">
-                <div className="text-center p-6">
-                  <div className="mx-auto w-20 h-20 rounded-full overflow-hidden mb-3">
-                    <img
-                      src={agentData.avatar || "/placeholder.svg"}
-                      alt={agentData.name}
-                      className="w-full h-full object-cover"
-                    />
+            <div className="w-full md:w-80 flex-shrink-0">
+              <div className="sticky top-20">
+                <div className="bg-white rounded-lg shadow-sm border border-sky-200 dark:bg-gray-800 dark:border-sky-700">
+                  <div className="text-center p-6">
+                    <div className="mx-auto w-20 h-20 rounded-full overflow-hidden mb-3">
+                      <img
+                        src={agentData.avatar || "/placeholder.svg"}
+                        alt={agentData.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{agentData.name}</h3>
+                    <p className="text-sky-700 dark:text-sky-300">{agentData.title}</p>
+                    <div className="flex items-center justify-center gap-2 text-sm text-sky-600 dark:text-sky-400 mt-2">
+                      <span>⭐ {agentData.rating}</span>
+                      <span>•</span>
+                      <span>{agentData.reviews} reviews</span>
+                      <span>•</span>
+                      <span>{agentData.yearsExperience} years</span>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{agentData.name}</h3>
-                  <p className="text-sky-700 dark:text-sky-300">{agentData.title}</p>
-                  <div className="flex items-center justify-center gap-2 text-sm text-sky-600 dark:text-sky-400 mt-2">
-                    <span>⭐ {agentData.rating}</span>
-                    <span>•</span>
-                    <span>{agentData.reviews} reviews</span>
-                    <span>•</span>
-                    <span>{agentData.yearsExperience} years</span>
+                  <div className="px-6 pb-6 space-y-3">
+                    <button className="w-full bg-sky-500 hover:bg-sky-600 text-white px-4 py-3 cursor-pointer rounded-md font-medium flex items-center justify-center">
+                      <Video className="h-4 w-4 mr-2" />
+                      Schedule Zoom Call
+                    </button>
+                    <button className="w-full border border-sky-300 text-sky-700 hover:bg-sky-50 bg-transparent px-4 py-3 cursor-pointer rounded-md font-medium flex items-center justify-center">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Schedule In Person
+                    </button>
+                    <button className="w-full border border-sky-300 text-sky-700 hover:bg-sky-50 bg-transparent px-4 py-3 cursor-pointer rounded-md font-medium flex items-center justify-center">
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      Chat with Mike Now
+                    </button>
                   </div>
-                </div>
-                <div className="px-6 pb-6 space-y-3">
-                  <button className="w-full bg-sky-500 hover:bg-sky-600 text-white px-4 py-3 rounded-md font-medium flex items-center justify-center">
-                    <Video className="h-4 w-4 mr-2" />
-                    Schedule Zoom Call
-                  </button>
-                  <button className="w-full border border-sky-300 text-sky-700 hover:bg-sky-50 bg-transparent px-4 py-3 rounded-md font-medium flex items-center justify-center">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Schedule In Person
-                  </button>
-                  <button className="w-full border border-sky-300 text-sky-700 hover:bg-sky-50 bg-transparent px-4 py-3 rounded-md font-medium flex items-center justify-center">
-                    <UserCheck className="h-4 w-4 mr-2" />
-                    Chat with Mike Now
-                  </button>
                 </div>
               </div>
             </div>
+             {/* Resource Card Sidebar */}
+            <div className="w-full md:w-80 flex-shrink-0">
+              <div className="sticky top-20">
+                <div className="bg-white rounded-lg shadow-sm border border-sky-200 dark:bg-gray-800 dark:border-sky-700">
+                  <div className="text-center p-6">
+                   
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Resources</h3>
+                   
+                    {/* <div className="flex items-center justify-center gap-2 text-sm text-sky-600 dark:text-sky-400 mt-2">
+                      <span>⭐ {agentData.rating}</span>
+                      <span>•</span>
+                      <span>{agentData.reviews} reviews</span>
+                      <span>•</span>
+                      <span>{agentData.yearsExperience} years</span>
+                    </div> */}
+                  </div>
+                  <div className="px-6 pb-6 space-y-3">
+                    <button className="w-full bg-sky-500 hover:bg-sky-600 text-white px-4 py-3 cursor-pointer rounded-md font-medium flex items-center justify-center">
+                      <DownloadCloudIcon className="h-4 w-4 mr-2" />
+                      Download Official CMA
+                    </button>
+                    <button className="w-full border border-sky-300 text-sky-700 hover:bg-sky-50 bg-transparent px-4 py-3 cursor-pointer rounded-md font-medium flex items-center justify-center">
+                      <ListCheckIcon   className="h-4 w-4 mr-2" />
+                     Download Sellers Checklist
+                    </button>
+                   
+                  </div>
+                </div>
+              </div>
+            </div> 
           </div>
 
           {/* Main Content */}
@@ -433,10 +606,17 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
             <div id="home-value" className="bg-white rounded-lg shadow-sm border-2 border-sky-200 dark:bg-gray-800 dark:border-sky-700">
               <div className="p-6">
                 <div className="text-center mb-6">
-                <p className="text-xl font-semibold text-gray-600 dark:text-gray-400">Estimated Home Value</p>
-                  <div className="z-20">
+                  <div className="flex items-center justify-center">
+                     <p className="text-lg block font-semibold bg-sky-100 px-4 py-2 rounded-full text-sky-600 dark:text-gray-400">Estimated Home Value</p>
+                  </div>
+                
+                  <div className="z-20 py-4 text-xl">
+                      {/* TODO: Replace with dynamic value from avmData */}
+                      <p className="text-6xl font-bold text-sky-600 dark:text-sky-400">
+                        {avmData?.price ? formatCurrency(avmData.price) : formatCurrency(850000)}
+                      </p>
 
-                    <GaugeComponent 
+                    {/* <GaugeComponent 
                         type="semicircle"
                         style={{
                             
@@ -478,38 +658,88 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                         }}
                   
                         // value={80}
-                    />
+                    /> */}
                   </div>
-                  {/* <h2 className="text-3xl font-bold text-sky-600 dark:text-sky-400">
-                    {formatCurrency(propertyData.zestimate || propertyData.price)}
-                  </h2> */}
+                  <div className="flex flex-row items-center gap-2 justify-center">
+                    {/* one */}
+                    <div className="flex flex-col items-end">
+                      <div className="text-2xl font-semibold ">
+                       
+                        ${pricePerSquareFoot}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        per sq.ft.
+                      </div>
+                    </div>
+                    <Separator orientation="vertical" />
+                    {/* two */}
+                    <div>
+                      <div>
+                        {/* TODO: Replace with dynamic confidence or range data from avmData */}
+                        {avmData?.confidence || 'Low'}
+                      </div>
+                      <div>
+                        confidence
+                      </div>
+                    </div>
+                 
+                  </div>
+                
                   
                 </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center bg-transparent">
-                  <div className="space-y-1">
-                    <div className="text-2xl font-semibold text-sky-600 dark:text-sky-400">
-                      {marketData?.saleData?.averageDaysOnMarket || 'N/A'}
+                {/* value measure */}
+                <div className="flex flex-col w-full">
+                  <div className="flex items-center justify-between text-gray-600">
+                    <div>
+                      Low Estimate
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Average Days on Market</div>
+                    <div>
+                      High Estimate
+                      </div>
+                  </div>
+                  {/* value bar */}
+                  <div className="bg-gradient-to-r from-sky-500 to-sky-800 h-2 rounded-sm">   </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <div>
+                      <span className="font-semibold text-lg">{formatCurrency(avmData.priceRangeLow)}</span>
+                      <div>
+                        {formatCurrency(avmData.priceRangeLow / avmData.subjectProperty.squareFootage)}/sf
+                      </div>
+                     
+                    </div>
+                    <div className="flex flex-col text-right">
+                        <span className="font-semibold text-lg">{formatCurrency(avmData.priceRangeHigh)}</span>
+                        <div>
+                        {formatCurrency(avmData.priceRangeHigh / avmData.subjectProperty.squareFootage)}/sf
+                        </div>
+                    </div>
+                  </div>
+                  
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center bg-transparent mt-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-center text-2xl font-semibold text-sky-600 dark:text-sky-400">
+                      <HouseIcon className="w-6 h-6 mr-1" /> {avmData.subjectProperty.bedrooms || 'N/A'}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Bedrooms</div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-2xl font-semibold text-sky-600 dark:text-sky-400">
-                      {marketData?.saleData?.averagePrice ? formatCurrency(marketData.saleData.averagePrice) : 'N/A'}
+                    <div className="flex items-center justify-center text-2xl font-semibold text-sky-600 dark:text-sky-400">
+                      <ShowerHead className="w-6 h-6 mr-1" />   {avmData.subjectProperty.bathrooms || 'N/A'}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Average Sales Price</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Bathrooms</div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-2xl font-semibold text-sky-600 dark:text-sky-400">
-                      {marketData?.saleData?.newListings || 'N/A'}
+                    <div className="flex items-center justify-center text-2xl font-semibold text-sky-600 dark:text-sky-400">
+                     <Scan className="w-6 h-6 mr-1" /> {avmData.subjectProperty.squareFootage || 'N/A'}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">New Listings <span className="text-xs text-gray-500">(last 6 months)</span></div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Square Footage </div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-2xl font-semibold text-sky-600 dark:text-sky-400">
-                      {marketData?.saleData?.averagePricePerSquareFoot ? `$${marketData.saleData.averagePricePerSquareFoot}` : 'N/A'}
+                    <div className="flex items-center justify-center  text-2xl font-semibold text-sky-600 dark:text-sky-400">
+                      <LandPlot className="w-6 h-6 mr-1" /> {avmData.subjectProperty.lotSize || 'N/A'}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Price per Sq Ft</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Lot Size</div>
                   </div>
                 </div>
 
@@ -629,6 +859,48 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
             </div>
 
             {/* Market Statistics */}
+            <div id="comparable-sales" className="bg-white rounded-lg shadow-sm border border-blue-200 dark:bg-gray-800 dark:border-blue-700">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Comparable Sales</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Comparable Sales near your area in
+                  {marketData?.zipCode && ` (${marketData.zipCode})`}
+                </p>
+
+                {marketData && (
+                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">Market Insights</h4>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                      {marketData.saleData?.averageDaysOnMarket && (
+                        <p>
+                          Properties in this area typically sell within{' '}
+                          <strong>{marketData.saleData.averageDaysOnMarket} days</strong>
+                          {marketData.saleData.averageDaysOnMarket < 30 ? ' - a fast-moving market!' : 
+                           marketData.saleData.averageDaysOnMarket > 60 ? ' - buyers have more time to decide.' : 
+                           ' - a balanced market.'}
+                        </p>
+                      )}
+                      {marketData.rentalData?.averageRentPrice && (
+                        <p>
+                          Average rental price in the area: <strong>{formatCurrency(marketData.rentalData.averageRentPrice)}/month</strong>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {error && !marketData && (
+                  <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-700">
+                    <h4 className="font-semibold mb-2 text-yellow-800 dark:text-yellow-200">Market Data Unavailable</h4>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                      {error.includes('No market data available') 
+                        ? `Market statistics are not available for this zip code in our database.`
+                        : 'Unable to load current market data. Please try again later.'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
             <div id="market-statistics" className="bg-white rounded-lg shadow-sm border border-blue-200 dark:bg-gray-800 dark:border-blue-700">
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Market Statistics</h3>
@@ -739,13 +1011,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-600 text-white px-6 py-3 rounded-md font-medium">
-                <Download className="h-4 w-4" />
-                Download Full Report
-              </button>
-            </div>
+         
           </div>
         </div>
       </div>
