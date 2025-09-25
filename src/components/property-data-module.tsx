@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
   Home,
@@ -22,13 +23,28 @@ import {
   HouseIcon,
   ShowerHead,
   Scan,
-  LandPlot
+  LandPlot,
+  ArrowUpIcon,
+  SparkleIcon,
+  ChartAreaIcon,
+  Sparkles,
+  CircleQuestionMark
+ 
 } from "lucide-react"
 import { extractZipcode } from "@/lib/utils/address"
 import type { MarketStatistics } from "@/lib/api/rentcast"
-import { MOCK_PROPERTY_DATA, MOCK_MARKET_DATA, USE_MOCK_DATA } from "@/lib/mock-data"
+import { MOCK_PROPERTY_DATA, MOCK_MARKET_DATA, USE_MOCK_DATA, MOCK_SUBJECT_PROPERTY_DATA, MOCK_AVM_DATA, MOCK_COMPS_DATA, MOCK_PROPERTY_IMAGE, MOCK_VALUE_DATA } from "@/lib/mock-data"
 import GaugeComponent from 'react-gauge-component';
 import { Separator } from "@/components/ui/separator"
+import { ChartLineInteractive } from "./ui/chart-line-interactive"
+import { ChartAreaInteractive } from "./ui/chart-area-interactive"
+import { Progress } from "@/components/ui/progress"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip"
+import { ChartRadar } from "./ui/chart-radar"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
+import { MapboxMap } from "./ui/mapbox-map"
+import { PropertyDetailsSheet } from "./property-details-sheet"
+import type image from "next/image"
 
 const usd = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -52,203 +68,55 @@ interface PropertyDataModuleProps {
 
 export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps) {
   const router = useRouter()
-  const [propertyData, setPropertyData] = useState<any>(null)
-  const [marketData, setMarketData] = useState<MarketStatistics | null>(null)
+  
+  // need to kill this
+  const [propertyData, setPropertyData] = useState<any>(null) 
+
+  const [useMockData, setUseMockData] = useState<boolean>(true)
+  const [subjectPropertyData, setSubjectPropertyData] = useState<any>(null)
+  const [marketData, setMarketData] = useState<any>(null)
   const [avmData, setAvmData] = useState<any>(null)
+  const [valueData, setValueData] = useState<any>(null)
+  const [propertyImages, setPropertyImages] = useState<any>(null)
+  const [comps, setComps] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [selectedTimeframe, setSelectedTimeframe] = useState<"1" | "3" | "5">("1")
   const [isTaxHistoryExpanded, setIsTaxHistoryExpanded] = useState(false)
+  const [isPropertySheetOpen, setIsPropertySheetOpen] = useState(false)
+  const [selectedProperty, setSelectedProperty] = useState<any>(null)
+
+  // Handler for when a map marker is clicked
+  const handleMarkerClick = (propertyData: any) => {
+    setSelectedProperty(propertyData)
+    setIsPropertySheetOpen(true)
+  }
   
   useEffect(() => {
-    if (!address) return
+    console.log('PropertyDataModule - Address received:', address)
+    console.log('PropertyDataModule - Address type:', typeof address)
+    console.log('PropertyDataModule - useMockData:', useMockData)
+    
+    if (!address) {
+      console.log('PropertyDataModule - No address provided, returning early')
+      return
+    }
 
     // Use mock data in development to avoid API calls
-    if (USE_MOCK_DATA) {
+    if (useMockData) {
       console.log('Using mock data for development')
-      setMarketData(MOCK_MARKET_DATA as MarketStatistics)
+      
+      setMarketData(MOCK_MARKET_DATA)
+      
+      setSubjectPropertyData(MOCK_SUBJECT_PROPERTY_DATA)
+      setComps(MOCK_COMPS_DATA)
       setPropertyData(MOCK_PROPERTY_DATA)
       // Hardcoded AVM data to prevent page breaks
-      setAvmData({
-        "price": 250000,
-        "priceRangeLow": 195000,
-        "priceRangeHigh": 304000,
-        "subjectProperty": {
-          "id": "5500-Grand-Lake-Dr,-San-Antonio,-TX-78244",
-          "formattedAddress": "5500 Grand Lake Dr, San Antonio, TX 78244",
-          "addressLine1": "5500 Grand Lake Dr",
-          "addressLine2": null,
-          "city": "San Antonio",
-          "state": "TX",
-          "stateFips": "48",
-          "zipCode": "78244",
-          "county": "Bexar",
-          "countyFips": "029",
-          "latitude": 29.476011,
-          "longitude": -98.351454,
-          "propertyType": "Single Family",
-          "bedrooms": 3,
-          "bathrooms": 2,
-          "squareFootage": 1878,
-          "lotSize": 8843,
-          "yearBuilt": 1973,
-          "lastSaleDate": "2024-11-18T00:00:00.000Z",
-          "lastSalePrice": 270000
-        },
-        "comparables": [
-          {
-            "id": "5207-Pine-Lake-Dr,-San-Antonio,-TX-78244",
-            "formattedAddress": "5207 Pine Lake Dr, San Antonio, TX 78244",
-            "addressLine1": "5207 Pine Lake Dr",
-            "addressLine2": null,
-            "city": "San Antonio",
-            "state": "TX",
-            "stateFips": "48",
-            "zipCode": "78244",
-            "county": "Bexar",
-            "countyFips": "029",
-            "latitude": 29.47046,
-            "longitude": -98.351561,
-            "propertyType": "Single Family",
-            "bedrooms": 3,
-            "bathrooms": 2,
-            "squareFootage": 1895,
-            "lotSize": 6882,
-            "yearBuilt": 1988,
-            "status": "Active",
-            "price": 289444,
-            "listingType": "Standard",
-            "listedDate": "2025-04-11T00:00:00.000Z",
-            "removedDate": null,
-            "lastSeenDate": "2025-09-03T10:57:39.532Z",
-            "daysOnMarket": 146,
-            "distance": 0.384,
-            "daysOld": 1,
-            "correlation": 0.9916
-          },
-          {
-            "id": "6707-Lake-Cliff-St,-San-Antonio,-TX-78244",
-            "formattedAddress": "6707 Lake Cliff St, San Antonio, TX 78244",
-            "addressLine1": "6707 Lake Cliff St",
-            "addressLine2": null,
-            "city": "San Antonio",
-            "state": "TX",
-            "stateFips": "48",
-            "zipCode": "78244",
-            "county": "Bexar",
-            "countyFips": "029",
-            "latitude": 29.47617,
-            "longitude": -98.356908,
-            "propertyType": "Single Family",
-            "bedrooms": 3,
-            "bathrooms": 2,
-            "squareFootage": 1811,
-            "lotSize": 8146,
-            "yearBuilt": 1977,
-            "status": "Inactive",
-            "price": 279000,
-            "listingType": "Standard",
-            "listedDate": "2025-06-06T00:00:00.000Z",
-            "removedDate": "2025-07-12T00:00:00.000Z",
-            "lastSeenDate": "2025-07-11T13:21:20.968Z",
-            "daysOnMarket": 36,
-            "distance": 0.3286,
-            "daysOld": 55,
-            "correlation": 0.9887
-          },
-          {
-            "id": "6917-Deep-Lake-Dr,-San-Antonio,-TX-78244",
-            "formattedAddress": "6917 Deep Lake Dr, San Antonio, TX 78244",
-            "addressLine1": "6917 Deep Lake Dr",
-            "addressLine2": null,
-            "city": "San Antonio",
-            "state": "TX",
-            "stateFips": "48",
-            "zipCode": "78244",
-            "county": "Bexar",
-            "countyFips": "029",
-            "latitude": 29.479375,
-            "longitude": -98.351978,
-            "propertyType": "Single Family",
-            "bedrooms": 3,
-            "bathrooms": 2,
-            "squareFootage": 1753,
-            "lotSize": 11151,
-            "yearBuilt": 1974,
-            "status": "Inactive",
-            "price": 199900,
-            "listingType": "Standard",
-            "listedDate": "2025-05-22T00:00:00.000Z",
-            "removedDate": "2025-08-27T00:00:00.000Z",
-            "lastSeenDate": "2025-08-26T12:36:31.859Z",
-            "daysOnMarket": 97,
-            "distance": 0.2348,
-            "daysOld": 9,
-            "correlation": 0.9863
-          },
-          {
-            "id": "5314-Lost-Tree,-San-Antonio,-TX-78244",
-            "formattedAddress": "5314 Lost Tree, San Antonio, TX 78244",
-            "addressLine1": "5314 Lost Tree",
-            "addressLine2": null,
-            "city": "San Antonio",
-            "state": "TX",
-            "stateFips": "48",
-            "zipCode": "78244",
-            "county": "Bexar",
-            "countyFips": "029",
-            "latitude": 29.477064,
-            "longitude": -98.343686,
-            "propertyType": "Single Family",
-            "bedrooms": 3,
-            "bathrooms": 2,
-            "squareFootage": 1948,
-            "lotSize": 9017,
-            "yearBuilt": 2000,
-            "status": "Inactive",
-            "price": 159900,
-            "listingType": "Standard",
-            "listedDate": "2025-06-23T00:00:00.000Z",
-            "removedDate": "2025-06-28T00:00:00.000Z",
-            "lastSeenDate": "2025-06-27T11:02:28.080Z",
-            "daysOnMarket": 5,
-            "distance": 0.4734,
-            "daysOld": 69,
-            "correlation": 0.9859
-          },
-          {
-            "id": "7207-Solar-Eclipse,-Converse,-TX-78109",
-            "formattedAddress": "7207 Solar Eclipse, Converse, TX 78109",
-            "addressLine1": "7207 Solar Eclipse",
-            "addressLine2": null,
-            "city": "Converse",
-            "state": "TX",
-            "stateFips": "48",
-            "zipCode": "78109",
-            "county": "Bexar",
-            "countyFips": "029",
-            "latitude": 29.463689,
-            "longitude": -98.348663,
-            "propertyType": "Single Family",
-            "bedrooms": 3,
-            "bathrooms": 2,
-            "squareFootage": 1883,
-            "lotSize": 5140,
-            "yearBuilt": 2022,
-            "status": "Active",
-            "price": 320000,
-            "listingType": "Standard",
-            "listedDate": "2025-03-10T00:00:00.000Z",
-            "removedDate": null,
-            "lastSeenDate": "2025-09-03T10:33:44.607Z",
-            "daysOnMarket": 178,
-            "distance": 0.8687,
-            "daysOld": 1,
-            "correlation": 0.9835
-          }
-        ]
-      })
+      setAvmData(MOCK_AVM_DATA)
+      setValueData(MOCK_VALUE_DATA)
+      // todo: get property images from API
+      setPropertyImages(MOCK_PROPERTY_IMAGE)
       setIsLoading(false)
       return
     }
@@ -258,11 +126,48 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       setError(null)
 
       try {
+        // Convert URL-friendly address format to API-friendly format
+        const apiAddress = address.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        console.log('PropertyDataModule - Original address:', address)
+        console.log('PropertyDataModule - Converted address for API:', apiAddress)
+        
+        //Fetch Subject Property Data
+        const zillowUrl = `/api/zillow?location=${encodeURIComponent(apiAddress)}`
+        console.log('PropertyDataModule - Zillow API URL:', zillowUrl)
+        const subjectPropertyResponse = await fetch(zillowUrl)
+        console.log('PropertyDataModule - Zillow response status:', subjectPropertyResponse.status)
+        let subjectPropertyResult = null
+        if (subjectPropertyResponse.ok) {
+          subjectPropertyResult = await subjectPropertyResponse.json()
+          setSubjectPropertyData(subjectPropertyResult)
+
+          //Fetch Property Images using zpid from subject property data
+          if (subjectPropertyResult?.zpid) {
+            const propertyImagesResponse = await fetch(`/api/zillow/images?zpid=${encodeURIComponent(subjectPropertyResult.zpid)}`)
+            if (propertyImagesResponse.ok) {
+              const propertyImagesResult = await propertyImagesResponse.json()
+              setPropertyImages(propertyImagesResult)
+            }
+          }
+        }
         // Fetch AVM data
-        const avmResponse = await fetch(`/api/rentcast/value?address=${encodeURIComponent(address)}`)
+        const rentcastUrl = `/api/rentcast/value?address=${encodeURIComponent(apiAddress)}`
+        console.log('PropertyDataModule - Rentcast API URL:', rentcastUrl)
+        const avmResponse = await fetch(rentcastUrl)
+        console.log('PropertyDataModule - Rentcast response status:', avmResponse.status)
         if (avmResponse.ok) {
           const avmResult = await avmResponse.json()
           setAvmData(avmResult)
+          
+        }
+
+        //Fetch Comps using zpid from subject property data
+        if (subjectPropertyResult?.zpid) {
+          const compsResponse = await fetch(`/api/zillow/comps?zpid=${encodeURIComponent(subjectPropertyResult.zpid)}`)
+          if (compsResponse.ok) {
+            const compsResult = await compsResponse.json()
+            setComps(compsResult)
+          }
         }
 
         // Fetch market data
@@ -272,6 +177,15 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
           if (marketResponse.ok) {
             const marketResult = await marketResponse.json()
             setMarketData(marketResult)
+          }
+        }
+
+        //Fetch ValueData using zpid from subject property data
+        if (subjectPropertyResult?.zpid) {
+          const valueDataResponse = await fetch(`/api/zillow/values?zpid=${encodeURIComponent(subjectPropertyResult.zpid)}`)
+          if (valueDataResponse.ok) {
+            const valueDataResult = await valueDataResponse.json()
+            setValueData(valueDataResult)
           }
         }
 
@@ -293,36 +207,58 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     fetchData()
   }, [address, zipcode])
 
+  
+
   const getMarketSpeedIndicator = (days: number) => {
     if (days < 30) return { 
       label: "Fast Market", 
       color: "bg-green-100 text-green-800", 
       icon: TrendingUp,
-      description: "Properties sell quickly with high demand. As a seller, you can expect competitive offers, potentially above asking price, and a faster closing timeline. This is an excellent time to list your property."
+      description: `Properties sell quickly with high demand with an average of ${marketData?.saleData?.averageDaysOnMarket || 'N/A'} days on market. As a seller, you can expect competitive offers, potentially above asking price, and a faster closing timeline. This is an excellent time to list your property.`
     }
     if (days > 60) return { 
       label: "Slow Market", 
       color: "bg-red-100 text-red-800", 
       icon: TrendingDown,
-      description: "Properties take longer to sell with lower demand. As a seller, you may need to price competitively, consider staging improvements, and be prepared for longer marketing periods and potential price negotiations."
+      description: `Properties take longer to sell with lower demand with an average of ${marketData?.saleData?.averageDaysOnMarket || 'N/A'} days on market. As a seller, you may need to price competitively, consider staging improvements, and be prepared for longer marketing periods and potential price negotiations.`
     }
     return { 
       label: "Balanced Market", 
       color: "bg-blue-100 text-blue-800", 
       icon: Calendar,
-      description: "Supply and demand are relatively equal. As a seller, you can expect reasonable market activity with standard negotiation processes. Proper pricing and presentation are key to attracting qualified buyers."
+      description: `Supply and demand are relatively equal with an average of ${marketData?.saleData?.averageDaysOnMarket || 'N/A'} days on market. As a seller, you can expect reasonable market activity with standard negotiation processes. Proper pricing and presentation are key to attracting qualified buyers.`
     }
   }
 
+  const marketStatusColor = (status: string) => {
+    if (status === "Active") return "bg-green-100 text-green-800"
+    return "bg-red-100 text-red-800"
+  }
+
+  const borderStatusColor = (status: string) => {
+    if (status === "Active") return "border-l-green-500"
+    return "border-l-red-500"
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const options: Intl.DateTimeFormatOptions = { 
+      month: '2-digit', 
+      day: '2-digit', 
+      year: 'numeric' 
+    }
+    return date.toLocaleDateString('en-US', options)
+  }
+
   const nextImage = () => {
-    if (propertyData && propertyData.photos && propertyData.photos.length > 0) {
-      setCurrentImageIndex((prev) => (prev + 1) % propertyData.photos.length)
+    if (propertyImages && propertyImages.images && propertyImages.images.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % propertyImages.images.length)
     }
   }
 
   const prevImage = () => {
-    if (propertyData && propertyData.photos && propertyData.photos.length > 0) {
-      setCurrentImageIndex((prev) => (prev - 1 + propertyData.photos.length) % propertyData.photos.length)
+    if (propertyImages && propertyImages.images && propertyImages.images.length > 0) {
+      setCurrentImageIndex((prev) => (prev - 1 + propertyImages.images.length) % propertyImages.images.length)
     }
   }
 
@@ -445,7 +381,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     isUsingFallback: propertyPrice <= 0
   })
   
-  const pricePerSquareFoot = Math.round((avmData.price / avmData.subjectProperty.squareFootage) * 100) / 100
+  const pricePerSquareFoot = subjectPropertyData?.zestimate && subjectPropertyData?.livingAreaValue 
+    ? Math.round((subjectPropertyData?.zestimate / subjectPropertyData?.livingAreaValue) * 100) / 100 
+    : 0
   // Set minimum value to 0 as requested
   const minPrice = 0
   
@@ -468,6 +406,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       {/* Header with navigation */}
       <div className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        
           <div className="flex h-16 justify-between items-center">
             <button
               onClick={() => router.back()}
@@ -485,8 +424,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       </div>
 
       {/* Navigation */}
-      <div className="bg-sky-50 border-b border-sky-200 dark:bg-sky-900/20 dark:border-sky-800 sticky top-0 z-20">
+      <div className="bg-sky-50 border-b border-sky-200 dark:bg-sky-900/20 dark:border-sky-800 sticky top-0 z-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+  
           <nav className="flex space-x-8 py-4">
             <button
               onClick={() => scrollToSection("home-value")}
@@ -575,14 +515,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                   <div className="text-center p-6">
                    
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Resources</h3>
-                   
-                    {/* <div className="flex items-center justify-center gap-2 text-sm text-sky-600 dark:text-sky-400 mt-2">
-                      <span>⭐ {agentData.rating}</span>
-                      <span>•</span>
-                      <span>{agentData.reviews} reviews</span>
-                      <span>•</span>
-                      <span>{agentData.yearsExperience} years</span>
-                    </div> */}
+                
                   </div>
                   <div className="px-6 pb-6 space-y-3">
                     <button className="w-full bg-sky-500 hover:bg-sky-600 text-white px-4 py-3 cursor-pointer rounded-md font-medium flex items-center justify-center">
@@ -600,93 +533,100 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
             </div> 
           </div>
 
+
+
           {/* Main Content */}
           <div className="flex-1 space-y-8">
             {/* Home Value Section */}
-            <div id="home-value" className="bg-white rounded-lg shadow-sm border-2 border-sky-200 dark:bg-gray-800 dark:border-sky-700">
+            <div id="home-value" className="bg-white rounded-lg shadow-sm border-2  dark:bg-gray-800 dark:border-sky-700">
               <div className="p-6">
                 <div className="text-center mb-6">
-                  <div className="flex items-center justify-center">
-                     <p className="text-lg block font-semibold bg-sky-100 px-4 py-2 rounded-full text-sky-600 dark:text-gray-400">Estimated Home Value</p>
-                  </div>
-                
-                  <div className="z-20 py-4 text-xl">
-                      {/* TODO: Replace with dynamic value from avmData */}
-                      <p className="text-6xl font-bold text-sky-600 dark:text-sky-400">
-                        {avmData?.price ? formatCurrency(avmData.price) : formatCurrency(850000)}
-                      </p>
 
-                    {/* <GaugeComponent 
-                        type="semicircle"
-                        style={{
-                            
-                        }}
-                        arc={{
-                          subArcs: [
-                            {
-                              limit: limit50Percent,
-                              color: "#f97316"
-                            }, 
-                            {
-                              limit: limit75Percent,
-                              color: "#10b981"
-                            },
-                            {
-                              limit: limit80Percent,
-                              color: "#0ea5e9"
-                            },
-             
-                          ]
-                        }}
-
-                        pointer={{type: "blob"}}
-                        minValue={minPrice}
-                        maxValue={maxPrice}
-                        value={propertyData.zestimate || propertyData.price || 0}
-                        labels={{
-                          valueLabel: {
-                            // Center number (inside the gauge)
-                            formatTextValue: (v: number) => usd.format(v),
-                            matchColorWithArc: true,
-                          },
-                          tickLabels: {
-                            // Axis tick numbers
-                            defaultTickValueConfig: {
-                              formatTextValue: (v: number) => usd.format(v),
-                            },
-                          },
-                        }}
+                  {/* value */}
+                  <div>
+                    <div className="flex flex-col gap-y-2 items-center justify-center">
+                    <h2 className="text-lg font-semibold">{subjectPropertyData?.address?.streetAddress} | {subjectPropertyData?.address?.city} | {subjectPropertyData?.address?.state} | {subjectPropertyData?.address?.zipcode}</h2>  
+                      <p className="text-lg block font-semibold bg-sky-100 px-4 py-2 rounded-full text-sky-600 dark:text-gray-400">Estimated Home Value</p>
+                     
+                    </div>
                   
-                        // value={80}
-                    /> */}
-                  </div>
-                  <div className="flex flex-row items-center gap-2 justify-center">
-                    {/* one */}
-                    <div className="flex flex-col items-end">
-                      <div className="text-2xl font-semibold ">
-                       
-                        ${pricePerSquareFoot}
-                      </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                        per sq.ft.
-                      </div>
+                    <div className=" py-4 flex flex-col gap-y-4 text-xl">
+                     
+                        <p className="text-6xl font-bold text-sky-600 dark:text-sky-400">
+                          {subjectPropertyData?.zestimate ? formatCurrency(subjectPropertyData?.zestimate) : formatCurrency(850000)}
+                        </p>            
                     </div>
-                    <Separator orientation="vertical" />
-                    {/* two */}
-                    <div>
-                      <div>
-                        {/* TODO: Replace with dynamic confidence or range data from avmData */}
-                        {avmData?.confidence || 'Low'}
+
+                    <div className="flex flex-row items-center gap-2 justify-center">
+                      {/* one */}
+                      <div className="flex flex-col items-end">
+                        <div className="text-2xl font-semibold ">
+                        
+                          ${pricePerSquareFoot}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          per sq.ft.
+                        </div>
                       </div>
+                      <Separator orientation="vertical" />
+                      {/* two */}
                       <div>
-                        confidence
+                        <div>
+                          {/* TODO: Replace with dynamic confidence or range data from avmData */}
+                          {avmData?.confidence || 'Low'}
+                        </div>
+                        <div>
+                          confidence
+                        </div>
                       </div>
+                  
                     </div>
-                 
                   </div>
+
+                  {/* images */}
+                  {propertyImages?.images && propertyImages.images.length > 0 && (
+                   <div className="relative mt-2">
+                    <h3 className=" absolute top-2 left-2 bg-white px-2 py-1 rounded text-sky-600 dark:text-gray-400 text-sm font-semibold mb-2">
+                      {propertyImages.images.length === 1 ? 'Property Image' : 'Property Images'}
+                    </h3>
+                    <img
+                      src={propertyImages.images[currentImageIndex]}
+                      alt={`Property photo ${currentImageIndex + 1}`}
+                      className="w-full h-80 object-cover rounded-lg"
+                    />
+                    {propertyImages.images.length > 1 && (
+                      <>
+                        <button
+                          onClick={prevImage}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white/90 p-2 rounded-full shadow-md"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={nextImage}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white/90 p-2 rounded-full shadow-md"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                          {propertyImages.images.map((_: any, index: number) => (
+                            <button
+                              key={index}
+                              className={`w-2 h-2 rounded-full transition-colors ${
+                                index === currentImageIndex ? "bg-sky-500" : "bg-white/60"
+                              }`}
+                              onClick={() => setCurrentImageIndex(index)}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  )}
                 
                   
                 </div>
+                
                 {/* value measure */}
                 <div className="flex flex-col w-full">
                   <div className="flex items-center justify-between text-gray-600">
@@ -698,19 +638,24 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                       </div>
                   </div>
                   {/* value bar */}
+                   {/* TODO: need to update this so its pulling accurate info that jives with Zillow data */}
                   <div className="bg-gradient-to-r from-sky-500 to-sky-800 h-2 rounded-sm">   </div>
                   <div className="flex items-center justify-between mt-2">
                     <div>
-                      <span className="font-semibold text-lg">{formatCurrency(avmData.priceRangeLow)}</span>
+                      <span className="font-semibold text-lg">{formatCurrency(avmData?.priceRangeLow || 0)}</span>
                       <div>
-                        {formatCurrency(avmData.priceRangeLow / avmData.subjectProperty.squareFootage)}/sf
+                        {avmData?.priceRangeLow && avmData?.subjectProperty?.squareFootage 
+                          ? formatCurrency(avmData?.priceRangeLow / avmData?.subjectProperty?.squareFootage) 
+                          : '$0'}/sf
                       </div>
                      
                     </div>
                     <div className="flex flex-col text-right">
-                        <span className="font-semibold text-lg">{formatCurrency(avmData.priceRangeHigh)}</span>
+                        <span className="font-semibold text-lg">{formatCurrency(avmData?.priceRangeHigh || 0)}</span>
                         <div>
-                        {formatCurrency(avmData.priceRangeHigh / avmData.subjectProperty.squareFootage)}/sf
+                        {avmData?.priceRangeHigh && avmData?.subjectProperty?.squareFootage 
+                          ? formatCurrency(avmData?.priceRangeHigh / avmData?.subjectProperty?.squareFootage) 
+                          : '$0'}/sf
                         </div>
                     </div>
                   </div>
@@ -719,189 +664,42 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center bg-transparent mt-4">
                   <div className="space-y-1">
                     <div className="flex items-center justify-center text-2xl font-semibold text-sky-600 dark:text-sky-400">
-                      <HouseIcon className="w-6 h-6 mr-1" /> {avmData.subjectProperty.bedrooms || 'N/A'}
+                      <Bed className="w-6 h-6 mr-1" /> {subjectPropertyData?.bedrooms || 'N/A'}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Bedrooms</div>
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-center text-2xl font-semibold text-sky-600 dark:text-sky-400">
-                      <ShowerHead className="w-6 h-6 mr-1" />   {avmData.subjectProperty.bathrooms || 'N/A'}
+                      <ShowerHead className="w-6 h-6 mr-1" />   {subjectPropertyData?.bathrooms || 'N/A'}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Bathrooms</div>
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-center text-2xl font-semibold text-sky-600 dark:text-sky-400">
-                     <Scan className="w-6 h-6 mr-1" /> {avmData.subjectProperty.squareFootage || 'N/A'}
+                     <HouseIcon className="w-6 h-6 mr-1" /> {subjectPropertyData?.livingAreaValue ? subjectPropertyData.livingAreaValue.toLocaleString() : 'N/A'}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Square Footage </div>
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-center  text-2xl font-semibold text-sky-600 dark:text-sky-400">
-                      <LandPlot className="w-6 h-6 mr-1" /> {avmData.subjectProperty.lotSize || 'N/A'}
+                      <LandPlot className="w-6 h-6 mr-1" /> {subjectPropertyData?.yearBuilt || 'N/A'}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Lot Size</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Year Built</div>
                   </div>
                 </div>
-
-                {marketSpeed && (
-                  <div className="mt-6 flex items-center flex-col gap-2 justify-center">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${marketSpeed.color}`}>
-                      <marketSpeed.icon className="h-4 w-4 mr-1" />
-                      {marketSpeed.label}
-                    </span>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 max-w-md text-center">{marketSpeed.description}</p>
-                  </div>
-                )}
+                <Separator orientation="horizontal" className="my-4" />
+                {/* sub section */}
+                <div className="gap-y-4 flex flex-col">
+                  
+                  <ChartAreaInteractive address={avmData?.subjectProperty?.formattedAddress || address} valueData={valueData}/> 
+                </div>
+            
+                
               </div>
             </div>
 
-            {/* Property Photos - Only render if photos exist */}
-            {propertyData.photos && propertyData.photos.length > 0 && (
-              <div id="property-photos" className="bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Property Photos</h3>
-                  <div className="relative">
-                    <img
-                      src={propertyData.photos[currentImageIndex]}
-                      alt={`Property photo ${currentImageIndex + 1}`}
-                      className="w-full h-80 object-cover rounded-lg"
-                    />
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white/90 p-2 rounded-full shadow-md"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white/90 p-2 rounded-full shadow-md"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                      {propertyData.photos.map((_: any, index: number) => (
-                        <button
-                          key={index}
-                          className={`w-2 h-2 rounded-full transition-colors ${
-                            index === currentImageIndex ? "bg-sky-500" : "bg-white/60"
-                          }`}
-                          onClick={() => setCurrentImageIndex(index)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Property Details */}
-            <div id="property-details" className="bg-white rounded-lg shadow-sm border border-emerald-200 dark:bg-gray-800 dark:border-emerald-700">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Home className="h-5 w-5" />
-                  Property Details
-                </h3>
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="flex items-center gap-3">
-                    <Bed className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    <div>
-                      <div className="font-semibold text-gray-900 dark:text-white">{propertyData.bedrooms || 'N/A'}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Bedrooms</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Bath className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    <div>
-                      <div className="font-semibold text-gray-900 dark:text-white">{propertyData.bathrooms || 'N/A'}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Bathrooms</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Square className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    <div>
-                      <div className="font-semibold text-gray-900 dark:text-white">{propertyData.livingArea ? formatNumber(propertyData.livingArea) : 'N/A'}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Sq Ft</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    <div>
-                      <div className="font-semibold text-gray-900 dark:text-white">{propertyData.yearBuilt || 'N/A'}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Year Built</div>
-                    </div>
-                  </div>
-                </div>
-
-                <hr className="border-gray-200 dark:border-gray-700 mb-6" />
-
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Property Type</span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                      {propertyData.propertyType || 'Single Family Home'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Lot Size</span>
-                    <span className="font-medium text-gray-900 dark:text-white">{propertyData.lotSize || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Last Sold</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {propertyData.lastSold ? 
-                        `${formatCurrency(propertyData.lastSold.price)} (${new Date(propertyData.lastSold.date).getFullYear()})` : 
-                        'N/A'
-                      }
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Market Statistics */}
-            <div id="comparable-sales" className="bg-white rounded-lg shadow-sm border border-blue-200 dark:bg-gray-800 dark:border-blue-700">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Comparable Sales</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Comparable Sales near your area in
-                  {marketData?.zipCode && ` (${marketData.zipCode})`}
-                </p>
-
-                {marketData && (
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">Market Insights</h4>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                      {marketData.saleData?.averageDaysOnMarket && (
-                        <p>
-                          Properties in this area typically sell within{' '}
-                          <strong>{marketData.saleData.averageDaysOnMarket} days</strong>
-                          {marketData.saleData.averageDaysOnMarket < 30 ? ' - a fast-moving market!' : 
-                           marketData.saleData.averageDaysOnMarket > 60 ? ' - buyers have more time to decide.' : 
-                           ' - a balanced market.'}
-                        </p>
-                      )}
-                      {marketData.rentalData?.averageRentPrice && (
-                        <p>
-                          Average rental price in the area: <strong>{formatCurrency(marketData.rentalData.averageRentPrice)}/month</strong>
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {error && !marketData && (
-                  <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-700">
-                    <h4 className="font-semibold mb-2 text-yellow-800 dark:text-yellow-200">Market Data Unavailable</h4>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                      {error.includes('No market data available') 
-                        ? `Market statistics are not available for this zip code in our database.`
-                        : 'Unable to load current market data. Please try again later.'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div id="market-statistics" className="bg-white rounded-lg shadow-sm border border-blue-200 dark:bg-gray-800 dark:border-blue-700">
+            {/* market stats component */}
+            <div id="market-statistics" className="bg-white rounded-lg shadow-sm border  dark:bg-gray-800 dark:border-blue-700">
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Market Statistics</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
@@ -909,27 +707,242 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                   {marketData?.zipCode && ` (${marketData.zipCode})`}
                 </p>
 
-                {marketData && (
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">Market Insights</h4>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                      {marketData.saleData?.averageDaysOnMarket && (
-                        <p>
-                          Properties in this area typically sell within{' '}
-                          <strong>{marketData.saleData.averageDaysOnMarket} days</strong>
-                          {marketData.saleData.averageDaysOnMarket < 30 ? ' - a fast-moving market!' : 
-                           marketData.saleData.averageDaysOnMarket > 60 ? ' - buyers have more time to decide.' : 
-                           ' - a balanced market.'}
-                        </p>
-                      )}
-                      {marketData.rentalData?.averageRentPrice && (
-                        <p>
-                          Average rental price in the area: <strong>{formatCurrency(marketData.rentalData.averageRentPrice)}/month</strong>
-                        </p>
-                      )}
+               
+                <div className="flex flex-col gap-2 ">
+          
+                  <div className="flex flex-col items-start">
+                 
+                  {marketSpeed && (
+                    
+                    <div className="flex flex-col items-start gap-y-2 border border-blue-200 p-2 rounded-sm">
+                      <div className="flex flex-row items-center gap-4">
+                        <h2 className="font-semibold flex flex-row items-center gap-2">AI Market Assessment</h2>
+                        <span className={`inline-flex items-center px-2 py-1 rounded-sm text-sm font-medium ${marketSpeed.color}`}>
+                          <marketSpeed.icon className="h-4 w-4 mr-1" />
+                          {marketSpeed.label}
+                        </span>
+                      </div>
+                       
+                      <div className="flex flex-row bg-sky-50 p-2 gap-2 rounded-sm">
+                        <Sparkles className="h-4 w-4 mt-0.5 text-blue-500 flex-shrink-0" />
+                       <p className="text-sm text-gray-600 dark:text-gray-400  text-left">{marketSpeed.description}</p>
+                      </div>
                     </div>
+                  )}
                   </div>
-                )}
+
+                  {/* cols */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 ">
+
+                  {/* box */}
+                  <ChartRadar marketData={marketData} />  
+
+                  {/* box  */}  
+                  <Card className="flex flex-col justify-between cursor-pointer hover:bg-blue-50">
+                    <CardHeader>
+                    <CardTitle className="text-slate-800">Average Price</CardTitle>
+                    <CardDescription className="text-slate-600">
+                    Average price of a <span className="font-semibold"> {avmData?.subjectProperty.propertyType}</span> in <span className="font-semibold"> {avmData?.subjectProperty.zipCode}</span>
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col items-center gap-y-4 justify-between">
+                      {(() => {
+                        // Get the subject property type from avmData
+                        const subjectPropertyType = avmData?.subjectProperty?.propertyType;
+                        
+                        // Find property type specific data from marketData
+                        const propertyTypeData = marketData?.saleData?.dataByPropertyType?.find(
+                          (data: any) => data.propertyType === subjectPropertyType
+                        );
+                        
+                        console.log('subjectPropertyType:', subjectPropertyType);
+                        console.log('propertyTypeData:', propertyTypeData);
+                        console.log('dataByPropertyType:', marketData?.saleData?.dataByPropertyType);
+                        
+                        // Use property type specific data if available, otherwise fall back to general market data
+                        const avgPrice = propertyTypeData?.averagePrice || marketData?.saleData?.averagePrice;
+                        const minPrice = propertyTypeData?.minPrice || marketData?.saleData?.minPrice;
+                        const maxPrice = propertyTypeData?.maxPrice || marketData?.saleData?.maxPrice;
+                        
+                        return (
+                          <>
+                            <h2 className="font-semibold text-5xl ">{formatCurrency(avgPrice)} <span className="text-gray-600 text-xs dark:text-gray-400">for {avmData?.subjectProperty?.propertyType || 'properties'}s</span></h2>
+                            <Separator orientation="horizontal" className="my-4" />
+                            <p className="text-xs"><span className="font-semibold">{avmData?.subjectProperty?.addressLine1 || 'Property'}</span> by comparison</p>
+                            <Progress value={subjectPropertyData?.price / maxPrice * 100} className="w-full"/> 
+                            <div className="flex w-full flex-row text-xs justify-between items-center gap-2">
+                              <p>{formatCurrency(minPrice)} <span className="text-gray-600 text-xs dark:text-gray-400">(Low)</span></p>
+                              <p>{formatCurrency(maxPrice)} <span className="text-gray-600 text-xs dark:text-gray-400">(High)</span></p>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </CardContent>
+                    <CardFooter className="flex-col gap-2 text-sm">
+                      {marketData?.saleData?.history && Object.keys(marketData.saleData.history).length > 0 && (() => {
+                        // Get the subject property type from avmData
+                        const subjectPropertyType = avmData?.subjectProperty?.propertyType;
+                        
+                        // Find property type specific data from marketData
+                        const propertyTypeData = marketData?.saleData?.dataByPropertyType?.find(
+                          (data: any) => data.propertyType === subjectPropertyType
+                        );
+                        
+                        // Get current property type specific average price
+                        const currentPrice = propertyTypeData?.averagePrice || marketData?.saleData?.averagePrice;
+                        
+                        // Get historical data
+                        const historyKeys = Object.keys(marketData.saleData.history).sort().reverse()
+                        const firstHistoryEntry = marketData.saleData.history[historyKeys[1]]
+                        
+                        // Find historical property type data if it exists
+                        const historicalPropertyTypeData = firstHistoryEntry?.dataByPropertyType?.find(
+                          (data: any) => data.propertyType === subjectPropertyType
+                        );
+                        
+                        // Use historical property type price if available, otherwise fall back to general historical price
+                        const previousPrice = historicalPropertyTypeData?.averagePrice || firstHistoryEntry?.averagePrice;
+                        
+                        const change = ((currentPrice - previousPrice) / previousPrice) * 100;
+                        const isPositive = change > 0;
+                        
+                        return (
+                          <>  
+                            <div className="flex items-center gap-2 leading-none font-medium">
+                              {isPositive ? (
+                                <span className="flex flex-row items-center gap-2 align-middle">
+                                  Trending up by <span className="font-semibold bg-green-100 p-1 rounded-sm">+{change.toFixed(1)}%</span> this month <TrendingUp className="h-4 w-4 " />
+                                </span>
+                              ) : (
+                                <span className="flex flex-row items-center gap-2 align-middle ">
+                                  Trending down by <span className="font-semibold bg-red-100 p-1 rounded-sm">-{Math.abs(change).toFixed(1)}%</span> this month <TrendingDown className="h-4 w-4" />
+                                </span>
+                              )} 
+                            </div>
+                          </>
+                        )
+                      })()}
+                    </CardFooter>
+                  </Card>
+
+                  {/* box 3  */}
+                  <Card className="flex flex-col justify-between">
+                    <CardHeader>
+                      <CardTitle className="text-slate-800">Average Days on Market</CardTitle>
+                      <CardDescription className="text-slate-600">
+                        Real estate market conditions assessment
+                      </CardDescription>
+                    </CardHeader>
+                
+                    <CardContent className="flex items-center justify-center">
+                      {(() => {
+                        // Get the subject property type from avmData
+                        const subjectPropertyType = avmData?.subjectProperty?.propertyType;
+                        
+                        // Find property type specific data from marketData
+                        const propertyTypeData = marketData?.saleData?.dataByPropertyType?.find(
+                          (data: any) => data.propertyType === subjectPropertyType
+                        );
+                        
+                        // Use property type specific days on market if available, otherwise fall back to general market data
+                        const avgDaysOnMarket = propertyTypeData?.averageDaysOnMarket || marketData?.saleData?.averageDaysOnMarket;
+                        
+                        return (
+                          <span className="font-semibold text-6xl ">{Math.round(avgDaysOnMarket)}</span>
+                        );
+                      })()}
+                    </CardContent>
+                    <CardFooter className="flex-col gap-2 text-sm">
+                
+                      {marketData?.saleData?.history && Object.keys(marketData.saleData.history).length > 0 && (() => {
+                      // Get the subject property type from avmData
+                      const subjectPropertyType = avmData?.subjectProperty?.propertyType;
+                      
+                      // Find property type specific data from marketData
+                      const propertyTypeData = marketData?.saleData?.dataByPropertyType?.find(
+                        (data: any) => data.propertyType === subjectPropertyType
+                      );
+                      
+                      // Use property type specific days on market if available, otherwise fall back to general market data
+                      const currentDays = propertyTypeData?.averageDaysOnMarket || marketData.saleData.averageDaysOnMarket
+                      const historyKeys = Object.keys(marketData.saleData.history).sort().reverse()
+                      const firstHistoryEntry = marketData.saleData.history[historyKeys[1]]
+                      const previousDays = firstHistoryEntry.averageDaysOnMarket
+                      const change = ((currentDays - previousDays) / previousDays) * 100
+                      const isPositive = change > 0
+                      
+                      return (
+                      <>  
+                 
+                        <div className="flex items-center gap-2 leading-none font-medium">
+                       {isPositive ? (
+                        <span className="flex flex-row items-center gap-2 align-middle">Trending up by <span className="font-semibold bg-green-100 p-1 rounded-sm">{change.toFixed(1)}%</span> this month <TrendingUp className="h-4 w-4 " /></span>
+                       ):(
+                        <span className="flex flex-row items-center gap-2 align-middle">Trending down by <span className="font-semibold bg-red-100 p-1 rounded-sm">{change.toFixed(1)}%</span> this month <TrendingDown className="h-4 w-4" /></span>
+                       )} 
+                      </div>
+                      {/* <div className="text-muted-foreground flex items-center gap-2 leading-none">
+                        January - June 2024
+                      </div> */}
+
+                        </>
+                        )
+                      })()}
+                    </CardFooter>
+                 
+                 </Card>   
+
+
+                {/* box 3 */}
+                 <Card className="flex flex-col justify-between">
+                    <CardHeader>
+                      <CardTitle className="text-slate-800">Total Listings</CardTitle>
+                      <CardDescription className="text-slate-600">
+                        Real estate market conditions assessment
+                      </CardDescription>
+                    </CardHeader>
+                
+                    <CardContent className="flex items-center justify-center">
+                        <span className="font-semibold text-6xl ">{marketData?.saleData.totalListings}</span>
+                    </CardContent>
+                    <CardFooter className="flex-col gap-2 text-sm">
+                
+                      {marketData?.saleData?.history && Object.keys(marketData.saleData.history).length > 0 && (() => {
+                      const currentTotalListings = marketData.saleData.totalListings
+                      const historyKeys = Object.keys(marketData.saleData.history).sort().reverse()
+                      const firstHistoryEntry = marketData.saleData.history[historyKeys[1]]
+                      const previousTotalListings = firstHistoryEntry.totalListings
+                      const change = ((currentTotalListings - previousTotalListings) / previousTotalListings) * 100
+                      const isPositive = change > 0
+                      
+                      return (
+                      <>  
+                 
+                        <div className="flex items-center gap-2 leading-none font-medium">
+                       {isPositive ? (
+                        <span className="flex flex-row items-center gap-2 align-middle">Trending up by <span className="font-semibold bg-green-100 p-1 rounded-sm">{change.toFixed(1)}%</span> this month <TrendingUp className="h-4 w-4 " /></span>
+                       ):(
+                        <span className="flex flex-row items-center gap-2 align-middle">Trending down by <span className="font-semibold bg-red-100 p-1 rounded-sm">{change.toFixed(1)}%</span> this month <TrendingDown className="h-4 w-4" /></span>
+                       )} 
+                      </div>
+                      {/* <div className="text-muted-foreground flex items-center gap-2 leading-none">
+                        January - June 2024
+                      </div> */}
+
+                        </>
+                        )
+                      })()}
+                    </CardFooter>
+                 
+                 </Card>   
+                </div>
+
+                {/* end cols */}
+
+           
+                </div>
+                {/* <ChartLineInteractive /> */}
+      
 
                 {error && !marketData && (
                   <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-700">
@@ -944,77 +957,109 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
               </div>
             </div>
 
-            {/* Tax History */}
-            {propertyData.taxHistory && propertyData.taxHistory.length > 0 && (
-              <div id="tax-history" className="bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+
+            {/* comparables */}
+             <div id="comps" className="bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                 <div className="p-6">
-                  <button
-                    onClick={() => setIsTaxHistoryExpanded(!isTaxHistoryExpanded)}
-                    className="w-full flex items-center justify-between text-left"
-                  >
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                      </svg>
-                      Tax History
-                    </h3>
-                    <svg 
-                      className={`h-5 w-5 text-gray-500 transition-transform duration-200 ${isTaxHistoryExpanded ? 'rotate-180' : ''}`}
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  
-                  {isTaxHistoryExpanded && (
-                    <div className="mt-4 overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-gray-200 dark:border-gray-700">
-                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Tax Year</th>
-                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Tax Amount</th>
-                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Assessed Value</th>
-                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Land Value</th>
-                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Building Value</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {propertyData.taxHistory.map((tax: any, index: number) => (
-                            <tr key={index} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                              <td className="py-3 px-4 text-gray-900 dark:text-white font-medium">{tax.taxYear || tax.year}</td>
-                              <td className="py-3 px-4 text-gray-700 dark:text-gray-300">
-                                {tax.taxPaid || tax.taxAmount ? usd.format(tax.taxPaid || tax.taxAmount) : 'N/A'}
-                              </td>
-                              <td className="py-3 px-4 text-gray-700 dark:text-gray-300">
-                                {tax.value || tax.assessedValue ? usd.format(tax.value || tax.assessedValue) : 'N/A'}
-                              </td>
-                              <td className="py-3 px-4 text-gray-700 dark:text-gray-300">
-                                {tax.landValue ? usd.format(tax.landValue) : 'N/A'}
-                              </td>
-                              <td className="py-3 px-4 text-gray-700 dark:text-gray-300">
-                                {tax.buildingValue || tax.improvementValue ? usd.format(tax.buildingValue || tax.improvementValue) : 'N/A'}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      {propertyData.taxHistory.length === 0 && (
-                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                          <p>No tax history available for this property.</p>
-                        </div>
-                      )}
+                  <div className="flex justify-between gap-4 mb-4">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Sales Comparables</h3>
+                        <p className="text-sm text-gray-600">Buy and Sell histories of comparable properties</p>
                     </div>
-                  )}
+
+                    {/* mapbox */}
+                    
+                   
+                   
+                  </div>
+                 
+                  <div className="relative">
+                  <MapboxMap 
+                      center={[avmData?.subjectProperty?.longitude || -98.3518, avmData?.subjectProperty?.latitude || 29.4241]}
+                      zoom={14}
+                      markers={[
+                        // Subject property marker
+                        {
+                          coordinates: [avmData?.subjectProperty?.longitude || -98.3518, avmData?.subjectProperty?.latitude || 29.4241],
+                          title: "Subject Property",
+                          description: avmData?.subjectProperty?.formattedAddress,
+                          color: "#EF4444", // Red for subject property
+                          image: propertyImages?.images?.[0] || undefined,
+                          data: avmData?.subjectProperty
+                        },
+                        // Comparable properties markers
+                        ...(comps?.comps?.map((comp: any, index: number) => ({
+                          coordinates: [comp.longitude, comp.latitude],
+                          title: `${comp.formattedChip.location[0].fullValue}, ${comp.formattedChip.location[1].fullValue}`,
+                          description: `${comp.address?.streetAddress} - ${formatCurrency(comp.price)}`,
+                          color: "#3B82F6", // Blue for comparables
+                          image: comp.miniCardPhotos?.[0]?.url,
+                          data: comp
+                        })) || [])
+                      ]}
+                      className="w-full h-80 mb-4"
+                      onMarkerClick={handleMarkerClick}
+                    />
+                  {comps?.comps?.map((comp: any, index: number) => (
+                    <div key={index} className={`flex flex-row justify-between items-center gap-4 mb-2  p-2 rounded-sm border border-gray-200 border-l-2 ${borderStatusColor(comp.homeStatus)}`}>
+                      <div>
+                      <p className="text-sm text-gray-600">{comp.formattedChip.location[0].fullValue}, {comp.formattedChip.location[1].fullValue}</p>
+                        <p className="text-2xl font-semibold">{formatCurrency(comp.price)}</p>
+                      </div>
+                      <div className="text-gray-500 flex flex-col justify-start text-left">
+                        <div className="flex items-center gap-4 justify-items-start">
+                          <p className="flex items-center gap-4"><span className="w-4 "><Bed /></span>{comp.bedrooms}</p>
+                          <p className="flex items-center gap-4"><span className="w-4 "><ShowerHead /></span>{comp.bathrooms}</p>
+                          <p className="flex flex-row items-center gap-4"><span className="w-4  "><Scan /></span>{comp.livingArea}</p>
+                        </div>
+                       
+                      </div>
+                      
+                     <div className="flex flex-row gap-2 items-center">
+                     <p className={`text-sm font-medium ${marketStatusColor(comp.homeStatus)} py-1 px-2 rounded-sm`}>
+                      {comp.homeStatus === "RECENTLY_SOLD" ? "Sold" : comp.homeStatus}
+                     </p>
+                      <Image 
+                        className="rounded-sm" 
+                        src={comp.miniCardPhotos?.[0]?.url || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0zMCA0MEg3MFY2MEgzMFY0MFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHA+CjxwYXRoIGQ9Ik0yNSAzNUg3NVY2NUgyNVYzNVoiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+CjxjaXJjbGUgY3g9IjM1IiBjeT0iNDUiIHI9IjMiIGZpbGw9IiM2QjcyODAiLz4KPHA+CjxwYXRoIGQ9Ik00NSA1NUw1NSA0NUw2NSA1NUw3MCA2MEgyNUw0NSA1NVoiIGZpbGw9IiM2QjcyODAiLz4KPHA+Cjx0ZXh0IHg9IjUwIiB5PSI4NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmaWxsPSIjNkI3MjgwIj5OTyBJTUFHRTwvdGV4dD4KPHA+Cjx0ZXh0IHg9IjUwIiB5PSI5NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjgiIGZpbGw9IiM2QjcyODAiPkFWQUlMQUJMRTwvdGV4dD4KPC9zdmc+"} 
+                        alt={comp.address?.streetAddress || "Property"} 
+                        width={100} 
+                        height={100}
+                        unoptimized={true}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          if (!target.src.includes('data:image/svg+xml')) {
+                            target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0zMCA0MEg3MFY2MEgzMFY0MFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHA+CjxwYXRoIGQ9Ik0yNSAzNUg3NVY2NUgyNVYzNVoiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+CjxjaXJjbGUgY3g9IjM1IiBjeT0iNDUiIHI9IjMiIGZpbGw9IiM2QjcyODAiLz4KPHA+CjxwYXRoIGQ9Ik00NSA1NUw1NSA0NUw2NSA1NUw3MCA2MEgyNUw0NSA1NVoiIGZpbGw9IiM2QjcyODAiLz4KPHA+Cjx0ZXh0IHg9IjUwIiB5PSI4NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmaWxsPSIjNkI3MjgwIj5OTyBJTUFHRTwvdGV4dD4KPHA+Cjx0ZXh0IHg9IjUwIiB5PSI5NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjgiIGZpbGw9IiM2QjcyODAiPkFWQUlMQUJMRTwvdGV4dD4KPC9zdmc+";
+                          }
+                        }}
+                      />  
+                     
+                     </div>
+                   
+                     
+                    </div>
+                    ))}
+                  </div>
+           
                 </div>
               </div>
-            )}
+          
+
+
+
+           
 
          
           </div>
         </div>
       </div>
+
+      {/* Property Details Sheet */}
+      <PropertyDetailsSheet
+        isOpen={isPropertySheetOpen}
+        onOpenChange={setIsPropertySheetOpen}
+        property={selectedProperty}
+      />
     </div>
   )
 }

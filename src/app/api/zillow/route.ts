@@ -33,10 +33,12 @@ function checkRateLimit(key: string): boolean {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const location = searchParams.get('location')
+    const zpid = searchParams.get('zpid')
+    const address = searchParams.get('address')
+    const location = searchParams.get('location') // Legacy support
 
-    if (!location) {
-      return NextResponse.json({ error: 'Location parameter is required' }, { status: 400 })
+    if (!zpid && !address && !location) {
+      return NextResponse.json({ error: 'Either zpid, address, or location parameter is required' }, { status: 400 })
     }
 
     // Rate limiting
@@ -48,30 +50,43 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Determine the search parameter and cache key
+    const searchParam = zpid || address || location || ''
+    const cacheKey = `zillow:${searchParam}`
+    
     // Check cache first
-    const cacheKey = `zillow:${location}`
     const cached = cache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      console.log('Returning cached data for:', location)
+      console.log('Returning cached data for:', searchParam)
       return NextResponse.json(cached.data)
     }
 
     // Make API request
-    const apiKey = process.env.NEXT_PUBLIC_ZILLOW_API_KEY
-    const apiHost = process.env.ZILLOW_API_HOST || 'zillow-com1.p.rapidapi.com'
+    const apiKey = process.env.RAPIDAPI_KEY
+    const apiHost = 'zillow-com1.p.rapidapi.com'
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
+      return NextResponse.json({ error: 'RAPIDAPI_KEY not configured' }, { status: 500 })
     }
 
+    // Build query parameters
+    const queryParams = new URLSearchParams()
+    if (zpid) queryParams.append('zpid', zpid)
+    if (address) queryParams.append('address', address)
+    if (location && !address) queryParams.append('address', location) // Legacy support
+
+    console.log('=== ZILLOW API REQUEST ===')
+    console.log('API Host:', apiHost)
+    console.log('Query params:', queryParams.toString())
+    console.log('Full URL:', `https://${apiHost}/property?${queryParams.toString()}`)
+
     const response = await fetch(
-      `https://${apiHost}/property?address=${encodeURIComponent(location)}`,
+      `https://${apiHost}/property?${queryParams.toString()}`,
       {
         method: 'GET',
         headers: {
-          'X-RapidAPI-Key': apiKey,
-          'X-RapidAPI-Host': apiHost,
-          'Content-Type': 'application/json',
+          'x-rapidapi-key': apiKey,
+          'x-rapidapi-host': apiHost,
         },
       }
     )
@@ -90,13 +105,13 @@ export async function GET(request: NextRequest) {
     
     console.log('=== ZILLOW /property ENDPOINT RESPONSE ===')
     console.log('Status:', response.status)
-    console.log('Address requested:', location)
+    console.log('Search param requested:', searchParam)
     console.log('Full response:', JSON.stringify(data, null, 2))
     console.log('Response keys:', Object.keys(data))
     console.log('Response type:', Array.isArray(data) ? 'Array' : typeof data)
     
     // Process and normalize the data
-    const processedData = processZillowData(data, location)
+    const processedData = processZillowData(data, searchParam)
     
     console.log('Processed data:', JSON.stringify(processedData, null, 2))
     
@@ -110,7 +125,11 @@ export async function GET(request: NextRequest) {
     
     // Return fallback data on error
     const { searchParams } = new URL(request.url)
-    const fallbackData = getFallbackData(searchParams.get('location') || '')
+    const zpid = searchParams.get('zpid')
+    const address = searchParams.get('address')
+    const location = searchParams.get('location')
+    const searchParam = zpid || address || location || ''
+    const fallbackData = getFallbackData(searchParam)
     return NextResponse.json(fallbackData)
   }
 }
