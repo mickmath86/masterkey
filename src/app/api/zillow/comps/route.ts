@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Make API request
-    const apiKey = process.env.NEXT_PUBLIC_ZILLOW_API_KEY
+    const apiKey = process.env.RAPIDAPI_KEY
     const apiHost = process.env.ZILLOW_API_HOST || 'zillow-com1.p.rapidapi.com'
 
     if (!apiKey) {
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await fetch(
-      `https://${apiHost}/comps?zpid=${encodeURIComponent(zpid)}`,
+      `https://${apiHost}/propertyComps?zpid=${encodeURIComponent(zpid)}`,
       {
         method: 'GET',
         headers: {
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
     console.log('Response type:', Array.isArray(data) ? 'Array' : typeof data)
     
     // Process and normalize the comps data
-    const processedData = processZillowCompsData(data, zpid)
+    const processedData = await processZillowCompsData(data, zpid, apiKey, apiHost)
     
     console.log('Processed comps data:', JSON.stringify(processedData, null, 2))
     
@@ -115,43 +115,37 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function processZillowCompsData(data: any, zpid: string) {
-  // Handle /comps endpoint response structure
+async function processZillowCompsData(data: any, zpid: string, apiKey: string, apiHost: string) {
+  console.log('Processing comps data (simplified - no enhanced property fetching)...')
+  
+  let comps: any[] = []
+  
+  // Extract comps array from various response structures
   if (data && Array.isArray(data.comps)) {
+    comps = data.comps
+  } else if (Array.isArray(data)) {
+    comps = data
+  } else if (data && data.comps) {
+    comps = Array.isArray(data.comps) ? data.comps : [data.comps]
+  }
+
+  // If no comps found, return early
+  if (comps.length === 0) {
     return {
       zpid: zpid,
-      comps: data.comps,
-      totalCount: data.comps.length,
+      comps: [],
+      totalCount: 0,
       rawData: data
     }
   }
 
-  // Handle case where comps are directly in an array
-  if (Array.isArray(data)) {
-    return {
-      zpid: zpid,
-      comps: data,
-      totalCount: data.length,
-      rawData: data
-    }
-  }
+  console.log(`Found ${comps.length} comps, using original data without enhancement to reduce API stress`)
 
-  // Handle case where data has comps property
-  if (data && data.comps) {
-    const comps = Array.isArray(data.comps) ? data.comps : [data.comps]
-    return {
-      zpid: zpid,
-      comps: comps,
-      totalCount: comps.length,
-      rawData: data
-    }
-  }
-
-  // Fallback for unexpected response structure
+  // Simply return the original comps data without making additional API calls
   return {
     zpid: zpid,
-    comps: [],
-    totalCount: 0,
+    comps: comps,
+    totalCount: comps.length,
     rawData: data
   }
 }

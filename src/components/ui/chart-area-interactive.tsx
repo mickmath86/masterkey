@@ -42,7 +42,20 @@ interface TransformedDataItem {
 }
 
 const unixFormat = (timestamp: number): string => {
+  // Validate timestamp
+  if (!timestamp || isNaN(timestamp) || timestamp <= 0) {
+    console.warn('Invalid timestamp:', timestamp)
+    return new Date().toISOString().split('T')[0] // Return current date as fallback
+  }
+  
   const date = new Date(timestamp * 1000) // Convert seconds to milliseconds
+  
+  // Check if the date is valid
+  if (isNaN(date.getTime())) {
+    console.warn('Invalid date created from timestamp:', timestamp)
+    return new Date().toISOString().split('T')[0] // Return current date as fallback
+  }
+  
   return date.toISOString().split('T')[0] // Returns YYYY-MM-DD format
 }
 
@@ -57,8 +70,11 @@ const chartConfig = {
 
 export function ChartAreaInteractive({address, valueData}: {address: string, valueData: ValueDataItem[] | null}) {
   const [timeRange, setTimeRange] = React.useState("all")
-// Transform valueData to chart format
-const transformedValueData = valueData?.map(item => ({
+// Transform valueData to chart format with validation
+const transformedValueData = valueData?.filter(item => 
+  item && typeof item.t === 'number' && typeof item.v === 'number' && 
+  item.t > 0 && !isNaN(item.t) && !isNaN(item.v)
+).map(item => ({
   date: unixFormat(item.t),
   value: item.v
 })) || []

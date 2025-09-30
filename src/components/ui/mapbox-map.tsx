@@ -40,7 +40,7 @@ export function MapboxMap({
   center = [-98.3518, 29.4241], // Default to San Antonio
   zoom = 12,
   markers = [],
-  className = "w-full h-64",
+  className = "w-full h-200",
   style = "mapbox://styles/mapbox/streets-v12",
   onMarkerClick
 }: MapboxMapProps) {
@@ -141,7 +141,10 @@ export function MapboxMap({
 
       if (marker.title || marker.description || marker.image) {
         const popupId = `popup-${index}`
-        const popup = new mapboxgl.Popup({ offset: 25 })
+        const popup = new mapboxgl.Popup({ 
+          offset: 25,
+          anchor: 'left'
+        })
           .setHTML(`
             <div class="p-3 max-w-xs" id="${popupId}">
               ${marker.image ? `

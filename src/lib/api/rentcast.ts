@@ -20,6 +20,16 @@ export interface MarketStatistics {
       percent?: number
       count?: number
     }
+    dataByPropertyType?: {
+      propertyType: string
+      averagePrice: number
+      minPrice: number
+      maxPrice: number
+    }[]
+    history?: {
+      month: string
+      averagePrice: number
+    }[]
   }
   rentalData?: {
     averageDaysOnMarket?: number
@@ -65,7 +75,7 @@ export class RentcastAPI {
       const params = new URLSearchParams({
         zipCode,
         dataType,
-        historyRange: '6' // Match sandbox parameter
+        historyRange: '10' // Match sandbox parameter
       })
 
       console.log(`Rentcast API: Fetching market data for zip ${zipCode}`)
@@ -116,7 +126,9 @@ export class RentcastAPI {
         totalListings: data.saleData.totalListings as number,
         totalSales: data.saleData.totalSales as number,
         newListings: data.saleData.newListings as number,
-        priceReduction: data.saleData.priceReduction as { percent?: number; count?: number }
+        priceReduction: data.saleData.priceReduction as { percent?: number; count?: number }, 
+        dataByPropertyType: data.saleData.dataByPropertyType as { propertyType: string; averagePrice: number; minPrice: number; maxPrice: number }[], 
+        history: data.saleData.history as { month: string; averagePrice: number }[], 
       } : undefined,
       rentalData: data.rentalData ? {
         averageDaysOnMarket: data.rentalData.averageDaysOnMarket as number,

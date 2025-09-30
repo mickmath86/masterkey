@@ -31,6 +31,7 @@ interface PropertyDetailsSheetProps {
   onOpenChange: (open: boolean) => void
   property: {
     id?: string
+    zpid?: string
     formattedAddress?: string
     address?: {
       streetAddress?: string
@@ -50,17 +51,31 @@ interface PropertyDetailsSheetProps {
     homeStatus?: string
     propertyType?: string
     propertyTypeDimension?: string
+    homeType?: string
     lastSeenDate?: string
     listedDate?: string
     removedDate?: string
     daysOnMarket?: number
     miniCardPhotos?: Array<{ url: string }>
+    photos?: Array<{ url: string }>
     attributionInfo?: {
       agentName?: string
       brokerName?: string
       mlsId?: string
+      agentPhoneNumber?: string
+      brokerPhoneNumber?: string
     }
     hdpUrl?: string
+    zestimate?: number
+    rentZestimate?: number
+    pricePerSquareFoot?: number
+    taxAnnualAmount?: number
+    resoFacts?: {
+      yearBuilt?: number
+      lotSize?: number
+      pricePerSquareFoot?: number
+      taxAnnualAmount?: number
+    }
   } | null
 }
 
@@ -101,7 +116,7 @@ export function PropertyDetailsSheet({ isOpen, onOpenChange, property }: Propert
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[1000px] sm:w-[1000px] overflow-y-auto p-4">
+      <SheetContent className="w-[1200px] sm:w-[1200px] max-w-[90vw] overflow-y-auto p-4">
         <ScrollArea className="h-[calc(100vh-10rem)] w-full pr-4 -mr-4">
         <SheetHeader>
           <SheetTitle className="text-left">
@@ -114,11 +129,12 @@ export function PropertyDetailsSheet({ isOpen, onOpenChange, property }: Propert
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
+
           {/* Property Image */}
-          {property.miniCardPhotos?.[0]?.url && (
+          {(property.miniCardPhotos?.[0]?.url || property.photos?.[0]?.url) && (
             <div className="relative w-full h-48 rounded-lg overflow-hidden">
               <Image
-                src={property.miniCardPhotos[0].url}
+                src={property.miniCardPhotos?.[0]?.url || property.photos?.[0]?.url || ''}
                 alt={property.address?.streetAddress || "Property"}
                 fill
                 className="object-cover"
@@ -134,13 +150,16 @@ export function PropertyDetailsSheet({ isOpen, onOpenChange, property }: Propert
           )}
 
           {/* Price and Status */}
-          <div className="flex items-center justify-between">
-            <div className="text-3xl font-bold text-gray-900">
-              {property.price ? formatCurrency(property.price) : 'Price not available'}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold text-gray-900">
+                {property.price ? formatCurrency(property.price) : 'Price not available'}
+              </div>
+              <Badge className={getStatusColor(property.homeStatus || '')}>
+                {displayStatus}
+              </Badge>
             </div>
-            <Badge className={getStatusColor(property.homeStatus || '')}>
-              {displayStatus}
-            </Badge>
+            
           </div>
 
           {/* Property Details */}
@@ -178,17 +197,21 @@ export function PropertyDetailsSheet({ isOpen, onOpenChange, property }: Propert
             <h3 className="text-lg font-semibold">Property Information</h3>
             
             <div className="grid grid-cols-1 gap-3">
-              {property.propertyTypeDimension && (
+              {(property.propertyTypeDimension || property.homeType) && (
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Property Type:</span>
-                  <span className="text-sm font-medium">{property.propertyTypeDimension}</span>
+                  <span className="text-sm font-medium">
+                    {property.propertyTypeDimension || property.homeType}
+                  </span>
                 </div>
               )}
               
-              {property.yearBuilt && (
+              {(property.yearBuilt || property.resoFacts?.yearBuilt) && (
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Year Built:</span>
-                  <span className="text-sm font-medium">{property.yearBuilt}</span>
+                  <span className="text-sm font-medium">
+                    {property.yearBuilt || property.resoFacts?.yearBuilt}
+                  </span>
                 </div>
               )}
 
@@ -196,6 +219,13 @@ export function PropertyDetailsSheet({ isOpen, onOpenChange, property }: Propert
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Days on Market:</span>
                   <span className="text-sm font-medium">{property.daysOnMarket} days</span>
+                </div>
+              )}
+
+              {property.zpid && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Zillow ID:</span>
+                  <span className="text-sm font-medium">{property.zpid}</span>
                 </div>
               )}
             </div>
@@ -248,11 +278,25 @@ export function PropertyDetailsSheet({ isOpen, onOpenChange, property }: Propert
                       <span className="text-sm font-medium">{property.attributionInfo.agentName}</span>
                     </div>
                   )}
+
+                  {property.attributionInfo.agentPhoneNumber && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Agent Phone:</span>
+                      <span className="text-sm font-medium">{property.attributionInfo.agentPhoneNumber}</span>
+                    </div>
+                  )}
                   
                   {property.attributionInfo.brokerName && (
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Brokerage:</span>
                       <span className="text-sm font-medium">{property.attributionInfo.brokerName}</span>
+                    </div>
+                  )}
+
+                  {property.attributionInfo.brokerPhoneNumber && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Broker Phone:</span>
+                      <span className="text-sm font-medium">{property.attributionInfo.brokerPhoneNumber}</span>
                     </div>
                   )}
 

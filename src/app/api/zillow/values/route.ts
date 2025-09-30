@@ -57,11 +57,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Make API request
-    const apiKey = process.env.NEXT_PUBLIC_ZILLOW_API_KEY
-    const apiHost = process.env.ZILLOW_API_HOST || 'zillow-com1.p.rapidapi.com'
+    const apiKey = process.env.RAPIDAPI_KEY
+    const apiHost = 'zillow-com1.p.rapidapi.com'
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
+      return NextResponse.json({ error: 'RAPIDAPI_KEY not configured' }, { status: 500 })
     }
 
     const response = await fetch(
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
     // Cache the result
     cache.set(cacheKey, { data: processedData, timestamp: Date.now() })
     
-    return NextResponse.json(processedData)
+    return NextResponse.json(data)
 
   } catch (error: any) {
     console.error('Zillow Value History API error:', error.message)
