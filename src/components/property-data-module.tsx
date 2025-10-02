@@ -368,17 +368,24 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       useMockData: useMockData
     })
     
-    if (subjectPropertyData && address && subjectPropertyData.zpid && valueData && !useMockData) {
-      console.log('✅ Triggering valuation analysis with value data for zpid:', subjectPropertyData.zpid)
+    if (subjectPropertyData && address && subjectPropertyData.zpid && !useMockData) {
+      console.log('✅ Triggering valuation analysis for zpid:', subjectPropertyData.zpid)
+      console.log('📊 Value data status:', valueData ? `Available (${Array.isArray(valueData) ? valueData.length : 0} items)` : 'Not available - will fetch in API')
       const apiAddress = address.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
       fetchValuationAnalysis(apiAddress, subjectPropertyData.zpid, subjectPropertyData)
     } else if (useMockData) {
       // Set a default valuation analysis for mock data
       setValuationAnalysis("Based on recent market analysis, this property demonstrates strong valuation performance with consistent appreciation trends. The current market positioning reflects favorable conditions for both investment potential and long-term value retention. Historical data indicates stable growth patterns that align with broader market dynamics in this desirable area.")
     } else {
-      console.log('❌ Valuation analysis not triggered - waiting for all data to be available')
+      console.log('❌ Valuation analysis not triggered - missing required data:')
+      console.log('Missing:', {
+        subjectPropertyData: !subjectPropertyData,
+        address: !address,
+        zpid: !subjectPropertyData?.zpid,
+        useMockData: useMockData
+      })
     }
-  }, [subjectPropertyData, address, valueData, useMockData])
+  }, [subjectPropertyData, address, useMockData]) // Removed valueData dependency - let API handle fetching if needed
 
   // Consistent function to get days on market for the subject property
   const getDaysOnMarket = () => {

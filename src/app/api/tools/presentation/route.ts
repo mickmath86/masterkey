@@ -66,11 +66,25 @@ export async function POST(req: Request) {
     // Generate structured AI property summary
     const result = await generateObject({
       model: openai("gpt-4o-mini"),
-      system: `You are a professional real estate analyst. Generate a structured property summary that's informative and factual without being overly promotional.`,
+      system: `You are a professional real estate analyst. Generate a structured property summary that's informative and factual without being overly promotional.
+      
+      For keyFeatures categories, use only these options: size, age, location, value, condition, amenities, bedrooms, bathrooms, market_value, tax, rental, financial
+      
+      Map property details to appropriate categories:
+      - Living area, square footage → "size"
+      - Bedrooms → "bedrooms" 
+      - Bathrooms → "bathrooms"
+      - Current price, Zestimate → "market_value"
+      - Property taxes → "tax"
+      - Rental estimates → "rental"
+      - Year built, property age → "age"
+      - Address, neighborhood → "location"
+      - Property condition, status → "condition"
+      - Features, upgrades → "amenities"`,
       schema: z.object({
         overview: z.string().describe("Brief 2-3 sentence overview of the property"),
         keyFeatures: z.array(z.object({
-          category: z.enum(["size", "age", "location", "value", "condition", "amenities"]).describe("Feature category"),
+          category: z.enum(["size", "age", "location", "value", "condition", "amenities", "bedrooms", "bathrooms", "market_value", "tax", "rental", "financial"]).describe("Feature category"),
           title: z.string().describe("Feature title"),
           description: z.string().describe("Feature description")
         })).describe("Key property features organized by category"),
