@@ -454,13 +454,6 @@ const resources = [
     icon: Mic,
   },
   {
-    id: "resource-3",
-    title: "Market Blog",
-    description: "Latest market updates and real estate news.",
-    href: "/blog",
-    icon: Newspaper,
-  },
-  {
     id: "resource-4",
     title: "How-To Videos",
     description: "Step-by-step guides for buyers and sellers.",
