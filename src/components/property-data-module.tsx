@@ -120,10 +120,22 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
       // Fetch Property Images using zpid from subject property data
       if (propertyZpid) {
-        const propertyImagesResponse = await fetch(`/api/zillow/images?zpid=${encodeURIComponent(propertyZpid)}`)
-        if (propertyImagesResponse.ok) {
-          const propertyImagesResult = await propertyImagesResponse.json()
-          setPropertyImages(propertyImagesResult)
+        try {
+          const propertyImagesResponse = await fetch(`/api/zillow/images?zpid=${encodeURIComponent(propertyZpid)}`, {
+            signal: AbortSignal.timeout(15000) // 15 second timeout
+          })
+          if (propertyImagesResponse.ok) {
+            const propertyImagesResult = await propertyImagesResponse.json()
+            if (propertyImagesResult && propertyImagesResult.images && propertyImagesResult.images.length > 0) {
+              setPropertyImages(propertyImagesResult)
+            } else {
+              console.log('No property images found for zpid:', propertyZpid)
+            }
+          } else {
+            console.warn('Property images API returned non-OK status:', propertyImagesResponse.status)
+          }
+        } catch (error) {
+          console.error('Failed to fetch property images:', error)
         }
       }
 
@@ -234,10 +246,22 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
           //Fetch Property Images using zpid from subject property data
           if (subjectPropertyResult?.zpid) {
-            const propertyImagesResponse = await fetch(`/api/zillow/images?zpid=${encodeURIComponent(subjectPropertyResult.zpid)}`)
-            if (propertyImagesResponse.ok) {
-              const propertyImagesResult = await propertyImagesResponse.json()
-              setPropertyImages(propertyImagesResult)
+            try {
+              const propertyImagesResponse = await fetch(`/api/zillow/images?zpid=${encodeURIComponent(subjectPropertyResult.zpid)}`, {
+                signal: AbortSignal.timeout(15000) // 15 second timeout
+              })
+              if (propertyImagesResponse.ok) {
+                const propertyImagesResult = await propertyImagesResponse.json()
+                if (propertyImagesResult && propertyImagesResult.images && propertyImagesResult.images.length > 0) {
+                  setPropertyImages(propertyImagesResult)
+                } else {
+                  console.log('No property images found for zpid:', subjectPropertyResult.zpid)
+                }
+              } else {
+                console.warn('Property images API returned non-OK status:', propertyImagesResponse.status)
+              }
+            } catch (error) {
+              console.error('Failed to fetch property images:', error)
             }
           }
         }
@@ -725,6 +749,17 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                             }}
                             onError={(e) => {
                               console.error('Failed to load property image:', e)
+                              // Try to remove the failed image from the array
+                              const target = e.target as HTMLImageElement
+                              if (target && propertyImages?.images) {
+                                const updatedImages = propertyImages.images.filter((_: string, index: number) => index !== currentImageIndex)
+                                if (updatedImages.length > 0) {
+                                  setPropertyImages({ ...propertyImages, images: updatedImages })
+                                  setCurrentImageIndex(0)
+                                } else {
+                                  setPropertyImages(null) // No valid images left
+                                }
+                              }
                             }}
                           />
                           {propertyImages.images.length > 1 && (

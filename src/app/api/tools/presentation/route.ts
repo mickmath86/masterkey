@@ -7,6 +7,17 @@ const rapidApiKey = process.env.RAPIDAPI_KEY!;
 
 export async function POST(req: Request) {
   try {
+    // Check if required environment variables are configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY environment variable is not set');
+      return Response.json({ error: 'OpenAI API key not configured' }, { status: 500 });
+    }
+    
+    if (!rapidApiKey) {
+      console.error('RAPIDAPI_KEY environment variable is not set');
+      return Response.json({ error: 'RapidAPI key not configured' }, { status: 500 });
+    }
+
     const { address, propertyData } = await req.json();
 
     if (!address) {
