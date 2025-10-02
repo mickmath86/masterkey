@@ -107,15 +107,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json()
-    console.log('=== ZILLOW RESIDENTIAL DATA RESPONSE DATA ===')
-    console.log('Full response:', JSON.stringify(data, null, 2))
-
-    if (data) {
-      console.log('Response keys:', Object.keys(data))
-      if (data.monthlyInventory) {
-        console.log('Monthly inventory entries:', data.monthlyInventory.length)
-      }
-    }
+    console.log('✅ Zillow Residential Data API Success for ZIP:', zip)
 
     // Cache the successful response
     residentialDataCache.set(cacheKey, {

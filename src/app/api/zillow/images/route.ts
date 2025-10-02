@@ -63,10 +63,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'RAPIDAPI_KEY not configured' }, { status: 500 })
     }
 
-    console.log('=== ZILLOW IMAGES API REQUEST ===')
-    console.log('API Host:', apiHost)
-    console.log('ZPID:', zpid)
-    console.log('Full URL:', `https://${apiHost}/images?zpid=${zpid}`)
+    console.log('🔄 Zillow Images API Request for zpid:', zpid)
 
     const response = await fetch(
       `https://${apiHost}/images?zpid=${zpid}`,
@@ -97,11 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json()
-    
-    console.log('=== ZILLOW IMAGES RESPONSE DATA ===')
-    console.log('Full response:', JSON.stringify(data, null, 2))
-    console.log('Response keys:', Object.keys(data))
-    console.log('Images array length:', data.images?.length || 0)
+  
 
     // Extract first image URL
     const firstImageUrl = data.images && data.images.length > 0 ? data.images[0] : null
@@ -172,10 +165,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'RAPIDAPI_KEY not configured' }, { status: 500 })
     }
 
-    console.log('=== ZILLOW IMAGES API REQUEST ===')
-    console.log('API Host:', apiHost)
-    console.log('ZPID:', zpid)
-    console.log('Full URL:', `https://${apiHost}/images?zpid=${zpid}`)
+    console.log('🔄 Zillow Images API Request for zpid:', zpid)
 
     const response = await fetch(
       `https://${apiHost}/images?zpid=${zpid}`,
@@ -200,17 +190,13 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json()
     
-    console.log('=== ZILLOW /images ENDPOINT RESPONSE ===')
-    console.log('Status:', response.status)
-    console.log('ZPID requested:', zpid)
-    console.log('Full response:', JSON.stringify(data, null, 2))
-    console.log('Response keys:', Object.keys(data))
-    console.log('Response type:', Array.isArray(data) ? 'Array' : typeof data)
+    console.log('✅ Zillow Images API Success for zpid:', zpid)
+   
     
     // Process and normalize the images data
     const processedData = processZillowImagesData(data, zpid)
     
-    console.log('Processed images data:', JSON.stringify(processedData, null, 2))
+
     
     // Cache the result
     cache.set(cacheKey, { data: processedData, timestamp: Date.now() })

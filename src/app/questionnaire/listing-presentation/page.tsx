@@ -181,32 +181,12 @@ function RealEstateSellPageContent() {
         source: 'questionnaire'
       };
 
-      // Submit to our API endpoint which will handle Zillow API and webhook
-      const response = await fetch('/api/property-submission', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submissionData),
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        console.log('Form submitted successfully:', result);
-        // Redirect to property-profile with address parameter
-        router.push(result.redirectUrl);
-      } else {
-        console.error('Form submission failed:', result.error);
-        // Still redirect on error for user experience
-        const encodedAddress = encodeURIComponent(formData.propertyAddress);
-        router.push(`/property-profile?address=${encodedAddress}`);
-      }
-    } catch (error) {
-      console.error('Form submission error:', error);
-      // Still redirect on error for user experience
-      const encodedAddress = encodeURIComponent(formData.propertyAddress);
-      router.push(`/property-profile?address=${encodedAddress}`);
+      // Log form submission for analytics (optional)
+      console.log('Form submitted successfully:', submissionData);
+      
+      // Redirect directly to property-profile with address parameter
+      // Property data is already prefetched via PropertyDataContext
+      router.push(`/property-profile?address=${encodeURIComponent(submissionData.propertyAddress)}`);
     } finally {
       setIsSubmitting(false);
     }

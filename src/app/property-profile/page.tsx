@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { PropertyDataModule } from '@/components/property-data-module'
 import Navbar3 from '@/components/navbar3'
 import { Footer } from '@/components/footer'
+import { usePropertyData } from '@/contexts/PropertyDataContext'
 
 function PropertyProfileContent() {
     const searchParams = useSearchParams()

@@ -88,17 +88,12 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json()
     
-    console.log('=== ZILLOW /comps ENDPOINT RESPONSE ===')
-    console.log('Status:', response.status)
-    console.log('ZPID requested:', zpid)
-    console.log('Full response:', JSON.stringify(data, null, 2))
-    console.log('Response keys:', Object.keys(data))
-    console.log('Response type:', Array.isArray(data) ? 'Array' : typeof data)
+    console.log('✅ Zillow Comps API Success for zpid:', zpid)
+
     
     // Process and normalize the comps data
     const processedData = await processZillowCompsData(data, zpid, apiKey, apiHost)
-    
-    console.log('Processed comps data:', JSON.stringify(processedData, null, 2))
+
     
     // Cache the result
     cache.set(cacheKey, { data: processedData, timestamp: Date.now() })

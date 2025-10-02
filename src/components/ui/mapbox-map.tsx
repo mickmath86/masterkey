@@ -36,8 +36,8 @@ interface MapboxMapProps {
   onMarkerClick?: (markerData: any) => void
 }
 
-export function MapboxMap({ 
-  center = [-98.3518, 29.4241], // Default to San Antonio
+export function MapboxMap({
+  center = [-118.2437, 34.0522], // Default to Los Angeles
   zoom = 12,
   markers = [],
   className = "w-full h-200",
@@ -47,6 +47,7 @@ export function MapboxMap({
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
+  const [mapError, setMapError] = useState<string | null>(null)
 
   // Debug logging
   console.log('MapboxMap rendering with:', { center, zoom, markers, className })
@@ -94,7 +95,15 @@ export function MapboxMap({
           })
 
           map.current.on('error', (e) => {
-            console.error('Map error:', e)
+            const errorMessage = e.error?.message || 'Unknown map error'
+            console.error('Mapbox error details:', {
+              error: e.error || e,
+              message: errorMessage,
+              stack: e.error?.stack,
+              type: e.type,
+              target: e.target
+            })
+            setMapError(errorMessage)
           })
 
           map.current.on('style.load', () => {
@@ -218,6 +227,29 @@ export function MapboxMap({
     )
   }
 
+  // Show error state if map error occurred
+  if (mapError) {
+    return (
+      <div className={className}>
+        <div className="w-full h-full rounded-lg border border-red-300 bg-red-50 flex items-center justify-center" style={{ minHeight: '300px' }}>
+          <div className="text-center p-4">
+            <div className="text-red-600 mb-2">🗺️ Map Error</div>
+            <p className="text-sm text-red-700 mb-2">{mapError}</p>
+            <button 
+              onClick={() => {
+                setMapError(null)
+                window.location.reload()
+              }}
+              className="text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={`${className} relative`}>
       {!mapLoaded && (
@@ -225,7 +257,7 @@ export function MapboxMap({
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
             <p className="text-sm text-gray-600">Loading map...</p>
-            <p className="text-xs text-gray-500 mt-1">Check console for errors</p>
+            <p className="text-xs text-gray-500 mt-1">Initializing Mapbox...</p>
           </div>
         </div>
       )}

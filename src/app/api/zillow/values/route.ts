@@ -88,22 +88,29 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json()
     
-    console.log('=== ZILLOW /zestimateHistory ENDPOINT RESPONSE ===')
-    console.log('Status:', response.status)
-    console.log('ZPID requested:', zpid)
-    console.log('Full response:', JSON.stringify(data, null, 2))
-    console.log('Response keys:', Object.keys(data))
-    console.log('Response type:', Array.isArray(data) ? 'Array' : typeof data)
+    console.log('✅ Zillow Values API Success for zpid:', zpid)
+    console.log('🔍 Raw API response structure:', {
+      isArray: Array.isArray(data),
+      keys: Object.keys(data || {}),
+      firstItem: Array.isArray(data) ? data[0] : data,
+      hasZestimateHistory: data?.[0]?.zestimateHistory ? 'Yes' : 'No'
+    })
+
     
     // Process and normalize the value history data
     const processedData = processZillowValueHistoryData(data, zpid)
+    console.log('🔧 Processed data:', {
+      isArray: Array.isArray(processedData),
+      length: processedData?.length || 0,
+      firstProcessedItem: processedData?.[0]
+    })
     
-    console.log('Processed value history data:', JSON.stringify(processedData, null, 2))
+
     
     // Cache the result
     cache.set(cacheKey, { data: processedData, timestamp: Date.now() })
     
-    return NextResponse.json(data)
+    return NextResponse.json(processedData)
 
   } catch (error: any) {
     console.error('Zillow Value History API error:', error.message)
@@ -116,33 +123,48 @@ export async function GET(request: NextRequest) {
 }
 
 function processZillowValueHistoryData(data: any, zpid: string) {
+  console.log('🔧 Processing value history data:', { dataType: typeof data, isArray: Array.isArray(data) })
+  
+  // Handle case where data is an array and first item has zestimateHistory
+  if (Array.isArray(data) && data.length > 0 && data[0]?.zestimateHistory) {
+    console.log('📊 Found zestimateHistory in first array item')
+    return data[0].zestimateHistory.map((item: any) => ({
+      t: item.t || item.time || item.timestamp || item.date,
+      v: item.v || item.value || item.zestimate || item.price
+    })).filter((item: any) => item.t && item.v) // Filter out invalid items
+  }
+
   // Handle /zestimateHistory endpoint response structure
   if (data && Array.isArray(data.zestimateHistory)) {
+    console.log('📊 Found direct zestimateHistory array')
     return data.zestimateHistory.map((item: any) => ({
-      t: item.time || item.timestamp || item.date,
-      v: item.value || item.zestimate || item.price
-    }))
+      t: item.t || item.time || item.timestamp || item.date,
+      v: item.v || item.value || item.zestimate || item.price
+    })).filter((item: any) => item.t && item.v)
   }
 
   // Handle case where history is directly in an array
   if (Array.isArray(data)) {
+    console.log('📊 Processing direct array data')
     return data.map((item: any) => ({
-      t: item.time || item.timestamp || item.date,
-      v: item.value || item.zestimate || item.price
-    }))
+      t: item.t || item.time || item.timestamp || item.date,
+      v: item.v || item.value || item.zestimate || item.price
+    })).filter((item: any) => item.t && item.v) // Filter out invalid items
   }
 
   // Handle case where data has history property
   if (data && data.history) {
+    console.log('📊 Found history property')
     const history = Array.isArray(data.history) ? data.history : [data.history]
     return history.map((item: any) => ({
-      t: item.time || item.timestamp || item.date,
-      v: item.value || item.zestimate || item.price
-    }))
+      t: item.t || item.time || item.timestamp || item.date,
+      v: item.v || item.value || item.zestimate || item.price
+    })).filter((item: any) => item.t && item.v)
   }
 
   // Handle case where data has valueHistory property
   if (data && data.valueHistory) {
+    console.log('📊 Found valueHistory property')
     const history = Array.isArray(data.valueHistory) ? data.valueHistory : [data.valueHistory]
     return history.map((item: any) => ({
       t: item.time || item.timestamp || item.date,

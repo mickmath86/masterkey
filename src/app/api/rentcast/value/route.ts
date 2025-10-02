@@ -64,10 +64,7 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json()
     
-    console.log('=== RENTCAST AVM API RESPONSE ===')
-    console.log('Status:', response.status)
-    console.log('Address requested:', address)
-    console.log('Full response:', JSON.stringify(data, null, 2))
+    console.log('✅ Rentcast AVM API Success for:', address)
     
     // Cache the result
     cache.set(cacheKey, { data, timestamp: Date.now() })

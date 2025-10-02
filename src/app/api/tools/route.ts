@@ -122,7 +122,6 @@ const tools = {
             const data = await response.json();
             // The API returns an array, and we want the zestimateHistory array from the first item
             const valueHistoryData = data[0]?.zestimateHistory || [];
-            console.log(data)
             return data;
         }
     }), 

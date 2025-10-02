@@ -6,30 +6,37 @@ const rapidApiKey = process.env.RAPIDAPI_KEY!;
 
 export async function POST(req: Request) {
   try {
-    const { address, zpid } = await req.json();
+    const { address, zpid, propertyData: passedPropertyData } = await req.json();
 
     if (!address || !zpid) {
       return Response.json({ error: 'Address and zpid are required' }, { status: 400 });
     }
 
-    // Fetch property data from Zillow API
-    const propertyResponse = await fetch(
-      `https://${rapidApiHost}/property?address=${encodeURIComponent(address)}`,
-      {
-        method: 'GET',
-        headers: {
-          'X-RapidAPI-Key': rapidApiKey,
-          'X-RapidAPI-Host': rapidApiHost,
-          'Content-Type': 'application/json'
+    let finalPropertyData = passedPropertyData;
+
+    // Only fetch property data if not provided
+    if (!passedPropertyData) {
+      console.log('⚠️ No property data provided for valuation, fetching from API');
+      const propertyResponse = await fetch(
+        `https://${rapidApiHost}/property?address=${encodeURIComponent(address)}`,
+        {
+          method: 'GET',
+          headers: {
+            'X-RapidAPI-Key': rapidApiKey,
+            'X-RapidAPI-Host': rapidApiHost,
+            'Content-Type': 'application/json'
+          }
         }
+      );
+
+      if (!propertyResponse.ok) {
+        throw new Error(`Property API request failed: ${propertyResponse.status}`);
       }
-    );
 
-    if (!propertyResponse.ok) {
-      throw new Error(`Property API request failed: ${propertyResponse.status}`);
+      finalPropertyData = await propertyResponse.json();
+    } else {
+      console.log('✅ Using provided property data for valuation analysis');
     }
-
-    const propertyData = await propertyResponse.json();
 
     // Fetch zestimate history data
     const historyResponse = await fetch(
@@ -45,20 +52,35 @@ export async function POST(req: Request) {
     );
 
     if (!historyResponse.ok) {
+      if (historyResponse.status === 429) {
+        console.log('⚠️ Rate limit hit for valuation tool, using fallback analysis');
+        // Generate valuation analysis without detailed history data
+        const result = await streamText({
+          model: openai("gpt-4o-mini"),
+          system: `You are a professional real estate valuation analyst. Generate a comprehensive valuation analysis based on the provided property data. Focus on market positioning, property characteristics, and general market trends. Note: This analysis is based on limited data due to API constraints.`,
+          prompt: `Generate a professional valuation analysis for the property at: ${address}. 
+          
+          Property Details:
+          - Address: ${address}
+          - ZPID: ${zpid}
+          
+          Please provide insights on market positioning, property characteristics, and investment potential based on the property location and general market conditions.`
+        });
+        
+        return result.toTextStreamResponse();
+      }
       throw new Error(`History API request failed: ${historyResponse.status}`);
     }
 
     const historyData = await historyResponse.json();
     const zestimateHistory = historyData[0]?.zestimateHistory || [];
 
-    // Debug logs
-    console.log('Property data for valuation:', propertyData);
-    console.log('Zestimate history data:', zestimateHistory);
+    console.log('✅ Generating valuation analysis with property data and history');
 
     // Calculate some basic metrics from history
     const recentHistory = zestimateHistory.slice(-12); // Last 12 months
-    const oldestValue = Number(recentHistory[0]?.v) || Number(propertyData.zestimate) || 0;
-    const newestValue = Number(recentHistory[recentHistory.length - 1]?.v) || Number(propertyData.zestimate) || 0;
+    const oldestValue = Number(recentHistory[0]?.v) || Number(finalPropertyData.zestimate) || 0;
+    const newestValue = Number(recentHistory[recentHistory.length - 1]?.v) || Number(finalPropertyData.zestimate) || 0;
     const valueChange = newestValue - oldestValue;
     const percentChange = oldestValue ? ((valueChange / oldestValue) * 100).toFixed(1) : '0';
 
@@ -69,17 +91,19 @@ export async function POST(req: Request) {
       prompt: `Generate a professional valuation analysis for the following property:
 
 Address: ${address}
-Current Zestimate: $${propertyData.zestimate?.toLocaleString() || 'N/A'}
-Property Type: ${propertyData.propertyType || 'N/A'}
-Year Built: ${propertyData.yearBuilt || 'N/A'}
-Living Area: ${propertyData.livingArea || 'N/A'} sq ft
-Price per Square Foot: $${propertyData.pricePerSquareFoot || 'N/A'}
-Home Status: ${propertyData.homeStatus || 'N/A'}
+Current Zestimate: $${finalPropertyData.zestimate?.toLocaleString() || 'N/A'}
+ZPID: ${zpid}
+Property Type: ${finalPropertyData.propertyType}
+Bedrooms: ${finalPropertyData.bedrooms}
+Bathrooms: ${finalPropertyData.bathrooms}
+Living Area: ${finalPropertyData.livingArea} sq ft
+Year Built: ${finalPropertyData.yearBuilt}
+Price per Square Foot: $${finalPropertyData.pricePerSquareFoot || 'N/A'}
+Home Status: ${finalPropertyData.homeStatus || 'N/A'}
 
 Valuation History Analysis:
 - 12-Month Value Change: ${valueChange > 0 ? '+' : ''}$${valueChange?.toLocaleString()} (${Number(percentChange) > 0 ? '+' : ''}${percentChange}%)
 - Historical Data Points: ${zestimateHistory.length} months of data available
-- Oldest Recent Value: $${oldestValue?.toLocaleString()}
 - Current Value: $${newestValue?.toLocaleString()}
 
 Recent Zestimate History (last 6 months):

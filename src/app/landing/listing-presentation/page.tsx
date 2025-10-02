@@ -14,6 +14,8 @@ import { Home, Key, DollarSign, ArrowRight, SparkleIcon } from "lucide-react"
 import { GooglePlacesInput } from '@/components/ui/google-places-input'
 import { Button } from '@/components/button'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { usePropertyData } from '@/contexts/PropertyDataContext'
 import { CheckBadgeIcon } from "@heroicons/react/16/solid";
 import { Gradient } from "@/components/gradient";
 import { PlusGrid } from "@/components/plus-grid";
@@ -23,14 +25,20 @@ import { MasterKeyMark } from '@/components/logo'
 function AddressTest() {
 
   const [address, setAddress] = useState('');
+  const router = useRouter();
+  const { prefetchPropertyData, isLoading } = usePropertyData();
 
-  const handleGetStarted = () => {
+  const handleGetStarted = async () => {
     if (address.trim()) {
-      // Redirect to questionnaire with pre-filled address, starting at step 2 (timeline)
-      window.location.href = `/questionnaire/listing-presentation?address=${encodeURIComponent(address)}&step=2`;
+      // Prefetch property data before navigating
+      console.log('Prefetching property data for address:', address);
+      await prefetchPropertyData(address);
+      
+      // Navigate to questionnaire with pre-filled address, starting at step 2 (timeline)
+      router.push(`/questionnaire/listing-presentation?address=${encodeURIComponent(address)}&step=2`);
     } else {
-      // Redirect to questionnaire without pre-filled address
-      window.location.href = '/questionnaire/listing-presentation';
+      // Navigate to questionnaire without pre-filled address
+      router.push('/questionnaire/listing-presentation');
     }
   };
   return (
@@ -40,11 +48,7 @@ function AddressTest() {
           <div className="px-6 lg:px-0 lg:pt-4">
             <div className="mx-auto max-w-2xl">
               <div className="max-w-lg">
-                {/* <img
-                  alt="Masterkey"
-                  src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=sky&shade=600"
-                  className="h-11 dark:hidden"
-                /> */}
+          
                 <MasterKeyMark className="h-11  dark:hidden"/>
                 <MasterKeyMark className="h-11  not-dark:hidden"/>
                 <div className="mt-24 sm:mt-32 lg:mt-16">
@@ -75,9 +79,10 @@ function AddressTest() {
                   </div>
                   <Button
                     onClick={handleGetStarted}
-                    className="px-8 py-3 bg-sky-500 hover:bg-sky-600   text-white font-medium rounded-sm transition-colors duration-200"
+                    disabled={isLoading}
+                    className="px-8 py-3 bg-sky-500 hover:bg-sky-600 disabled:bg-sky-300 text-white font-medium rounded-sm transition-colors duration-200"
                     >
-                    Get Started
+                    {isLoading ? 'Loading...' : 'Get Started'}
                   </Button>
                 </div>
               </div>

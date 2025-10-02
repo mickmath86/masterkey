@@ -2,7 +2,8 @@ import { SanityLive } from '@/sanity/live'
 import { revalidateSyncTags } from '@/sanity/revalidateSyncTags'
 import '@/styles/tailwind.css'
 import type { Metadata } from 'next'
-import { GoogleTagManager } from '@next/third-parties/google' 
+import { GoogleTagManager } from '@next/third-parties/google'
+import { PropertyDataProvider } from '@/contexts/PropertyDataContext' 
 
 export const metadata: Metadata = {
   title: {
@@ -37,7 +38,9 @@ export default function RootLayout({
       <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WTJD5VKJ"
       height="0" width="0" style={{ display: "none", visibility: "hidden" }}></iframe></noscript>
 
-        {children}
+        <PropertyDataProvider>
+          {children}
+        </PropertyDataProvider>
         <SanityLive revalidateSyncTags={revalidateSyncTags} />
       </body>
     </html>

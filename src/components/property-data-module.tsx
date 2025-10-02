@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { usePropertyData } from "@/contexts/PropertyDataContext"
 import Image from "next/image"
 import { Toaster } from "@/components/ui/sonner"
 import GaugeComponent from "react-gauge-component"
@@ -65,6 +66,7 @@ interface PropertyDataModuleProps {
 
 export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps) {
   const router = useRouter()
+  const { propertyData: prefetchedPropertyData } = usePropertyData()
   
   // need to kill this
   const [propertyData, setPropertyData] = useState<any>(null) 
@@ -100,34 +102,110 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     setIsPropertySheetOpen(true)
   }
 
+  // Function to fetch additional data when we have prefetched property data
+  const fetchAdditionalData = async (subjectPropertyResult: any) => {
+    try {
+      const apiAddress = address?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || ''
+      const propertyZpid = subjectPropertyResult?.zpid
+
+      console.log('🔄 Fetching additional data with zpid:', propertyZpid)
+
+      // Fetch Property Images using zpid from subject property data
+      if (propertyZpid) {
+        const propertyImagesResponse = await fetch(`/api/zillow/images?zpid=${encodeURIComponent(propertyZpid)}`)
+        if (propertyImagesResponse.ok) {
+          const propertyImagesResult = await propertyImagesResponse.json()
+          setPropertyImages(propertyImagesResult)
+        }
+      }
+
+      // Fetch AVM data
+      const rentcastUrl = `/api/rentcast/value?address=${encodeURIComponent(apiAddress)}`
+      const avmResponse = await fetch(rentcastUrl)
+      if (avmResponse.ok) {
+        const avmResult = await avmResponse.json()
+        setAvmData(avmResult)
+      }
+
+      // Fetch Comps using zpid from subject property data
+      if (propertyZpid) {
+        const compsResponse = await fetch(`/api/zillow/comps?zpid=${encodeURIComponent(propertyZpid)}`)
+        if (compsResponse.ok) {
+          const compsResult = await compsResponse.json()
+          setComps(compsResult)
+        }
+      }
+
+      // Fetch market data
+      const marketZipcode = zipcode || extractZipcode(address || '')
+      if (marketZipcode) {
+        const marketResponse = await fetch(`/api/rentcast/markets?zipcode=${encodeURIComponent(marketZipcode)}`)
+        if (marketResponse.ok) {
+          const marketResult = await marketResponse.json()
+          setMarketData(marketResult)
+        }
+      }
+
+      // Fetch ValueData using zpid from prefetched property data
+      if (propertyZpid) {
+        try {
+          console.log('🔄 Fetching value data for zpid:', propertyZpid)
+          const valueDataResponse = await fetch(`/api/zillow/values?zpid=${encodeURIComponent(propertyZpid)}`)
+          if (valueDataResponse.ok) {
+            const valueDataResult = await valueDataResponse.json()
+            console.log('✅ Value data fetched successfully:', valueDataResult)
+            console.log('📊 Value data structure:', {
+              isArray: Array.isArray(valueDataResult),
+              length: Array.isArray(valueDataResult) ? valueDataResult.length : 0,
+              firstItem: valueDataResult?.[0],
+              hasCorrectFormat: !!(valueDataResult?.[0]?.t && valueDataResult?.[0]?.v)
+            })
+            setValueData(valueDataResult)
+          } else {
+            console.error('❌ Value data fetch failed:', valueDataResponse.status)
+          }
+        } catch (error) {
+          console.error('Value data fetch error:', error)
+        }
+      } else {
+        console.log('❌ No zpid available for value data fetch')
+      }
+    } catch (error) {
+      console.error('Error fetching additional data:', error)
+    }
+  }
+
   
   useEffect(() => {
-    console.log('PropertyDataModule - Address received:', address)
-    console.log('PropertyDataModule - Address type:', typeof address)
-    console.log('PropertyDataModule - useMockData:', useMockData)
-    
     if (!address) {
-      console.log('PropertyDataModule - No address provided, returning early')
       return
     }
 
-    // Use mock data in development to avoid API calls
-    // if (useMockData) {
-    //   console.log('Using mock data for development')
+    // If we have prefetched data, use it immediately
+    const normalizeAddress = (addr: string) => {
+      return addr?.replace(/,\s*USA$/i, '').replace(/\s+/g, ' ').trim().toLowerCase()
+    }
+    
+    const prefetchedNormalized = normalizeAddress(prefetchedPropertyData?.address || '')
+    const currentNormalized = normalizeAddress(address || '')
+    const addressesMatch = prefetchedNormalized.includes(currentNormalized.split(',')[0]) || 
+                          currentNormalized.includes(prefetchedNormalized.split(',')[0])
+    
+    if (prefetchedPropertyData && addressesMatch) {
+      console.log('✅ Using prefetched data, calling fetchAdditionalData with:', prefetchedPropertyData)
+      setSubjectPropertyData(prefetchedPropertyData)
       
-    //   setMarketData(MOCK_MARKET_DATA)
+      // Set property data with prefetched values
+      setPropertyData({
+        ...MOCK_PROPERTY_DATA,
+        zestimate: prefetchedPropertyData.zestimate || prefetchedPropertyData.price || 850000,
+        address: address
+      })
       
-    //   setSubjectPropertyData(MOCK_SUBJECT_PROPERTY_DATA)
-    //   setComps(MOCK_COMPS_DATA)
-    //   setPropertyData(MOCK_PROPERTY_DATA)
-    //   // Hardcoded AVM data to prevent page breaks
-    //   setAvmData(MOCK_AVM_DATA)
-    //   setValueData(MOCK_VALUE_DATA)
-    //   // todo: get property images from API
-    //   setPropertyImages(MOCK_PROPERTY_IMAGE)
-    //   setIsLoading(false)
-    //   return
-    // }
+      // Still fetch additional data (images, comps, market data) in background
+      fetchAdditionalData(prefetchedPropertyData)
+      return
+    }
 
     const fetchData = async () => {
       setIsLoading(true)
@@ -136,21 +214,15 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       try {
         // Convert URL-friendly address format to API-friendly format
         const apiAddress = address.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-        console.log('PropertyDataModule - Original address:', address)
-        console.log('PropertyDataModule - Converted address for API:', apiAddress)
 
-        
+
         //Fetch Subject Property Data
         const zillowUrl = `/api/zillow/property?address=${encodeURIComponent(apiAddress)}`
-        console.log('PropertyDataModule - Zillow API URL:', zillowUrl)
         const subjectPropertyResponse = await fetch(zillowUrl)
-        console.log('PropertyDataModule - Zillow response status:', subjectPropertyResponse.status)
         let subjectPropertyResult = null
         if (subjectPropertyResponse.ok) {
           subjectPropertyResult = await subjectPropertyResponse.json()
           setSubjectPropertyData(subjectPropertyResult)
-          console.log('Zillow API Response:', subjectPropertyResult)
-          console.log('Subject Property Data Set:', subjectPropertyResult)
 
           //Fetch Property Images using zpid from subject property data
           if (subjectPropertyResult?.zpid) {
@@ -163,9 +235,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         }
         // Fetch AVM data
         const rentcastUrl = `/api/rentcast/value?address=${encodeURIComponent(apiAddress)}`
-        console.log('PropertyDataModule - Rentcast API URL:', rentcastUrl)
         const avmResponse = await fetch(rentcastUrl)
-        console.log('PropertyDataModule - Rentcast response status:', avmResponse.status)
         if (avmResponse.ok) {
           const avmResult = await avmResponse.json()
           setAvmData(avmResult)
@@ -174,16 +244,10 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
         //Fetch Comps using zpid from subject property data
         if (subjectPropertyResult?.zpid) {
-          console.log('Fetching comps for zpid:', subjectPropertyResult.zpid)
           const compsResponse = await fetch(`/api/zillow/comps?zpid=${encodeURIComponent(subjectPropertyResult.zpid)}`)
-          console.log('Comps response status:', compsResponse.status)
           if (compsResponse.ok) {
             const compsResult = await compsResponse.json()
-            console.log('Comps result:', compsResult)
-            console.log('Total comps count:', compsResult?.comps?.length || 0)
             setComps(compsResult)
-          } else {
-            console.error('Comps API error:', compsResponse.status, await compsResponse.text())
           }
         }
 
@@ -194,29 +258,16 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
           if (marketResponse.ok) {
             const marketResult = await marketResponse.json()
             setMarketData(marketResult)
-            console.log('Check it - Market data:', marketResult)
           }
         }
 
         //Fetch ValueData using zpid from subject property data
         if (subjectPropertyResult?.zpid) {
-          console.log('Fetching value data for zpid:', subjectPropertyResult.zpid)
           try {
             const valueDataResponse = await fetch(`/api/zillow/values?zpid=${encodeURIComponent(subjectPropertyResult.zpid)}`)
-            console.log('Value data response status:', valueDataResponse.status)
             if (valueDataResponse.ok) {
               const valueDataResult = await valueDataResponse.json()
-              // The API returns an array of {t, v} objects, so we use it directly
               setValueData(valueDataResult)
-              console.log('PropertyDataModule - Value data array:', valueDataResult)
-              console.log('PropertyDataModule - Value data length:', valueDataResult?.length)
-              console.log('PropertyDataModule - First value item:', valueDataResult?.[0])
-            } else if (valueDataResponse.status === 429) {
-              console.warn('Value data API rate limited, skipping for now')
-              // Don't set error state for rate limiting, just skip
-            } else {
-              const errorText = await valueDataResponse.text()
-              console.error('Value data API error:', valueDataResponse.status, errorText)
             }
           } catch (error) {
             console.error('Value data fetch error:', error)
@@ -239,7 +290,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     }
 
     fetchData()
-  }, [address, zipcode])
+  }, [address, zipcode, prefetchedPropertyData])
 
   // Show agent card after 10 seconds
   useEffect(() => {
@@ -254,7 +305,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   useEffect(() => {
     if (subjectPropertyData && address && !useMockData) {
       const apiAddress = address.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-      fetchPropertySummary(apiAddress)
+      fetchPropertySummary(apiAddress, subjectPropertyData)
     } else if (useMockData) {
       // Set a default summary for mock data
       setPropertySummary("This beautifully maintained property offers exceptional value in a desirable neighborhood. With its thoughtful layout and modern amenities, it represents an excellent opportunity for both homeowners and investors. The property's strategic location provides convenient access to local amenities while maintaining the peaceful residential atmosphere that makes this area so sought after.")
@@ -263,35 +314,58 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
   // Fetch valuation analysis when subject property data is loaded
   useEffect(() => {
+    console.log('🔍 Valuation Analysis Check:', {
+      hasSubjectPropertyData: !!subjectPropertyData,
+      hasAddress: !!address,
+      hasZpid: !!subjectPropertyData?.zpid,
+      zpid: subjectPropertyData?.zpid,
+      useMockData: useMockData
+    })
+    
     if (subjectPropertyData && address && subjectPropertyData.zpid && !useMockData) {
+      console.log('✅ Triggering valuation analysis for zpid:', subjectPropertyData.zpid)
       const apiAddress = address.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-      fetchValuationAnalysis(apiAddress, subjectPropertyData.zpid)
+      fetchValuationAnalysis(apiAddress, subjectPropertyData.zpid, subjectPropertyData)
     } else if (useMockData) {
       // Set a default valuation analysis for mock data
       setValuationAnalysis("Based on recent market analysis, this property demonstrates strong valuation performance with consistent appreciation trends. The current market positioning reflects favorable conditions for both investment potential and long-term value retention. Historical data indicates stable growth patterns that align with broader market dynamics in this desirable area.")
+    } else {
+      console.log('❌ Valuation analysis not triggered - missing requirements')
     }
   }, [subjectPropertyData, address, useMockData])
 
   
 
+  // Consistent function to get days on market for the subject property
+  const getDaysOnMarket = () => {
+    const subjectPropertyType = avmData?.subjectProperty?.propertyType;
+    const propertyTypeData = marketData?.saleData?.dataByPropertyType?.find(
+      (data: any) => data.propertyType === subjectPropertyType
+    );
+    return propertyTypeData?.averageDaysOnMarket || marketData?.saleData?.averageDaysOnMarket;
+  }
+
   const getMarketSpeedIndicator = (days: number) => {
+    const avgDays = getDaysOnMarket();
+    const displayDays = avgDays && !isNaN(avgDays) ? Math.round(avgDays) : 'N/A';
+    
     if (days < 30) return { 
       label: "Fast Market", 
       color: "bg-green-100 text-green-800", 
       icon: TrendingUp,
-      description: `Properties sell quickly with high demand with an average of ${marketData?.saleData?.averageDaysOnMarket || 'N/A'} days on market. As a seller, you can expect competitive offers, potentially above asking price, and a faster closing timeline. This is an excellent time to list your property.`
+      description: `Properties sell quickly with high demand with an average of ${displayDays} days on market. As a seller, you can expect competitive offers, potentially above asking price, and a faster closing timeline. This is an excellent time to list your property.`
     }
     if (days > 60) return { 
       label: "Slow Market", 
       color: "bg-red-100 text-red-800", 
       icon: TrendingDown,
-      description: `Properties take longer to sell with lower demand with an average of ${marketData?.saleData?.averageDaysOnMarket || 'N/A'} days on market. As a seller, you may need to price competitively, consider staging improvements, and be prepared for longer marketing periods and potential price negotiations.`
+      description: `Properties take longer to sell with lower demand with an average of ${displayDays} days on market. As a seller, you may need to price competitively, consider staging improvements, and be prepared for longer marketing periods and potential price negotiations.`
     }
     return { 
       label: "Balanced Market", 
       color: "bg-blue-100 text-blue-800", 
       icon: Calendar,
-      description: `Supply and demand are relatively equal with an average of ${marketData?.saleData?.averageDaysOnMarket || 'N/A'} days on market. As a seller, you can expect reasonable market activity with standard negotiation processes. Proper pricing and presentation are key to attracting qualified buyers.`
+      description: `Supply and demand are relatively equal with an average of ${displayDays} days on market. As a seller, you can expect reasonable market activity with standard negotiation processes. Proper pricing and presentation are key to attracting qualified buyers.`
     }
   }
 
@@ -316,7 +390,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   }
 
   // Function to fetch AI-generated property summary with streaming
-  const fetchPropertySummary = async (propertyAddress: string) => {
+  const fetchPropertySummary = async (propertyAddress: string, propertyData?: any) => {
     setSummaryLoading(true)
     setPropertySummary('') // Clear existing summary
     
@@ -326,7 +400,10 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ address: propertyAddress }),
+        body: JSON.stringify({ 
+          address: propertyAddress,
+          propertyData: propertyData || subjectPropertyData // Pass prefetched data
+        }),
       })
 
       if (!response.ok) {
@@ -363,7 +440,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   }
 
   // Function to fetch AI-generated valuation analysis with streaming
-  const fetchValuationAnalysis = async (propertyAddress: string, zpid: number) => {
+  const fetchValuationAnalysis = async (propertyAddress: string, zpid: number, propertyData?: any) => {
     setValuationLoading(true)
     setValuationAnalysis('') // Clear existing analysis
     
@@ -373,7 +450,11 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ address: propertyAddress, zpid }),
+        body: JSON.stringify({ 
+          address: propertyAddress, 
+          zpid,
+          propertyData: propertyData || subjectPropertyData // Pass prefetched data
+        }),
       })
 
       if (!response.ok) {
@@ -409,7 +490,8 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     }
   }
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | undefined | null) => {
+    if (!amount || isNaN(amount)) return '$0'
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -418,14 +500,18 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     }).format(amount)
   }
 
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat("en-US").format(num)
-  }
-
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
+      // Get the element's position
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset
+      // Add offset for header padding (adjust this value as needed)
+      const offsetPosition = elementPosition - 80 // 80px padding from top
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      })
     }
   }
 
@@ -533,21 +619,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     : "NA"
   // Set minimum value to 0 as requested
   const minPrice = 0
-  
-  // Calculate gauge limits as percentages of maxPrice (must be in ascending order)
-  const limit50Percent = maxPrice * 0.50 // 50% of maxPrice
-  const limit75Percent = maxPrice * 0.75 // 75% of maxPrice  
-  const limit80Percent = maxPrice * 0.80 // 80% of maxPrice
 
-  // Console log the calculated values for debugging
-  console.log('Gauge Values:', {
-    minPrice,
-    limit50Percent,
-    limit75Percent,
-    limit80Percent,
-    maxPrice
-  })
- 
+
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header with navigation */}
@@ -573,40 +647,33 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       {/* Navigation */}
       <div className="bg-sky-50 border-b border-sky-200 dark:bg-sky-900/20 dark:border-sky-800 sticky top-0 z-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-  
-          <nav className="flex space-x-8 py-4">
+          {/* Mobile: Horizontal scroll, Desktop: Normal flex */}
+          <nav className="flex space-x-4 md:space-x-8 py-4 overflow-x-auto scrollbar-hide">
             <button
-              onClick={() => scrollToSection("home-value")}
-              className="text-sky-700 hover:text-sky-900 hover:bg-sky-100 px-3 py-2 rounded-md text-sm font-medium"
+              onClick={() => scrollToSection("property-summary")}
+              className="text-sky-700 hover:text-sky-900 hover:bg-sky-100 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap flex-shrink-0"
             >
-              Home Value
+              Property Summary
             </button>
             <button
-              onClick={() => scrollToSection("property-photos")}
-              className="text-sky-700 hover:text-sky-900 hover:bg-sky-100 px-3 py-2 rounded-md text-sm font-medium"
+              onClick={() => scrollToSection("property-valuation")}
+              className="text-sky-700 hover:text-sky-900 hover:bg-sky-100 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap flex-shrink-0"
             >
-              Photos & Map
-            </button>
-            <button
-              onClick={() => scrollToSection("property-details")}
-              className="text-sky-700 hover:text-sky-900 hover:bg-sky-100 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Property Details
+              Valuation
             </button>
             <button
               onClick={() => scrollToSection("market-statistics")}
-              className="text-sky-700 hover:text-sky-900 hover:bg-sky-100 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-sky-700 hover:text-sky-900 hover:bg-sky-100 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap flex-shrink-0"
             >
-              Market Data
+              Market Stats
             </button>
-            {propertyData?.taxHistory && propertyData.taxHistory.length > 0 && (
-              <button
-                onClick={() => scrollToSection("tax-history")}
-                className="text-sky-700 hover:text-sky-900 hover:bg-sky-100 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Tax History
-              </button>
-            )}
+            <button
+              onClick={() => scrollToSection("sales-comparables")}
+              className="text-sky-700 hover:text-sky-900 hover:bg-sky-100 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap flex-shrink-0"
+            >
+              Sales Comparables
+            </button>
+           
           </nav>
         </div>
       </div>
@@ -633,7 +700,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                         month: 'short', 
                         day: 'numeric', 
                         year: 'numeric' 
-                      }).replace(/(\d+),/, '$1th,')}
+                      })}
                   </h4>
                 </div>
               </CardDescription>
@@ -709,7 +776,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                         <div className="flex flex-col items-center justify-center space-y-2 bg-gray-50 dark:bg-gray-700 rounded-sm p-4">
                           <div className="flex items-center text-2xl font-semibold text-sky-600 dark:text-sky-400">
                             <HouseIcon className="w-6 h-6 mr-2" />
-                            {subjectPropertyData?.livingArea ? subjectPropertyData.livingArea.toLocaleString() : 'N/A'}
+                            {subjectPropertyData?.livingArea && !isNaN(subjectPropertyData.livingArea) ? subjectPropertyData.livingArea.toLocaleString() : 'N/A'}
                           </div>
                           <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">Square Footage</div>
                         </div>
@@ -734,7 +801,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                     <Sparkles className="w-4 h-4 mr-2 text-sky-600 dark:text-sky-400" /> <h2 className="text-lg font-semibold text-sky-600 dark:text-sky-400">Property Summary</h2>
                   </CardTitle>
                   </CardHeader>
-                  <CardContent> 
+                  <CardContent id="property-summary"> 
                     {summaryLoading ? (
                       <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
                         <Sparkles className="w-4 h-4 animate-spin" />
@@ -756,7 +823,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
             {/* Property Valuation Section */}
             <Card>
               <CardHeader>
-              <CardTitle className="text-xl md:text-2xl lg:text-3xl font-semibold">Property Valuation</CardTitle>
+              <CardTitle id="property-valuation" className="text-xl md:text-2xl lg:text-3xl font-semibold">Property Valuation</CardTitle>
                 <CardDescription>
                   
                   <div className="bg-sky-50 mt-4 text-sm px-4 py-2 rounded-sm text-sky-600 dark:text-gray-400">
@@ -828,7 +895,15 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                   </div>  
                   
                   </div>
-                  <ChartAreaInteractive address={avmData?.subjectProperty?.formattedAddress || address} valueData={valueData}/>
+                  <ChartAreaInteractive 
+                    address={avmData?.subjectProperty?.formattedAddress || address} 
+                    valueData={valueData}
+                  />
+                  {/* Debug info */}
+                  <div className="text-xs text-gray-500 mt-2">
+                    Debug: valueData available: {valueData ? 'Yes' : 'No'} | 
+                    Data points: {Array.isArray(valueData) ? valueData.length : 0}
+                  </div>
                  
               
               </CardContent>
@@ -839,7 +914,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
             {/* Market Statistics Section */}
             <Card id="market-statistics" className="bg-white rounded-lg shadow-sm   flex flex-col dark:bg-gray-800 dark:border-blue-700 gap-2">
               <CardHeader>
-                <CardTitle>Market Statistics</CardTitle>
+                <CardTitle className="text-xl md:text-2xl lg:text-3xl font-semibold">Market Statistics</CardTitle>
                 <CardDescription>
                 Detailed market trends and pricing analysis for your area
                 {marketData?.zipCode && ` (${marketData.zipCode})`}
@@ -1019,19 +1094,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                 
                     <CardContent className="flex items-center justify-center">
                       {(() => {
-                        // Get the subject property type from avmData
-                        const subjectPropertyType = avmData?.subjectProperty?.propertyType;
-                        
-                        // Find property type specific data from marketData
-                        const propertyTypeData = marketData?.saleData?.dataByPropertyType?.find(
-                          (data: any) => data.propertyType === subjectPropertyType
-                        );
-                        
-                        // Use property type specific days on market if available, otherwise fall back to general market data
-                        const avgDaysOnMarket = propertyTypeData?.averageDaysOnMarket || marketData?.saleData?.averageDaysOnMarket;
-                        
+                        const avgDaysOnMarket = getDaysOnMarket();
                         return (
-                          <span className="font-semibold text-6xl ">{Math.round(avgDaysOnMarket)}</span>
+                          <span className="font-semibold text-6xl ">{avgDaysOnMarket && !isNaN(avgDaysOnMarket) ? Math.round(avgDaysOnMarket) : 'N/A'}</span>
                         );
                       })()}
                     </CardContent>
@@ -1145,18 +1210,20 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
 
             {/* comparables Section */}
-             <div id="comps" className="bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-                <div className="p-6">
-                  <div className="flex justify-between gap-4 mb-4">
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Sales Comparables</h3>
-                        <p className="text-sm text-gray-600">Buy and Sell histories of comparable properties</p>
-                    </div>
+             <Card id="sales-comparables" className="bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle  className="text-xl md:text-2xl lg:text-3xl font-semibold">Sales Comparables</CardTitle>
+                <CardDescription className="text-sm text-gray-600">Buy and Sell histories of comparable properties</CardDescription>
+              </CardHeader>
+              <CardContent>
+                
+                  <div className="flex justify-between gap-4">
+                    
 
                     {/* mapbox */}
                     
                    
-                   
+
                   </div>
                  
                   <div className="relative">
@@ -1216,8 +1283,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                     />
                   </div>
            
-                </div>
-              </div>
+               
+              </CardContent>
+              </Card>
           
               {/* Property Details Sheet */}
               <PropertyDetailsSheet
@@ -1265,12 +1333,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white">{agentData.name}</h3>
                     <p className="text-sm text-sky-600 dark:text-sky-400">{agentData.title}</p>
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      <span>{agentData.rating}</span>
-                      <span>•</span>
-                      <span>{agentData.reviews} reviews</span>
-                    </div>
+                    
                   </div>
                 </div>
                 

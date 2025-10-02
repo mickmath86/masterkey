@@ -75,10 +75,7 @@ export async function GET(request: NextRequest) {
     if (address) queryParams.append('address', address)
     if (location && !address) queryParams.append('address', location) // Legacy support
 
-    console.log('=== ZILLOW API REQUEST ===')
-    console.log('API Host:', apiHost)
-    console.log('Query params:', queryParams.toString())
-    console.log('Full URL:', `https://${apiHost}/property?${queryParams.toString()}`)
+    console.log('🔄 Zillow Property API Request for:', searchParam)
 
     const response = await fetch(
       `https://${apiHost}/property?${queryParams.toString()}`,
@@ -103,17 +100,10 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json()
     
-    console.log('=== ZILLOW /property ENDPOINT RESPONSE ===')
-    console.log('Status:', response.status)
-    console.log('Search param requested:', searchParam)
-    console.log('Full response:', JSON.stringify(data, null, 2))
-    console.log('Response keys:', Object.keys(data))
-    console.log('Response type:', Array.isArray(data) ? 'Array' : typeof data)
+    console.log('✅ Zillow API Success:', response.status, 'for:', searchParam)
     
     // Process and normalize the data
     const processedData = processZillowData(data, searchParam)
-    
-    console.log('Processed data:', JSON.stringify(processedData, null, 2))
     
     // Cache the result
     cache.set(cacheKey, { data: processedData, timestamp: Date.now() })
