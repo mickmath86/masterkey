@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { usePropertyData } from "@/contexts/PropertyDataContext"
 import Image from "next/image"
 import { Toaster } from "@/components/ui/sonner"
