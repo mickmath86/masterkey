@@ -64,7 +64,7 @@ const unixFormat = (timestamp: number): string => {
 const chartConfig = {
   value: {
     label: "Property Value",
-    color: "var(--chart-1)",
+    color: "hsl(200 98% 39%)", // sky-600
   },
 } satisfies ChartConfig
 

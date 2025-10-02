@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { usePropertyData } from "@/contexts/PropertyDataContext"
 import Image from "next/image"
 import { Toaster } from "@/components/ui/sonner"
-import GaugeComponent from "react-gauge-component"
 import { useRouter } from 'next/navigation'
 import {
   Home,
@@ -26,8 +25,15 @@ import {
   Scan,
   LandPlot,
   Sparkles,
-  X
- 
+  X,
+  Badge,
+  TrendingUp as TrendingUpIcon,
+  DollarSign,
+  Target,
+  Award,
+  Building,
+  Clock,
+  CircleDotIcon
 } from "lucide-react"
 import { extractZipcode } from "@/lib/utils/address"
 
@@ -37,11 +43,11 @@ import { MOCK_PROPERTY_DATA, MOCK_MARKET_DATA, USE_MOCK_DATA, MOCK_SUBJECT_PROPE
 import { ChartAreaInteractive } from "./ui/chart-area-interactive"
 import { Progress } from "@/components/ui/progress"
 
-import { ChartRadar } from "./ui/chart-radar"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { MapboxMap } from "./ui/mapbox-map"
 import { ComparablesDataTable } from "./ui/comparables-data-table"
 import { PropertyDetailsSheet } from "./property-details-sheet"
+import { FadeIn, FadeInStagger } from "./animations/fade-in"
 
 
 const usd = new Intl.NumberFormat("en-US", {
@@ -87,8 +93,10 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   const [showAgentCard, setShowAgentCard] = useState(false)
   const [propertySummary, setPropertySummary] = useState<string>('')
   const [summaryLoading, setSummaryLoading] = useState(false)
+  const [structuredSummary, setStructuredSummary] = useState<any>(null)
   const [valuationAnalysis, setValuationAnalysis] = useState<string>('')
   const [valuationLoading, setValuationLoading] = useState(false)
+  const [structuredValuation, setStructuredValuation] = useState<any>(null)
 
 
   // Handler for when a map marker is clicked
@@ -322,19 +330,31 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       useMockData: useMockData
     })
     
-    if (subjectPropertyData && address && subjectPropertyData.zpid && !useMockData) {
-      console.log('✅ Triggering valuation analysis for zpid:', subjectPropertyData.zpid)
+    // Note: Valuation analysis is now triggered in a separate useEffect that waits for valueData
+  }, [subjectPropertyData, address, useMockData])
+
+  // Trigger valuation analysis when both property data and value data are available
+  useEffect(() => {
+    console.log('🔍 Valuation Analysis Trigger Check:', {
+      hasSubjectPropertyData: !!subjectPropertyData,
+      hasAddress: !!address,
+      hasZpid: !!subjectPropertyData?.zpid,
+      hasValueData: !!valueData,
+      valueDataLength: Array.isArray(valueData) ? valueData.length : 0,
+      useMockData: useMockData
+    })
+    
+    if (subjectPropertyData && address && subjectPropertyData.zpid && valueData && !useMockData) {
+      console.log('✅ Triggering valuation analysis with value data for zpid:', subjectPropertyData.zpid)
       const apiAddress = address.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
       fetchValuationAnalysis(apiAddress, subjectPropertyData.zpid, subjectPropertyData)
     } else if (useMockData) {
       // Set a default valuation analysis for mock data
       setValuationAnalysis("Based on recent market analysis, this property demonstrates strong valuation performance with consistent appreciation trends. The current market positioning reflects favorable conditions for both investment potential and long-term value retention. Historical data indicates stable growth patterns that align with broader market dynamics in this desirable area.")
     } else {
-      console.log('❌ Valuation analysis not triggered - missing requirements')
+      console.log('❌ Valuation analysis not triggered - waiting for all data to be available')
     }
-  }, [subjectPropertyData, address, useMockData])
-
-  
+  }, [subjectPropertyData, address, valueData, useMockData])
 
   // Consistent function to get days on market for the subject property
   const getDaysOnMarket = () => {
@@ -389,10 +409,10 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     }
   }
 
-  // Function to fetch AI-generated property summary with streaming
+  // Function to fetch AI-generated structured property summary
   const fetchPropertySummary = async (propertyAddress: string, propertyData?: any) => {
     setSummaryLoading(true)
-    setPropertySummary('') // Clear existing summary
+    setStructuredSummary(null) // Clear existing summary
     
     try {
       const response = await fetch('/api/tools/presentation', {
@@ -410,39 +430,26 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const reader = response.body?.getReader()
-      const decoder = new TextDecoder()
-
-      if (!reader) {
-        throw new Error('No reader available')
-      }
-
-      let accumulatedText = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        
-        if (done) {
-          setSummaryLoading(false)
-          break
-        }
-
-        // Decode the chunk and add it to accumulated text
-        const chunk = decoder.decode(value, { stream: true })
-        accumulatedText += chunk
-        setPropertySummary(accumulatedText)
-      }
+      const data = await response.json()
+      setStructuredSummary(data)
+      setSummaryLoading(false)
     } catch (error) {
       console.error('Error fetching property summary:', error)
-      setPropertySummary('Unable to generate property summary at this time.')
+      setStructuredSummary({
+        overview: 'Unable to generate property summary at this time.',
+        keyFeatures: [],
+        marketPosition: { pricePoint: 'market_rate', competitiveness: 'moderate', description: 'Analysis unavailable' },
+        investmentHighlights: [],
+        propertyStats: { ageCategory: 'established' }
+      })
       setSummaryLoading(false)
     }
   }
 
-  // Function to fetch AI-generated valuation analysis with streaming
+  // Function to fetch AI-generated structured valuation analysis
   const fetchValuationAnalysis = async (propertyAddress: string, zpid: number, propertyData?: any) => {
     setValuationLoading(true)
-    setValuationAnalysis('') // Clear existing analysis
+    setStructuredValuation(null) // Clear existing analysis
     
     try {
       const response = await fetch('/api/tools/valuation', {
@@ -453,7 +460,8 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         body: JSON.stringify({ 
           address: propertyAddress, 
           zpid,
-          propertyData: propertyData || subjectPropertyData // Pass prefetched data
+          propertyData: propertyData || subjectPropertyData, // Pass prefetched data
+          valueData: valueData // Pass the same data the chart uses
         }),
       })
 
@@ -461,31 +469,18 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const reader = response.body?.getReader()
-      const decoder = new TextDecoder()
-
-      if (!reader) {
-        throw new Error('No reader available')
-      }
-
-      let accumulatedText = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        
-        if (done) {
-          setValuationLoading(false)
-          break
-        }
-
-        // Decode the chunk and add it to accumulated text
-        const chunk = decoder.decode(value, { stream: true })
-        accumulatedText += chunk
-        setValuationAnalysis(accumulatedText)
-      }
+      const data = await response.json()
+      setStructuredValuation(data)
+      setValuationLoading(false)
     } catch (error) {
       console.error('Error fetching valuation analysis:', error)
-      setValuationAnalysis('Unable to generate valuation analysis at this time.')
+      setStructuredValuation({
+        summary: 'Unable to generate valuation analysis at this time.',
+        marketTrend: { direction: 'stable', strength: 'moderate', description: 'Analysis unavailable' },
+        keyMetrics: { valueChange12Month: { amount: 0, percentage: 0, isPositive: false }, pricePerSqFt: { marketPosition: 'at' }, volatility: 'moderate' },
+        insights: [],
+        recommendation: { action: 'hold', reasoning: 'Analysis unavailable', timeframe: 'N/A' }
+      })
       setValuationLoading(false)
     }
   }
@@ -688,7 +683,8 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
           {/* Main Content */}
           <div className="flex-1 space-y-8">
 
-            {/* test Module */}
+            {/* Home Summary Module */}
+        <FadeIn>
           <Card id="home-value" className="bg-white rounded-lg shadow-sm border-2  dark:bg-gray-800 dark:border-sky-700">
             <CardHeader>
               <CardTitle className="text-xl md:text-2xl lg:text-3xl font-semibold">{subjectPropertyData?.address || address}</CardTitle>
@@ -714,31 +710,38 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
                   {/* images */}
                   <div className="flex flex-col  gap-2">
-                      {propertyImages?.images && propertyImages.images.length > 0 && (
+                      {propertyImages?.images && propertyImages.images.length > 0 ? (
                         <div className="relative  mt-2">
-                          <h3 className=" absolute top-2 left-2 bg-white px-2 py-1 rounded text-sky-600 dark:text-gray-400 text-sm font-semibold mb-2">
+                          <h3 className=" absolute top-2 left-2 bg-white px-2 py-1 rounded text-sky-600 dark:text-gray-400 text-sm font-semibold mb-2 z-10">
                             {propertyImages.images.length === 1 ? 'Property Image' : 'Property Images'}
                           </h3>
                           <img
                             src={propertyImages.images[currentImageIndex]}
                             alt={`Property photo ${currentImageIndex + 1}`}
                             className="w-full max-h-[50vh] h-[50vh]  object-cover rounded-lg"
+                            loading="lazy"
+                            onLoad={() => {
+                              // Image loaded successfully
+                            }}
+                            onError={(e) => {
+                              console.error('Failed to load property image:', e)
+                            }}
                           />
                           {propertyImages.images.length > 1 && (
                             <>
                               <button
                                 onClick={prevImage}
-                                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white/90 p-2 rounded-full shadow-md"
+                                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white/90 p-2 rounded-full shadow-md z-10"
                               >
                                 <ChevronLeft className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={nextImage}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white/90 p-2 rounded-full shadow-md"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white/90 p-2 rounded-full shadow-md z-10"
                               >
                                 <ChevronRight className="h-4 w-4" />
                               </button>
-                              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
                                 {propertyImages.images.map((_: any, index: number) => (
                                   <button
                                     key={index}
@@ -751,6 +754,19 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                               </div>
                             </>
                           )}
+                        </div>
+                      ) : (
+                        // Loading skeleton for images
+                        <div className="relative mt-2">
+                          <div className="absolute top-2 left-2 bg-gray-200 px-2 py-1 rounded text-transparent text-sm font-semibold mb-2 z-10 animate-pulse">
+                            Loading Images...
+                          </div>
+                          <div className="w-full max-h-[50vh] h-[50vh] bg-gray-200 rounded-lg animate-pulse flex items-center justify-center">
+                            <div className="text-gray-400 text-center">
+                              <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-full animate-pulse"></div>
+                              <p className="text-sm">Loading property images...</p>
+                            </div>
+                          </div>
                         </div>
                       )}
                       <div className="w-full  grid grid-cols-2 grid-rows-2 gap-4  p-4">
@@ -795,58 +811,208 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                 </div>
                 
              
-                <Card className="bg-sky-50 dark:bg-gray-800">
-                  <CardHeader className="flex items-center space-x-2">
-                  <CardTitle className="flex items-center space-x-2">
-                    <Sparkles className="w-4 h-4 mr-2 text-sky-600 dark:text-sky-400" /> <h2 className="text-lg font-semibold text-sky-600 dark:text-sky-400">Property Summary</h2>
-                  </CardTitle>
+                <Card className="dark:bg-gray-800">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Sparkles className="w-5 h-5 text-sky-600 dark:text-sky-400" /> 
+                      <span className="text-xl font-semibold">AI Property Analysis</span>
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent id="property-summary"> 
+                  <CardContent id="property-summary" className="space-y-6"> 
                     {summaryLoading ? (
                       <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-                        <Sparkles className="w-4 h-4 animate-spin" />
-                        <span>Generating AI-powered property summary...</span>
+                        <CircleDotIcon className="w-4 h-4 animate-pulse" />
+                        <span>Generating AI-powered property analysis...</span>
+                      </div>
+                    ) : structuredSummary ? (
+                      <div className="space-y-6">
+                        {/* Overview */}
+                        <div className="bg-sky-50 dark:bg-gray-800 border-l-4 border-sky-600 dark:border-sky-400 p-4 rounded-sm">
+                          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                            {structuredSummary.overview}
+                          </p>
+                        </div>
+
+                         {/* Market Position */}
+                         <FadeIn>
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                              <Target className="w-5 h-5 text-sky-600" />
+                              Market Position
+                            </h3>
+                            <FadeInStagger className="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  structuredSummary.marketPosition.pricePoint === 'below_market' ? 'bg-green-100 text-green-800' :
+                                  structuredSummary.marketPosition.pricePoint === 'above_market' ? 'bg-red-100 text-red-800' :
+                                  'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {structuredSummary.marketPosition.pricePoint.replace('_', ' ').toUpperCase()}
+                                </span>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  structuredSummary.marketPosition.competitiveness === 'high' ? 'bg-green-100 text-green-800' :
+                                  structuredSummary.marketPosition.competitiveness === 'low' ? 'bg-red-100 text-red-800' :
+                                  'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {structuredSummary.marketPosition.competitiveness.toUpperCase()} COMPETITIVE
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {structuredSummary.marketPosition.description}
+                              </p>
+                            </FadeInStagger>
+                          </FadeIn>
+
+                        {/* Key Features */}
+                        {structuredSummary.keyFeatures && structuredSummary.keyFeatures.length > 0 && (
+                          <FadeIn>
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                              <Award className="w-5 h-5 text-sky-600" />
+                              Key Features
+                            </h3>
+                            <FadeInStagger className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {structuredSummary.keyFeatures.map((feature: any, index: number) => (
+                                <div key={index} className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                                  <div className="flex items-start gap-3">
+                                    <div className={`p-2 rounded-full ${
+                                      feature.category === 'size' ? 'bg-blue-100 text-blue-600' :
+                                      feature.category === 'age' ? 'bg-blue-100 text-blue-600' :
+                                      feature.category === 'location' ? 'bg-blue-100 text-blue-600' :
+                                      feature.category === 'value' ? 'bg-blue-100 text-blue-600' :
+                                      feature.category === 'condition' ? 'bg-blue-100 text-blue-600' :
+                                      'bg-gray-100 text-gray-600'
+                                    }`}>
+                                      {feature.category === 'size' && <HouseIcon className="w-4 h-4" />}
+                                      {feature.category === 'age' && <Clock className="w-4 h-4" />}
+                                      {feature.category === 'location' && <MapPin className="w-4 h-4" />}
+                                      {feature.category === 'value' && <DollarSign className="w-4 h-4" />}
+                                      {feature.category === 'condition' && <Star className="w-4 h-4" />}
+                                      {feature.category === 'amenities' && <Building className="w-4 h-4" />}
+                                    </div>
+                                    <div className="flex-1">
+                                      <h4 className="font-medium text-gray-800 dark:text-gray-200 text-sm">
+                                        {feature.title}
+                                      </h4>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                        {feature.description}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </FadeInStagger>
+                          </FadeIn>
+                        )}
+
+                        {/* Market Position & Investment Highlights */}
+                        <div className=" ">
+                         
+
+                          {/* Investment Highlights */}
+                          {structuredSummary.investmentHighlights && structuredSummary.investmentHighlights.length > 0 && (
+                            <FadeIn>
+                              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                                <TrendingUpIcon className="w-5 h-5 text-sky-600" />
+                                Investment Potential
+                              </h3>
+                              <FadeInStagger className="gap-3 grid grid-cols-1 lg:grid-cols-4">
+                                {structuredSummary.investmentHighlights.map((highlight: any, index: number) => (
+                                  <div key={index} className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                                    <div className="flex items-start gap-2">
+                                      <span className={`h-2 w-2 rounded-full mt-2 ${
+                                        highlight.type === 'appreciation' ? 'bg-green-500' :
+                                        highlight.type === 'rental_income' ? 'bg-blue-500' :
+                                        highlight.type === 'tax_benefits' ? 'bg-purple-500' :
+                                        highlight.type === 'location' ? 'bg-orange-500' :
+                                        'bg-gray-500'
+                                      }`}></span>
+                                      <div className="flex-1">
+                                        <h4 className="font-medium text-gray-800 dark:text-gray-200 text-sm">
+                                          {highlight.title}
+                                        </h4>
+                                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                                          {highlight.value}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </FadeInStagger>
+                            </FadeIn>
+                          )}
+                        </div>
+
+                        {/* Property Stats */}
+                        {structuredSummary.propertyStats && (
+                          <FadeIn>
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                              <Badge className="w-5 h-5 text-sky-600" />
+                              Property Statistics
+                            </h3>
+                            <FadeInStagger className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              {structuredSummary.propertyStats.pricePerSqFt && (
+                                <div className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 text-center">
+                                  <div className="text-lg font-bold text-sky-600">
+                                    ${structuredSummary.propertyStats.pricePerSqFt}
+                                  </div>
+                                  <div className="text-xs text-gray-600 dark:text-gray-400">Per Sq Ft</div>
+                                </div>
+                              )}
+                              {structuredSummary.propertyStats.taxRate && (
+                                <div className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 text-center">
+                                  <div className="text-lg font-bold text-sky-600">
+                                    {structuredSummary.propertyStats.taxRate.toFixed(2)}%
+                                  </div>
+                                  <div className="text-xs text-gray-600 dark:text-gray-400">Tax Rate</div>
+                                </div>
+                              )}
+                              {structuredSummary.propertyStats.rentYield && (
+                                <div className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 text-center">
+                                  <div className="text-lg font-bold text-sky-600">
+                                    {structuredSummary.propertyStats.rentYield.toFixed(1)}%
+                                  </div>
+                                  <div className="text-xs text-gray-600 dark:text-gray-400">Rent Yield</div>
+                                </div>
+                              )}
+                              <div className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 text-center">
+                                <div className="text-lg font-bold text-sky-600 capitalize">
+                                  {structuredSummary.propertyStats.ageCategory}
+                                </div>
+                                <div className="text-xs text-gray-600 dark:text-gray-400">Property Age</div>
+                              </div>
+                            </FadeInStagger>
+                          </FadeIn>
+                        )}
                       </div>
                     ) : (
-                      <p className="text-sky-600 dark:text-sky-400 text-sm leading-relaxed">
-                        {propertySummary || 'Property summary will be generated once property data is loaded.'}
-                      </p>
+                      <div className="bg-sky-50 dark:bg-gray-800 border-l-4 border-sky-600 dark:border-sky-400 p-4 rounded-sm">
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Property analysis will be generated once property data is loaded.
+                        </p>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
   
              </CardContent>
-            </Card>
+          </Card>
+          </FadeIn>
 
 
 
             {/* Property Valuation Section */}
+            <FadeIn>
             <Card>
               <CardHeader>
               <CardTitle id="property-valuation" className="text-xl md:text-2xl lg:text-3xl font-semibold">Property Valuation</CardTitle>
                 <CardDescription>
                   
-                  <div className="bg-sky-50 mt-4 text-sm px-4 py-2 rounded-sm text-sky-600 dark:text-gray-400">
-                    <div className="flex items-center space-x-2"> 
-                    <Sparkles className="w-4 h-4 mr-2 text-sky-600 dark:text-sky-400" /> <h3 className="text-lg font-semibold">Valuation Analysis</h3>
-                    </div>
-                   
-                    {valuationLoading ? (
-                      <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 mt-2">
-                        <Sparkles className="w-4 h-4 animate-spin" />
-                        <span>Generating AI-powered valuation analysis...</span>
-                      </div>
-                    ) : (
-                      <p className="mt-2 leading-relaxed">
-                        {valuationAnalysis || 'Valuation analysis will be generated once property data is loaded.'}
-                      </p>
-                    )}
-                  </div>
+                  AI property valuation based on current market conditions
                  </CardDescription>
               </CardHeader>
              
               <CardContent>
-                  <div className="flex flex-col justify-center items-center gap-y-4 ">
+                  <FadeIn className="flex flex-col justify-center items-center gap-y-4 ">
+                    <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold">Valuation Range</h2>
                     <div className="flex flex-col mt-4 w-full md:w-3/4 mb-10">
                       <Progress className="h-10 rounded-sm " value={100} />
                     <div className="flex items-center justify-between text-gray-600">
@@ -894,24 +1060,120 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                     </div>
                   </div>  
                   
-                  </div>
-                  <ChartAreaInteractive 
-                    address={avmData?.subjectProperty?.formattedAddress || address} 
-                    valueData={valueData}
-                  />
+                  </FadeIn>
+                  <FadeIn className="border my-4 text-sm px-4 py-2 rounded-sm text-sky-600 dark:text-gray-400">
+                    <div className="flex items-center space-x-2"> 
+                      <Sparkles className="w-4 h-4 mr-2 text-sky-600 dark:text-sky-400" /> 
+                      <h3 className="text-lg font-semibold">AI Valuation Analysis</h3>
+                    </div>
+                   
+                    {valuationLoading ? (
+                      <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 mt-2">
+                        <CircleDotIcon className="w-4 h-4 animate-pulse" />
+                        <span>Generating AI-powered valuation analysis...</span>
+                      </div>
+                    ) : structuredValuation ? (
+                      <FadeInStagger className="mt-4 space-y-4">
+                        {/* Summary */}
+                        <div className=" p-3 rounded-md bg-sky-50 border-l-4 border-sky-500">
+                          <p className="text-gray-700 leading-relaxed">{structuredValuation.summary}</p>
+                        </div>
+
+                        {/* Market Trend */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-white p-3 border rounded-md">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className={`w-3 h-3 rounded-full ${
+                                structuredValuation.marketTrend.direction === 'increasing' ? 'bg-green-500' :
+                                structuredValuation.marketTrend.direction === 'decreasing' ? 'bg-red-500' : 'bg-sky-500'
+                              }`}></div>
+                              <h4 className="font-semibold text-gray-800">Market Trend</h4>
+                            </div>
+                            <p className="text-sm text-gray-600 capitalize">
+                              {structuredValuation.marketTrend.strength} {structuredValuation.marketTrend.direction}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">{structuredValuation.marketTrend.description}</p>
+                          </div>
+
+                          {/* Key Metrics */}
+                          <div className="bg-white p-3 border rounded-md">
+                            <h4 className="font-semibold text-gray-800 mb-2">12-Month Performance</h4>
+                            <div className={`text-lg font-bold ${
+                              structuredValuation.keyMetrics.valueChange12Month.isPositive ? 'text-green-600' : 'text-red-600'
+                            }`}>
+                              {structuredValuation.keyMetrics.valueChange12Month.isPositive ? '+' : ''}
+                              {formatCurrency(structuredValuation.keyMetrics.valueChange12Month.amount)}
+                            </div>
+                            <div className={`text-sm ${
+                              structuredValuation.keyMetrics.valueChange12Month.isPositive ? 'text-green-600' : 'text-red-600'
+                            }`}>
+                              ({structuredValuation.keyMetrics.valueChange12Month.percentage > 0 ? '+' : ''}
+                              {structuredValuation.keyMetrics.valueChange12Month.percentage.toFixed(1)}%)
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Insights */}
+                        {structuredValuation.insights && structuredValuation.insights.length > 0 && (
+                          <div className="space-y-2">
+                            <h4 className="font-semibold  text-gray-800">Key Insights</h4>
+                            {structuredValuation.insights.map((insight: any, index: number) => (
+                              <div key={index} className={`p-2 rounded-md border`}>
+                  
+                                <div className="flex items-center gap-2 w-auto">
+                                  <span className={`h-2 w-2 rounded-full text-xs font-medium ${
+                                    insight.type === 'positive' ? 'bg-green-600' : 
+                                    insight.type === 'negative' ? 'bg-red-600' : 'bg-sky-600'
+                                  } `}></span>
+                                  <div className={`  font-medium text-sm text-gray-800`}>{insight.title}</div>
+                                </div>
+                               
+                                <div className="text-xs text-gray-600">{insight.description}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Recommendation */}
+                        <div className="bg-white p-3 rounded-md border border-sky-200">
+                          <h2 className="font-semibold text-gray-800 mb-2">Recommendation to Seller</h2>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              structuredValuation.recommendation.action === 'sell_now' ? 'bg-green-100 text-green-800' :
+                              structuredValuation.recommendation.action === 'sell_soon' ? 'bg-yellow-100 text-yellow-800' :
+                              structuredValuation.recommendation.action === 'wait' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {structuredValuation.recommendation.action.replace('_', ' ').toUpperCase()}
+                            </div>
+                            <span className="text-sm text-gray-500">{structuredValuation.recommendation.timeframe}</span>
+                          </div>
+                          <p className="text-sm text-gray-700">{structuredValuation.recommendation.reasoning}</p>
+                        </div>
+                      </FadeInStagger>
+                    ) : (
+                      <p className="mt-2 leading-relaxed text-gray-600">
+                        Valuation analysis will be generated once property data is loaded.
+                      </p>
+                    )}
+                  </FadeIn>
+                  <FadeIn>
+                    <ChartAreaInteractive 
+                      address={avmData?.subjectProperty?.formattedAddress || address} 
+                      valueData={valueData}
+                    />
+                  </FadeIn>
                   {/* Debug info */}
-                  <div className="text-xs text-gray-500 mt-2">
-                    Debug: valueData available: {valueData ? 'Yes' : 'No'} | 
-                    Data points: {Array.isArray(valueData) ? valueData.length : 0}
-                  </div>
+               
                  
               
               </CardContent>
             </Card>
+            </FadeIn>
             {/* End Property Valuation Section */}
         
 
             {/* Market Statistics Section */}
+            <FadeIn>
             <Card id="market-statistics" className="bg-white rounded-lg shadow-sm   flex flex-col dark:bg-gray-800 dark:border-blue-700 gap-2">
               <CardHeader>
                 <CardTitle className="text-xl md:text-2xl lg:text-3xl font-semibold">Market Statistics</CardTitle>
@@ -1206,10 +1468,12 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
               </CardContent>
             
             </Card>
+            </FadeIn>
             {/* end Market Statistics Section */}
 
 
-            {/* comparables Section */}
+            {/* Comps Section */}
+            <FadeIn>
              <Card id="sales-comparables" className="bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
               <CardHeader>
                 <CardTitle  className="text-xl md:text-2xl lg:text-3xl font-semibold">Sales Comparables</CardTitle>
@@ -1286,6 +1550,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                
               </CardContent>
               </Card>
+            </FadeIn>
           
               {/* Property Details Sheet */}
               <PropertyDetailsSheet

@@ -120,7 +120,7 @@ function Person({
 }) {
   return (
     <li className="flex items-center gap-4">
-      <img alt="" src={img} className="size-12 rounded-full" />
+      <img alt={name} src={img} className="size-12 rounded-full object-cover" />
       <div className="text-sm/6">
         <h3 className="font-medium">{name}</h3>
         <p className="text-gray-500">{description}</p>
@@ -133,12 +133,12 @@ const  people = [
   {
     name: "Mark Mathias",
     description: "Co-Founder / Principal / Broker",
-    img: "/team/michael-foster.jpg",
+    img: "/team/mark-avatar.jpeg",
   },
   {
     name: "Michael Mathias",
-    description: "Co-Founder / CTO/ roker",
-    img: "/team/dries-vincent.jpg",
+    description: "Co-Founder / CTO / Broker",
+    img: "/mike-avatar.png",
   },
 
 ]
@@ -151,26 +151,15 @@ function Team() {
         Founded by an all-star team.
       </Heading>
       <Lead className="mt-6 max-w-3xl">
-        Radiant is founded by two of the best sellers in the business and backed
-        by investors who look the other way.
+        MasterKey is founded by two brothers who bring together decades of technical expertise and real estate knowledge to revolutionize property transactions.
       </Lead>
       <div className="mt-12 grid grid-cols-1 gap-12 lg:grid-cols-2">
         <div className="max-w-lg">
           <p className="text-sm/6 text-gray-600">
-            Years ago, while working as sales associates at rival companies,
-            Thomas, Ben, and Natalie were discussing a big client they had all
-            been competing for. Joking about seeing the terms of each other’s
-            offers, they had an idea: what if they shared data to win deals and
-            split the commission behind their companies’ backs? It turned out to
-            be an incredible success, and that idea became the kernel for
-            Radiant.
+            Mike and Mark Mathias, both licensed brokers with strong technical backgrounds, recognized a fundamental gap in the real estate industry. Mark's experience as a sales lead and product manager for SaaS companies, combined with Mike's expertise from working at a Madison Avenue advertising tech company servicing major clients like Google, Nike, Samsung, and BBC, gave them unique insight into how technology could transform real estate.
           </p>
           <p className="mt-8 text-sm/6 text-gray-600">
-            Today, Radiant transforms revenue organizations by harnessing
-            illegally acquired customer and competitor data, using it to provide
-            extraordinary leverage. More than 30,000 companies rely on Radiant
-            to undercut their competitors and extort their customers, all
-            through a single integrated platform.
+            Together, their mission is to harness the power of technology and apply it to the real estate industry, helping buyers and sellers have the tools to conduct transactions as efficiently as possible. MasterKey provides comprehensive property insights, market analysis, and valuation tools that empower informed decision-making in real estate transactions.
           </p>
           <div className="mt-6">
             <Button className="w-full sm:w-auto" href="/contact">
@@ -182,7 +171,7 @@ function Team() {
           <div className="aspect-3/2 overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-black/10">
             <img
               alt=""
-              src="/company/5.jpg"
+              src="https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
               className="block size-full object-cover"
             />
           </div>

@@ -10,7 +10,7 @@ import { FadeInStagger } from "@/components/animations"
 import { CloudArrowUpIcon, LockClosedIcon, ServerIcon } from '@heroicons/react/20/solid'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { StarIcon } from '@heroicons/react/20/solid'
-import { Home, Key, DollarSign, ArrowRight, SparkleIcon } from "lucide-react"
+import { Home, Key, DollarSign, ArrowRight, SparkleIcon, Sparkles } from "lucide-react"
 import { GooglePlacesInput } from '@/components/ui/google-places-input'
 import { Button } from '@/components/button'
 import { useState } from 'react'
@@ -51,7 +51,7 @@ function AddressTest() {
           
                 <MasterKeyMark className="h-11  dark:hidden"/>
                 <MasterKeyMark className="h-11  not-dark:hidden"/>
-                <div className="mt-24 sm:mt-32 lg:mt-16">
+                {/* <div className="mt-24 sm:mt-32 lg:mt-16">
                   <a href="/questionnaire/listing-presentation" className="inline-flex space-x-6">
                     <span className="rounded-full bg-sky-50 px-3 py-1 text-sm/6 font-semibold text-sky-600 ring-1 ring-sky-600/20 ring-inset dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/25">
                       Selling Made Simple
@@ -61,12 +61,17 @@ function AddressTest() {
                       <ChevronRightIcon aria-hidden="true" className="size-5 text-gray-400 dark:text-gray-500" />
                     </span>
                   </a>
+                </div> */}
+                <div className="flex flex-row items-start gap-2">
+                
+                    {/* <Sparkles className="h-24 w-24 not-dark:hidden"/> */}
+                  <h1 className="mt-10 text-5xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-7xl dark:text-white">
+                  <Sparkles className="h-4 w-4 dark:hidden top-2 md:h-10 md:w-10 inline-block left-24 text-sky-500"/> Discover Your Home's <span className="text-sky-500">True Worth</span>
+                  </h1>
                 </div>
-                <h1 className="mt-10 text-5xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-7xl dark:text-white">
-                  Sell Your Home for Maximum Value
-                </h1>
+               
                 <p className="mt-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
-                  Get expert guidance, proven marketing strategies, and personalized support to sell your home quickly and for the best price possible.
+                  Get instant <span className="text-sky-500">AI-powered</span> insights on your property value and local market conditions. Simply enter your address to unlock comprehensive analysis and data-driven recommendations.
                 </p>
                 <div className="mt-10 flex flex-col md:flex-row md:items-start mx-auto  gap-6">
                   <div className="flex-1 top-0">
@@ -205,27 +210,29 @@ function LandingHero() {
 
 const testimonials = [
   {
-      title: "Sarah Martinez",
+      title: "Todd Shillington",
       link:"/questionnaire/listing-presentation", 
       slug: "seller-testimonial-1",
       icon: Home,
-      quote: "MasterKey helped us sell our home in just 12 days for 8% above asking price! Their marketing strategy and expert guidance made all the difference."
+      quote: "MasterKey is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!"
   },
   {
-      title: "David Chen",
+      title: "Kevin Marsden",
       link:"/questionnaire/listing-presentation", 
       slug: "seller-testimonial-2",
       icon: Key,
-      quote: "The team provided exceptional support throughout our selling process. From pricing strategy to closing, they exceeded our expectations at every step."
+      quote: "Professional and excellent service. I highly recommend. The Mathias team can help you out with all you real estate and management needs."
   },
   {
-      title: "Jennifer Williams",
+      title: "Javier Aguilera",
       link:"/questionnaire/listing-presentation", 
       slug: "seller-testimonial-3",
       icon: DollarSign,
-      quote: "Their market analysis was spot-on and helped us price our home perfectly. We received multiple offers within the first week of listing!"
+      quote: "I highly recommend them not only as property managers but as brokers as well."
   },
 ]
+
+
 function Testimonials() {
   return (
   <> 
@@ -321,7 +328,7 @@ const features = [
                 With years of experience and deep local market knowledge, we help homeowners achieve their selling goals through innovative marketing strategies and personalized service.
               </p>
               <h3 className="mt-6 text-lg font-semibold text-gray-700 dark:text-gray-300">
-               We will...
+               We will provide...
               </h3>
               <dl className="mt-10 max-w-xl space-y-8 text-base/7 text-gray-600 lg:max-w-none dark:text-gray-400">
                 {features.map((feature) => (
