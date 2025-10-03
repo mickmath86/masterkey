@@ -1,4 +1,4 @@
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
 
 // OpenGraph metadata for listing presentation landing page
 export const metadata: Metadata = {
