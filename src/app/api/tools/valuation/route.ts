@@ -1,11 +1,16 @@
 import { generateText, streamText, generateObject } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const rapidApiHost = 'zillow-com1.p.rapidapi.com';
 const rapidApiKey = process.env.RAPIDAPI_KEY!;
 
 console.log('🔥 VALUATION ROUTE FILE LOADED - Module execution');
+
+// Create OpenAI client with trimmed API key to avoid newline issues
+const openai = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY?.trim()
+});
 
 export async function POST(request: Request) {
   console.log('🚀 VALUATION API ROUTE STARTED - Basic execution check');
