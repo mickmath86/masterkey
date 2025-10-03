@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       console.log('⚠️ No value data provided, fetching from API');
       // Fetch value history data (same as chart uses)
       const valuesResponse = await fetch(
-        `https://${rapidApiHost}/property/values?zpid=${zpid}`,
+        `https://${rapidApiHost}/zestimateHistory?zpid=${zpid}`,
         {
           method: 'GET',
           headers: {
@@ -74,27 +74,22 @@ export async function POST(req: Request) {
       if (!valuesResponse.ok) {
         if (valuesResponse.status === 429) {
           console.log('⚠️ Rate limit hit for valuation tool, using fallback analysis');
-          // Generate valuation analysis without detailed history data
-          const result = await streamText({
-            model: openai("gpt-4o-mini"),
-            system: `You are a professional real estate valuation analyst. Generate a comprehensive valuation analysis based on the provided property data. Focus on market positioning, property characteristics, and general market trends. Note: This analysis is based on limited data due to API constraints.`,
-            prompt: `Generate a professional valuation analysis for the property at: ${address}. 
-            
-            Property Details:
-            - Address: ${address}
-            - ZPID: ${zpid}
-            
-            Please provide insights on market positioning, property characteristics, and investment potential based on the property location and general market conditions.`
-          });
-          
-          return result.toTextStreamResponse();
+        } else if (valuesResponse.status === 404) {
+          console.log('⚠️ Value history not found for zpid, using fallback analysis');
+        } else {
+          console.log(`⚠️ Values API error ${valuesResponse.status}, using fallback analysis`);
         }
-        throw new Error(`Values API request failed: ${valuesResponse.status}`);
+        
+        // Generate valuation analysis without detailed history data for any API error
+        console.log('📊 Generating valuation analysis without historical data');
+        
+        // Use empty array for zestimateHistory to continue with analysis
+        zestimateHistory = [];
+      } else {
+        const valuesData = await valuesResponse.json();
+        // Use the same data structure as the chart component
+        zestimateHistory = Array.isArray(valuesData) ? valuesData : [];
       }
-
-      const valuesData = await valuesResponse.json();
-      // Use the same data structure as the chart component
-      zestimateHistory = Array.isArray(valuesData) ? valuesData : [];
     }
 
     console.log('📊 Values Data for Valuation:', {
@@ -136,11 +131,14 @@ export async function POST(req: Request) {
     }
     
     // Get the most recent value
-    const newestValue = sortedHistory.length > 0 ? Number(sortedHistory[sortedHistory.length - 1].v) : Number(finalPropertyData.zestimate) || 0;
+    const newestValue = sortedHistory.length > 0 ? Number(sortedHistory[sortedHistory.length - 1].v) : Number(finalPropertyData?.zestimate) || 0;
     const oldestValue = baselineValue || newestValue;
     
     const valueChange = newestValue - oldestValue;
     const percentChange = oldestValue ? ((valueChange / oldestValue) * 100) : 0;
+    
+    // Handle case where we have no historical data
+    const hasHistoricalData = sortedHistory.length > 0;
     
     console.log('📊 12-Month Calculation:', {
       oldestValue: oldestValue,
@@ -190,22 +188,26 @@ export async function POST(req: Request) {
 
         Property Details:
         - Address: ${address}
-        - Current Zestimate: $${finalPropertyData.zestimate?.toLocaleString() || 'N/A'}
-        - Property Type: ${finalPropertyData.propertyType}
-        - Living Area: ${finalPropertyData.livingArea} sq ft
-        - Year Built: ${finalPropertyData.yearBuilt}
-        - Price per Sq Ft: $${finalPropertyData.pricePerSquareFoot || 'N/A'}
+        - Current Zestimate: $${finalPropertyData?.zestimate?.toLocaleString() || 'N/A'}
+        - Property Type: ${finalPropertyData?.propertyType || 'N/A'}
+        - Living Area: ${finalPropertyData?.livingArea || 'N/A'} sq ft
+        - Year Built: ${finalPropertyData?.yearBuilt || 'N/A'}
+        - Price per Sq Ft: $${finalPropertyData?.pricePerSquareFoot || 'N/A'}
 
-        Market Performance:
+        ${hasHistoricalData ? `Market Performance:
         - 12-Month Change: ${valueChange > 0 ? '+' : ''}$${valueChange?.toLocaleString()} (${percentChange > 0 ? '+' : ''}${percentChange.toFixed(1)}%)
         - Data Points Available: ${zestimateHistory.length} months
         - Current Value: $${newestValue?.toLocaleString()}
-
-        Recent History: ${sortedHistory.slice(-6).map((item: any) => 
+        - Recent History: ${sortedHistory.slice(-6).map((item: any) => 
           `$${Number(item.v)?.toLocaleString()}`
-        ).join(', ')}
+        ).join(', ')}` : `Market Performance:
+        - Historical data not available
+        - Analysis based on current property characteristics and market conditions
+        - Current Value: $${newestValue?.toLocaleString()}`}
 
-        Provide actionable, data-driven insights for a home seller.`
+        ${hasHistoricalData ? 
+          'Provide actionable, data-driven insights for a home seller based on historical trends.' : 
+          'Provide actionable insights for a home seller based on property characteristics and general market conditions.'}`
     });
 
     return Response.json(result.object);

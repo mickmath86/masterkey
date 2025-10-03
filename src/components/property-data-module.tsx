@@ -97,6 +97,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   const [valuationAnalysis, setValuationAnalysis] = useState<string>('')
   const [valuationLoading, setValuationLoading] = useState(false)
   const [structuredValuation, setStructuredValuation] = useState<any>(null)
+  const [dataLoadingComplete, setDataLoadingComplete] = useState(false)
+  const [summaryTriggered, setSummaryTriggered] = useState(false)
+  const [valuationTriggered, setValuationTriggered] = useState(false)
 
 
   // Handler for when a map marker is clicked
@@ -224,12 +227,22 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       
       // Still fetch additional data (images, comps, market data) in background
       fetchAdditionalData(prefetchedPropertyData)
+      
+      // Mark data loading as complete for prefetched data
+      setTimeout(() => {
+        setDataLoadingComplete(true)
+        console.log('✅ Prefetched data loading marked as complete')
+      }, 100)
       return
     }
 
     const fetchData = async () => {
       setIsLoading(true)
       setError(null)
+      setDataLoadingComplete(false)
+      setSummaryTriggered(false)
+      setValuationTriggered(false)
+      console.log('🔄 Starting fresh data fetch - resetting trigger flags')
 
       try {
         // Convert URL-friendly address format to API-friendly format
@@ -318,6 +331,11 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         console.error('Data fetch error:', err)
       } finally {
         setIsLoading(false)
+        // Mark data loading as complete after all async operations
+        setTimeout(() => {
+          setDataLoadingComplete(true)
+          console.log('✅ Data loading marked as complete')
+        }, 100) // Small delay to ensure all state updates are processed
       }
     }
 
@@ -333,59 +351,67 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     return () => clearTimeout(timer)
   }, [])
 
-  // Fetch property summary when subject property data is loaded
+  // Fetch property summary when data loading is complete and we have required data
   useEffect(() => {
-    if (subjectPropertyData && address && !useMockData) {
+    console.log('📝 Property Summary Trigger Check:', {
+      dataLoadingComplete,
+      hasSubjectPropertyData: !!subjectPropertyData,
+      hasAddress: !!address,
+      summaryTriggered,
+      useMockData
+    })
+    
+    if (dataLoadingComplete && subjectPropertyData && address && !summaryTriggered && !useMockData) {
+      console.log('✅ Triggering property summary generation')
+      setSummaryTriggered(true)
       const apiAddress = address.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
       fetchPropertySummary(apiAddress, subjectPropertyData)
-    } else if (useMockData) {
+    } else if (useMockData && !summaryTriggered) {
+      console.log('✅ Setting mock property summary')
+      setSummaryTriggered(true)
       // Set a default summary for mock data
       setPropertySummary("This beautifully maintained property offers exceptional value in a desirable neighborhood. With its thoughtful layout and modern amenities, it represents an excellent opportunity for both homeowners and investors. The property's strategic location provides convenient access to local amenities while maintaining the peaceful residential atmosphere that makes this area so sought after.")
     }
-  }, [subjectPropertyData, address, useMockData])
+  }, [dataLoadingComplete, subjectPropertyData, address, summaryTriggered, useMockData])
 
-  // Fetch valuation analysis when subject property data is loaded
-  useEffect(() => {
-    console.log('🔍 Valuation Analysis Check:', {
-      hasSubjectPropertyData: !!subjectPropertyData,
-      hasAddress: !!address,
-      hasZpid: !!subjectPropertyData?.zpid,
-      zpid: subjectPropertyData?.zpid,
-      useMockData: useMockData
-    })
-    
-    // Note: Valuation analysis is now triggered in a separate useEffect that waits for valueData
-  }, [subjectPropertyData, address, useMockData])
-
-  // Trigger valuation analysis when both property data and value data are available
+  // Trigger valuation analysis when data loading is complete and we have required data
   useEffect(() => {
     console.log('🔍 Valuation Analysis Trigger Check:', {
+      dataLoadingComplete,
       hasSubjectPropertyData: !!subjectPropertyData,
       hasAddress: !!address,
       hasZpid: !!subjectPropertyData?.zpid,
+      valuationTriggered,
       hasValueData: !!valueData,
       valueDataLength: Array.isArray(valueData) ? valueData.length : 0,
       useMockData: useMockData
     })
     
-    if (subjectPropertyData && address && subjectPropertyData.zpid && !useMockData) {
+    if (dataLoadingComplete && subjectPropertyData && address && subjectPropertyData.zpid && !valuationTriggered && !useMockData) {
       console.log('✅ Triggering valuation analysis for zpid:', subjectPropertyData.zpid)
       console.log('📊 Value data status:', valueData ? `Available (${Array.isArray(valueData) ? valueData.length : 0} items)` : 'Not available - will fetch in API')
+      setValuationTriggered(true)
       const apiAddress = address.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
       fetchValuationAnalysis(apiAddress, subjectPropertyData.zpid, subjectPropertyData)
-    } else if (useMockData) {
+    } else if (useMockData && !valuationTriggered) {
+      console.log('✅ Setting mock valuation analysis')
+      setValuationTriggered(true)
       // Set a default valuation analysis for mock data
       setValuationAnalysis("Based on recent market analysis, this property demonstrates strong valuation performance with consistent appreciation trends. The current market positioning reflects favorable conditions for both investment potential and long-term value retention. Historical data indicates stable growth patterns that align with broader market dynamics in this desirable area.")
+    } else if (!dataLoadingComplete) {
+      console.log('⏳ Valuation analysis waiting for data loading to complete')
     } else {
       console.log('❌ Valuation analysis not triggered - missing required data:')
       console.log('Missing:', {
+        dataLoadingComplete,
         subjectPropertyData: !subjectPropertyData,
         address: !address,
         zpid: !subjectPropertyData?.zpid,
+        valuationTriggered,
         useMockData: useMockData
       })
     }
-  }, [subjectPropertyData, address, useMockData]) // Removed valueData dependency - let API handle fetching if needed
+  }, [dataLoadingComplete, subjectPropertyData, address, valuationTriggered, useMockData]) // Removed valueData dependency - let API handle fetching if needed
 
   // Consistent function to get days on market for the subject property
   const getDaysOnMarket = () => {

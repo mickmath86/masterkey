@@ -80,7 +80,9 @@ export async function POST(req: Request) {
       - Year built, property age → "age"
       - Address, neighborhood → "location"
       - Property condition, status → "condition"
-      - Features, upgrades → "amenities"`,
+      - Features, upgrades → "amenities"
+      
+      For investmentHighlights types, use only: appreciation, rental_income, tax_benefits, location, condition, value, financial`,
       schema: z.object({
         overview: z.string().describe("Brief 2-3 sentence overview of the property"),
         keyFeatures: z.array(z.object({
@@ -94,7 +96,7 @@ export async function POST(req: Request) {
           description: z.string().describe("Market position explanation")
         }),
         investmentHighlights: z.array(z.object({
-          type: z.enum(["appreciation", "rental_income", "tax_benefits", "location", "condition"]).describe("Investment aspect"),
+          type: z.enum(["appreciation", "rental_income", "tax_benefits", "location", "condition", "value", "financial"]).describe("Investment aspect"),
           title: z.string().describe("Highlight title"),
           value: z.string().describe("Specific value or benefit")
         })).describe("Investment potential highlights"),
