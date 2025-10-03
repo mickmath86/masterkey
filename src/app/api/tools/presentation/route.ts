@@ -5,17 +5,20 @@ import { z } from "zod";
 const rapidApiHost = 'zillow-com1.p.rapidapi.com';
 const rapidApiKey = process.env.RAPIDAPI_KEY!;
 
-export async function POST(req: Request) {
-  console.log('🚀 Presentation API called at:', new Date().toISOString());
+export async function POST(request: Request) {
+  console.log('🚀 PRESENTATION API ROUTE STARTED - Basic execution check');
+  console.log('🎯 Presentation API - Starting request processing:', {
+    timestamp: new Date().toISOString(),
+    url: request.url
+  });
+  // Check if required environment variables are configured
+  console.log('🔑 Environment check:', {
+    hasOpenAI: !!process.env.OPENAI_API_KEY,
+    hasRapidAPI: !!rapidApiKey,
+    nodeEnv: process.env.NODE_ENV
+  });
   
   try {
-    // Check if required environment variables are configured
-    console.log('🔑 Environment check:', {
-      hasOpenAI: !!process.env.OPENAI_API_KEY,
-      hasRapidAPI: !!rapidApiKey,
-      nodeEnv: process.env.NODE_ENV
-    });
-    
     if (!process.env.OPENAI_API_KEY) {
       console.error('❌ OPENAI_API_KEY environment variable is not set');
       return Response.json({ error: 'OpenAI API key not configured' }, { status: 500 });
@@ -27,7 +30,7 @@ export async function POST(req: Request) {
     }
 
     console.log('📥 Parsing request body...');
-    const { address, propertyData } = await req.json();
+    const { address, propertyData } = await request.json();
     console.log('📋 Request data:', {
       address: address || 'NOT PROVIDED',
       hasPropertyData: !!propertyData,
