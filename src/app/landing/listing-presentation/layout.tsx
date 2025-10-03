@@ -26,10 +26,10 @@ export const metadata: Metadata = {
     siteName: 'MasterKey Real Estate',
     images: [
       {
-        url: '/og-listing-presentation.jpg',
+        url: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80',
         width: 1200,
         height: 630,
-        alt: 'MasterKey Real Estate - Property Valuation Analysis',
+        alt: 'Luxury modern house - MasterKey Real Estate Property Valuation',
       },
     ],
     locale: 'en_US',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Discover Your Home\'s True Worth | MasterKey Real Estate',
     description: 'Get instant AI-powered insights on your property value and local market conditions.',
-    images: ['/og-listing-presentation.jpg'],
+    images: ['https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80'],
     creator: '@masterkeyrealestate',
   },
   robots: {

@@ -113,8 +113,8 @@ function RealEstateSellPageContent() {
 
   const totalSteps = 7;
   
-  // Webhook URL - you can customize this
-  const WEBHOOK_URL = process.env.NEXT_PUBLIC_FORM_WEBHOOK_URL || 'https://hooks.zapier.com/hooks/catch/24734243/u1rst7c/';
+  // LeadConnector webhook URL
+  const WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/0972671d-e4b7-46c5-ad30-53d734b97e8c';
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -181,8 +181,26 @@ function RealEstateSellPageContent() {
         source: 'questionnaire'
       };
 
-      // Log form submission for analytics (optional)
-      console.log('Form submitted successfully:', submissionData);
+      // Send form data to LeadConnector webhook
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(submissionData),
+        });
+
+        if (response.ok) {
+          console.log('Form submitted successfully to LeadConnector:', submissionData);
+        } else {
+          console.error('Webhook submission failed:', response.status, response.statusText);
+          // Continue with redirect even if webhook fails
+        }
+      } catch (webhookError) {
+        console.error('Webhook submission error:', webhookError);
+        // Continue with redirect even if webhook fails
+      }
       
       // Redirect directly to property-profile with address parameter
       // Property data is already prefetched via PropertyDataContext
