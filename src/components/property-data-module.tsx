@@ -468,30 +468,60 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
   // Function to fetch AI-generated structured property summary
   const fetchPropertySummary = async (propertyAddress: string, propertyData?: any) => {
+    console.log('📝 Starting property summary fetch:', {
+      address: propertyAddress,
+      hasPropertyData: !!propertyData,
+      timestamp: new Date().toISOString()
+    });
+    
     setSummaryLoading(true)
     setStructuredSummary(null) // Clear existing summary
     
     try {
+      const requestBody = { 
+        address: propertyAddress,
+        propertyData: propertyData || subjectPropertyData // Pass prefetched data
+      };
+      
+      console.log('📤 Sending presentation API request:', {
+        url: '/api/tools/presentation',
+        hasAddress: !!requestBody.address,
+        hasPropertyData: !!requestBody.propertyData
+      });
+      
       const response = await fetch('/api/tools/presentation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          address: propertyAddress,
-          propertyData: propertyData || subjectPropertyData // Pass prefetched data
-        }),
+        body: JSON.stringify(requestBody),
       })
 
+      console.log('📥 Presentation API response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text();
+        console.error('❌ Presentation API error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`)
       }
 
       const data = await response.json()
+      console.log('✅ Property summary received successfully:', {
+        hasOverview: !!data.overview,
+        keyFeaturesCount: data.keyFeatures?.length || 0
+      });
+      
       setStructuredSummary(data)
       setSummaryLoading(false)
     } catch (error) {
-      console.error('Error fetching property summary:', error)
+      console.error('❌ Property summary fetch error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
       setStructuredSummary({
         overview: 'Unable to generate property summary at this time.',
         keyFeatures: [],
@@ -505,32 +535,68 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
   // Function to fetch AI-generated structured valuation analysis
   const fetchValuationAnalysis = async (propertyAddress: string, zpid: number, propertyData?: any) => {
+    console.log('📊 Starting valuation analysis fetch:', {
+      address: propertyAddress,
+      zpid,
+      hasPropertyData: !!propertyData,
+      hasValueData: !!valueData,
+      valueDataLength: Array.isArray(valueData) ? valueData.length : 'NOT ARRAY',
+      timestamp: new Date().toISOString()
+    });
+    
     setValuationLoading(true)
     setStructuredValuation(null) // Clear existing analysis
     
     try {
+      const requestBody = { 
+        address: propertyAddress, 
+        zpid,
+        propertyData: propertyData || subjectPropertyData, // Pass prefetched data
+        valueData: valueData // Pass the same data the chart uses
+      };
+      
+      console.log('📤 Sending valuation API request:', {
+        url: '/api/tools/valuation',
+        hasAddress: !!requestBody.address,
+        zpid: requestBody.zpid,
+        hasPropertyData: !!requestBody.propertyData,
+        hasValueData: !!requestBody.valueData
+      });
+      
       const response = await fetch('/api/tools/valuation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          address: propertyAddress, 
-          zpid,
-          propertyData: propertyData || subjectPropertyData, // Pass prefetched data
-          valueData: valueData // Pass the same data the chart uses
-        }),
+        body: JSON.stringify(requestBody),
       })
 
+      console.log('📥 Valuation API response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text();
+        console.error('❌ Valuation API error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`)
       }
 
       const data = await response.json()
+      console.log('✅ Valuation analysis received successfully:', {
+        hasSummary: !!data.summary,
+        hasMarketTrend: !!data.marketTrend,
+        hasKeyMetrics: !!data.keyMetrics
+      });
+      
       setStructuredValuation(data)
       setValuationLoading(false)
     } catch (error) {
-      console.error('Error fetching valuation analysis:', error)
+      console.error('❌ Valuation analysis fetch error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
       setStructuredValuation({
         summary: 'Unable to generate valuation analysis at this time.',
         marketTrend: { direction: 'stable', strength: 'moderate', description: 'Analysis unavailable' },

@@ -5,6 +5,8 @@ import { z } from "zod";
 const rapidApiHost = 'zillow-com1.p.rapidapi.com';
 const rapidApiKey = process.env.RAPIDAPI_KEY!;
 
+console.log('🔥 PRESENTATION ROUTE FILE LOADED - Module execution');
+
 export async function POST(request: Request) {
   console.log('🚀 PRESENTATION API ROUTE STARTED - Basic execution check');
   console.log('🎯 Presentation API - Starting request processing:', {
