@@ -37,7 +37,9 @@ import {
   Bath,
   Maximize,
   Receipt,
-  HomeIcon
+  HomeIcon,
+  LoaderCircle
+
 } from "lucide-react"
 import { extractZipcode } from "@/lib/utils/address"
 
@@ -97,9 +99,11 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   const [showAgentCard, setShowAgentCard] = useState(false)
   const [propertySummary, setPropertySummary] = useState<string>('')
   const [summaryLoading, setSummaryLoading] = useState(false)
+  const [summaryState, setSummaryState] = useState<'idle' | 'preparing' | 'fetching-data' | 'analyzing' | 'complete' | 'error'>('idle')
   const [structuredSummary, setStructuredSummary] = useState<any>(null)
   const [valuationAnalysis, setValuationAnalysis] = useState<string>('')
   const [valuationLoading, setValuationLoading] = useState(false)
+  const [valuationState, setValuationState] = useState<'idle' | 'preparing' | 'fetching-data' | 'analyzing' | 'complete' | 'error'>('idle')
   const [structuredValuation, setStructuredValuation] = useState<any>(null)
   const [dataLoadingComplete, setDataLoadingComplete] = useState(false)
   const [summaryTriggered, setSummaryTriggered] = useState(false)
@@ -479,9 +483,14 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     });
     
     setSummaryLoading(true)
+    setSummaryState('preparing')
     setStructuredSummary(null) // Clear existing summary
     
     try {
+      // Phase 1: Preparing request (with delay to show state)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      setSummaryState('fetching-data')
+      
       const requestBody = { 
         address: propertyAddress,
         propertyData: propertyData || subjectPropertyData // Pass prefetched data
@@ -492,6 +501,10 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         hasAddress: !!requestBody.address,
         hasPropertyData: !!requestBody.propertyData
       });
+      
+      // Phase 2: Analyzing with AI (with delay to show state)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      setSummaryState('analyzing');
       
       const response = await fetch('/api/tools/presentation', {
         method: 'POST',
@@ -520,6 +533,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       });
       
       setStructuredSummary(data)
+      setSummaryState('complete')
       setSummaryLoading(false)
     } catch (error) {
       console.error('❌ Property summary fetch error:', {
@@ -533,6 +547,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         investmentHighlights: [],
         propertyStats: { ageCategory: 'established' }
       })
+      setSummaryState('error')
       setSummaryLoading(false)
     }
   }
@@ -549,9 +564,13 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     });
     
     setValuationLoading(true)
+    setValuationState('preparing')
     setStructuredValuation(null) // Clear existing analysis
     
     try {
+      // Phase 1: Preparing request (with delay to show state)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      setValuationState('fetching-data')
       const requestBody = { 
         address: propertyAddress, 
         zpid,
@@ -566,6 +585,10 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         hasPropertyData: !!requestBody.propertyData,
         hasValueData: !!requestBody.valueData
       });
+      
+      // Phase 2: Analyzing with AI (with delay to show state)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      setValuationState('analyzing');
       
       const response = await fetch('/api/tools/valuation', {
         method: 'POST',
@@ -595,6 +618,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       });
       
       setStructuredValuation(data)
+      setValuationState('complete')
       setValuationLoading(false)
     } catch (error) {
       console.error('❌ Valuation analysis fetch error:', {
@@ -608,6 +632,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         insights: [],
         recommendation: { action: 'hold', reasoning: 'Analysis unavailable', timeframe: 'N/A' }
       })
+      setValuationState('error')
       setValuationLoading(false)
     }
   }
@@ -959,8 +984,24 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                   <CardContent id="property-summary" className="space-y-6"> 
                     {summaryLoading ? (
                       <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-                        <CircleDotIcon className="w-4 h-4 animate-pulse" />
-                        <span>Generating AI-powered property analysis...</span>
+                        <LoaderCircle className="w-4 h-4 animate-spin " />
+                        {(() => {
+                          switch (summaryState) {
+                            case 'preparing':
+                              return <FadeIn><span>Preparing property analysis...</span></FadeIn>
+                            case 'fetching-data':
+                              return <FadeIn><span>Gathering property details...</span></FadeIn>
+                            case 'analyzing':
+                              return <FadeIn><span>AI analyzing property features...</span></FadeIn>
+                            case 'complete':
+                              return <FadeIn><span>Analysis complete!</span></FadeIn>
+                            case 'error':
+                              return <FadeIn><span>❌ Analysis failed, showing fallback data</span></FadeIn>
+                            default:
+                              return <FadeIn><span>Generating AI-powered property analysis...</span></FadeIn>
+                          }
+                        })()
+                        }
                       </div>
                     ) : structuredSummary ? (
                       <div className="space-y-6">
@@ -1218,8 +1259,24 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                    
                     {valuationLoading ? (
                       <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 mt-2">
-                        <CircleDotIcon className="w-4 h-4 animate-pulse" />
-                        <span>Generating AI-powered valuation analysis...</span>
+                        <LoaderCircle className="w-4 h-4 animate-spin" />
+                        {(() => {
+                          switch (valuationState) {
+                            case 'preparing':
+                              return <FadeIn><span> Preparing valuation analysis...</span></FadeIn>
+                            case 'fetching-data':
+                              return <FadeIn><span> Gathering property and market data...</span></FadeIn>
+                            case 'analyzing':
+                              return <FadeIn><span>AI analyzing property value and trends...</span></FadeIn>
+                            case 'complete':
+                              return <FadeIn><span> Analysis complete!</span></FadeIn>
+                            case 'error':
+                              return <FadeIn><span>❌ Analysis failed, showing fallback data</span></FadeIn>
+                            default:
+                              return <FadeIn><span>Generating AI-powered valuation analysis...</span></FadeIn>
+                          }
+                        })()
+                        }
                       </div>
                     ) : structuredValuation ? (
                       <FadeInStagger className="mt-4 space-y-4">
