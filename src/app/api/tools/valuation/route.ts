@@ -6,19 +6,35 @@ const rapidApiHost = 'zillow-com1.p.rapidapi.com';
 const rapidApiKey = process.env.RAPIDAPI_KEY!;
 
 export async function POST(req: Request) {
+  console.log('🚀 Valuation API called at:', new Date().toISOString());
+  
   try {
     // Check if required environment variables are configured
+    console.log('🔑 Environment check:', {
+      hasOpenAI: !!process.env.OPENAI_API_KEY,
+      hasRapidAPI: !!rapidApiKey,
+      nodeEnv: process.env.NODE_ENV
+    });
+    
     if (!process.env.OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY environment variable is not set');
+      console.error('❌ OPENAI_API_KEY environment variable is not set');
       return Response.json({ error: 'OpenAI API key not configured' }, { status: 500 });
     }
     
     if (!rapidApiKey) {
-      console.error('RAPIDAPI_KEY environment variable is not set');
+      console.error('❌ RAPIDAPI_KEY environment variable is not set');
       return Response.json({ error: 'RapidAPI key not configured' }, { status: 500 });
     }
 
+    console.log('📥 Parsing request body...');
     const { address, zpid, propertyData: passedPropertyData, valueData } = await req.json();
+    console.log('📋 Request data:', {
+      address: address || 'NOT PROVIDED',
+      zpid: zpid || 'NOT PROVIDED',
+      hasPropertyData: !!passedPropertyData,
+      hasValueData: !!valueData,
+      valueDataLength: Array.isArray(valueData) ? valueData.length : 'NOT ARRAY'
+    });
 
     if (!address || !zpid) {
       return Response.json({ error: 'Address and zpid are required' }, { status: 400 });
@@ -150,7 +166,16 @@ export async function POST(req: Request) {
       newestDate: sortedHistory.length > 0 ? new Date(sortedHistory[sortedHistory.length - 1].t * 1000).toLocaleDateString() : 'N/A'
     });
 
+    console.log('🤖 Preparing valuation AI generation with data:', {
+      hasPropertyData: !!finalPropertyData,
+      hasHistoricalData,
+      dataPointsCount: sortedHistory.length,
+      currentValue: newestValue,
+      yearOverYearChange: percentChange.toFixed(1) + '%'
+    });
+
     // Generate structured AI valuation analysis
+    console.log('🤖 Starting valuation AI generation...');
     const result = await generateObject({
       model: openai("gpt-4o-mini"), // Using gpt-4o-mini for better structured output
       system: `You are a professional real estate valuation analyst. Generate a structured valuation analysis that's informative yet accessible to home sellers. Instead of saying Zestimate anywhere make sure to call our valuation. `,
@@ -210,13 +235,27 @@ export async function POST(req: Request) {
           'Provide actionable insights for a home seller based on property characteristics and general market conditions.'}`
     });
 
+    console.log('✅ Valuation AI generation successful! Result structure:', {
+      hasSummary: !!result.object.summary,
+      hasMarketTrend: !!result.object.marketTrend,
+      hasKeyMetrics: !!result.object.keyMetrics,
+      hasRecommendation: !!result.object.recommendation
+    });
+
     return Response.json(result.object);
 
   } catch (error) {
-    console.error('Error generating valuation analysis:', error);
+    console.error('❌ Valuation API Error:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+      nodeEnv: process.env.NODE_ENV
+    });
+    
     return Response.json({ 
       error: 'Failed to generate valuation analysis',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
     }, { status: 500 });
   }
 }

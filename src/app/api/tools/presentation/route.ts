@@ -6,19 +6,33 @@ const rapidApiHost = 'zillow-com1.p.rapidapi.com';
 const rapidApiKey = process.env.RAPIDAPI_KEY!;
 
 export async function POST(req: Request) {
+  console.log('🚀 Presentation API called at:', new Date().toISOString());
+  
   try {
     // Check if required environment variables are configured
+    console.log('🔑 Environment check:', {
+      hasOpenAI: !!process.env.OPENAI_API_KEY,
+      hasRapidAPI: !!rapidApiKey,
+      nodeEnv: process.env.NODE_ENV
+    });
+    
     if (!process.env.OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY environment variable is not set');
+      console.error('❌ OPENAI_API_KEY environment variable is not set');
       return Response.json({ error: 'OpenAI API key not configured' }, { status: 500 });
     }
     
     if (!rapidApiKey) {
-      console.error('RAPIDAPI_KEY environment variable is not set');
+      console.error('❌ RAPIDAPI_KEY environment variable is not set');
       return Response.json({ error: 'RapidAPI key not configured' }, { status: 500 });
     }
 
+    console.log('📥 Parsing request body...');
     const { address, propertyData } = await req.json();
+    console.log('📋 Request data:', {
+      address: address || 'NOT PROVIDED',
+      hasPropertyData: !!propertyData,
+      propertyDataKeys: propertyData ? Object.keys(propertyData) : 'NONE'
+    });
 
     if (!address) {
       return Response.json({ error: 'Address is required' }, { status: 400 });
@@ -63,7 +77,18 @@ export async function POST(req: Request) {
       console.log('✅ Using provided property data for presentation generation');
     }
 
+    console.log('🤖 Preparing AI generation with data:', {
+      hasPropertyData: !!finalPropertyData,
+      propertyDataSample: finalPropertyData ? {
+        address: finalPropertyData.address,
+        price: finalPropertyData.price || finalPropertyData.zestimate,
+        bedrooms: finalPropertyData.bedrooms,
+        bathrooms: finalPropertyData.bathrooms
+      } : 'NONE'
+    });
+
     // Generate structured AI property summary
+    console.log('🤖 Starting AI generation...');
     const result = await generateObject({
       model: openai("gpt-4o-mini"),
       system: `You are a professional real estate analyst. Generate a structured property summary that's informative and factual without being overly promotional.
@@ -126,13 +151,28 @@ Property Details:
 Focus on factual analysis, market positioning, and investment potential based on the data provided.`
     });
 
+    console.log('✅ AI generation successful! Result structure:', {
+      hasOverview: !!result.object.overview,
+      keyFeaturesCount: result.object.keyFeatures?.length || 0,
+      hasMarketPosition: !!result.object.marketPosition,
+      investmentHighlightsCount: result.object.investmentHighlights?.length || 0,
+      hasPropertyStats: !!result.object.propertyStats
+    });
+
     return Response.json(result.object);
 
   } catch (error) {
-    console.error('Error generating property summary:', error);
+    console.error('❌ Presentation API Error:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+      nodeEnv: process.env.NODE_ENV
+    });
+    
     return Response.json({ 
       error: 'Failed to generate property summary',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
     }, { status: 500 });
   }
 }

@@ -51,7 +51,6 @@ export async function POST(request: NextRequest) {
     const cacheKey = `zillow-images:${zpid}`
     const cached = cache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      console.log('Returning cached images data for zpid:', zpid)
       return NextResponse.json(cached.data)
     }
 
@@ -63,7 +62,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'RAPIDAPI_KEY not configured' }, { status: 500 })
     }
 
-    console.log('🔄 Zillow Images API Request for zpid:', zpid)
 
     const response = await fetch(
       `https://${apiHost}/images?zpid=${zpid}`,
@@ -76,13 +74,9 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    console.log('=== ZILLOW IMAGES API RESPONSE ===')
-    console.log('Status:', response.status)
-    console.log('Status Text:', response.statusText)
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.log('Error response body:', errorText)
       return NextResponse.json(
         { 
           error: `Zillow Images API failed: ${response.status} ${response.statusText}`,
@@ -108,7 +102,6 @@ export async function POST(request: NextRequest) {
       rawData: data
     }
 
-    console.log('Processed result:', JSON.stringify(result, null, 2))
     
     // Cache the result
     cache.set(cacheKey, { data: result, timestamp: Date.now() })
@@ -153,7 +146,6 @@ export async function GET(request: NextRequest) {
     const cacheKey = `zillow-images:${zpid}`
     const cached = cache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      console.log('Returning cached images data for zpid:', zpid)
       return NextResponse.json(cached.data)
     }
 
@@ -165,7 +157,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'RAPIDAPI_KEY not configured' }, { status: 500 })
     }
 
-    console.log('🔄 Zillow Images API Request for zpid:', zpid)
 
     const response = await fetch(
       `https://${apiHost}/images?zpid=${zpid}`,
@@ -190,7 +181,6 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json()
     
-    console.log('✅ Zillow Images API Success for zpid:', zpid)
    
     
     // Process and normalize the images data
