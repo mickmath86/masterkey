@@ -75,6 +75,17 @@ export async function POST(request: Request) {
       console.log('✅ Using provided property data for valuation analysis');
     }
 
+    // Check if property type is supported (only single family homes and condos)
+    const supportedHomeTypes = ['SINGLE_FAMILY', 'CONDO', 'TOWNHOUSE'];
+    if (finalPropertyData?.homeType && !supportedHomeTypes.includes(finalPropertyData.homeType)) {
+      console.log(`❌ Unsupported property type: ${finalPropertyData.homeType}`);
+      return Response.json({
+        error: 'Property type not supported',
+        message: 'We currently only support single family homes, condos, and townhouses. This property appears to be a different type of residence.',
+        propertyType: finalPropertyData.homeType
+      }, { status: 400 });
+    }
+
     let zestimateHistory = [];
 
     // Use provided valueData if available, otherwise fetch it
@@ -214,8 +225,8 @@ export async function POST(request: Request) {
           description: z.string().describe("Detailed explanation")
         })).describe("Key insights about the property"),
         recommendation: z.object({
-          action: z.enum(["hold", "sell_soon", "sell_now", "wait"]).describe("Recommended action. Make sure there is established critera for this so that we dont recommend two different suggestions if they run through the process again. "),
-          reasoning: z.string().describe("Explanation for the recommendation. Make sure to take into consideration the seller's motivations and pending their desire to sell.  "),
+          action: z.enum(["holding", "selling_soon", "selling_now"]).describe("Recommended action. Make sure there is established critera for this so that we dont recommend two different suggestions if they run through the process again. "),
+          reasoning: z.string().describe("Explanation for the recommendation. Make sure to take into consideration the seller's motivations and pending their desire to sell. Make sure this is all written in the context of someone who needs maximum value now. People who may be recommended to hold can still sell if needed."),
           timeframe: z.string().describe("Suggested timeframe for action")
         })
       }),

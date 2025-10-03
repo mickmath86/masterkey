@@ -537,7 +537,7 @@ export default function Navbar3() {
                   ))}
                   
                   {/* Featured Section */}
-                  <a href="/questionnaire" className="relative overflow-hidden rounded-2xl group bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 p-6 text-white animate-in slide-in-from-right-2 duration-300 hover:bg-blue-900 hover:text-white">
+                  <a href="/questionnaire/listing-presentation" className="relative overflow-hidden rounded-2xl group bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 p-6 text-white animate-in slide-in-from-right-2 duration-300 hover:bg-blue-900 hover:text-white">
                     <div className="relative z-10">
                       <div className="mb-4">
                         <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-1 text-xs font-medium text-white">

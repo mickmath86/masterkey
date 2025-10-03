@@ -33,7 +33,11 @@ import {
   Award,
   Building,
   Clock,
-  CircleDotIcon
+  CircleDotIcon,
+  Bath,
+  Maximize,
+  Receipt,
+  HomeIcon
 } from "lucide-react"
 import { extractZipcode } from "@/lib/utils/address"
 
@@ -1003,24 +1007,23 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                               <Award className="w-5 h-5 text-sky-600" />
                               Key Features
                             </h3>
-                            <FadeInStagger className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <FadeInStagger className="grid grid-cols-1 md:grid-cols-3 gap-3">
                               {structuredSummary.keyFeatures.map((feature: any, index: number) => (
                                 <div key={index} className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
                                   <div className="flex items-start gap-3">
-                                    <div className={`p-2 rounded-full ${
-                                      feature.category === 'size' ? 'bg-blue-100 text-blue-600' :
-                                      feature.category === 'age' ? 'bg-blue-100 text-blue-600' :
-                                      feature.category === 'location' ? 'bg-blue-100 text-blue-600' :
-                                      feature.category === 'value' ? 'bg-blue-100 text-blue-600' :
-                                      feature.category === 'condition' ? 'bg-blue-100 text-blue-600' :
-                                      'bg-gray-100 text-gray-600'
-                                    }`}>
-                                      {feature.category === 'size' && <HouseIcon className="w-4 h-4" />}
+                                    <div className="p-2 rounded-full bg-blue-100 text-blue-600">
+                                      {feature.category === 'size' && <Maximize className="w-4 h-4" />}
                                       {feature.category === 'age' && <Clock className="w-4 h-4" />}
                                       {feature.category === 'location' && <MapPin className="w-4 h-4" />}
                                       {feature.category === 'value' && <DollarSign className="w-4 h-4" />}
                                       {feature.category === 'condition' && <Star className="w-4 h-4" />}
                                       {feature.category === 'amenities' && <Building className="w-4 h-4" />}
+                                      {feature.category === 'bedrooms' && <Bed className="w-4 h-4" />}
+                                      {feature.category === 'bathrooms' && <Bath className="w-4 h-4" />}
+                                      {feature.category === 'market_value' && <TrendingUpIcon className="w-4 h-4" />}
+                                      {feature.category === 'rental' && <HomeIcon className="w-4 h-4" />}
+                                      {feature.category === 'tax' && <Receipt className="w-4 h-4" />}
+                                      {feature.category === 'financial' && <DollarSign className="w-4 h-4" />}
                                     </div>
                                     <div className="flex-1">
                                       <h4 className="font-medium text-gray-800 dark:text-gray-200 text-sm">
@@ -1159,13 +1162,25 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <div>
-                        <span className="font-semibold text-lg">{formatCurrency(avmData?.priceRangeLow || 0)}</span>
-                        <div>
-                          {avmData?.priceRangeLow && avmData?.subjectProperty?.squareFootage 
-                            ? formatCurrency(avmData?.priceRangeLow / avmData?.subjectProperty?.squareFootage) 
-                            : '$0'}/sf
-                        </div>
-                      
+                        {avmData?.priceRangeLow < subjectPropertyData?.zestimate ? (
+                          <>
+                          <span className="font-semibold text-lg">{formatCurrency(avmData?.priceRangeLow || 0)}</span>
+                          <div>
+                            {avmData?.priceRangeLow && avmData?.subjectProperty?.squareFootage 
+                              ? formatCurrency(avmData?.priceRangeLow / avmData?.subjectProperty?.squareFootage) 
+                              : '$0'}/sf
+                          </div>
+                          </>
+                        ) : (
+                          <>
+                          <span className="font-semibold text-lg">{formatCurrency(subjectPropertyData?.zestimate || 0)}</span>
+                          <div>
+                            {subjectPropertyData?.pricePerSquareFoot
+                              ? formatCurrency(subjectPropertyData?.pricePerSquareFoot) 
+                              : '$0'}/sf
+                          </div>
+                          </>
+                        )}
                       </div>
                       <div className="flex flex-col text-right">
                         {avmData?.priceRangeHigh > subjectPropertyData?.zestimate ? (
@@ -1269,8 +1284,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                         )}
 
                         {/* Recommendation */}
-                        <div className="bg-white p-3 rounded-md border border-sky-200">
-                          <h2 className="font-semibold text-gray-800 mb-2">Recommendation to Seller</h2>
+                        <div className="bg-white p-3 rounded-md border flex flex-col gap-y-2 border-sky-200">
+                          <h2 className="font-semibold text-gray-800 ">Recommendation to Seller</h2>
+                          <p className="text-sm text-gray-600">For those who may be considering selling in the near term looking for maximum value, we recommend:</p>
                           <div className="flex items-center gap-2 mb-2">
                             <div className={`px-2 py-1 rounded-full text-xs font-medium ${
                               structuredValuation.recommendation.action === 'sell_now' ? 'bg-green-100 text-green-800' :

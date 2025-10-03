@@ -59,24 +59,15 @@ export async function POST(request: Request) {
           method: 'GET',
           headers: {
             'X-RapidAPI-Key': rapidApiKey,
-            'X-RapidAPI-Host': rapidApiHost,
             'Content-Type': 'application/json'
           }
         }
       );
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          console.log('⚠️ Rate limit hit for presentation tool, using fallback data');
-          finalPropertyData = {
-            address: address,
-            propertyType: 'Single Family',
-            bedrooms: 4,
-            bathrooms: 2.5,
-            squareFootage: 2000,
-            yearBuilt: 2000,
-            zestimate: 850000
-          };
+      if (response.ok) {
+        const data = await response.json();
+        if (data.error) {
+          throw new Error(`API request failed: ${data.error}`);
         } else {
           throw new Error(`API request failed: ${response.status}`);
         }
@@ -85,6 +76,17 @@ export async function POST(request: Request) {
       }
     } else {
       console.log('✅ Using provided property data for presentation generation');
+    }
+
+    // Check if property type is supported (only single family homes and condos)
+    const supportedHomeTypes = ['SINGLE_FAMILY', 'CONDO', 'TOWNHOUSE'];
+    if (finalPropertyData?.homeType && !supportedHomeTypes.includes(finalPropertyData.homeType)) {
+      console.log(`❌ Unsupported property type: ${finalPropertyData.homeType}`);
+      return Response.json({
+        error: 'Property type not supported',
+        message: 'We currently only support single family homes, condos, and townhouses. This property appears to be a different type of residence.',
+        propertyType: finalPropertyData.homeType
+      }, { status: 400 });
     }
 
     console.log('🤖 Preparing AI generation with data:', {
@@ -118,10 +120,16 @@ export async function POST(request: Request) {
       - Features, upgrades → "amenities"
       
       For investmentHighlights types, use only: appreciation, rental_income, tax_benefits, location, condition, value, financial`,
+      prompt: `Property Address: ${address}
+
+Property Details:
+${JSON.stringify(finalPropertyData, null, 2)}
+
+Generate a comprehensive property summary focusing on key selling points and market position. Be factual and informative without being overly promotional. Use "valuation" instead of "Zestimate" in all descriptions.`,
       schema: z.object({
         overview: z.string().describe("Brief 2-3 sentence overview of the property"),
         keyFeatures: z.array(z.object({
-          category: z.enum(["size", "age", "location", "value", "condition", "amenities", "bedrooms", "bathrooms", "market_value", "tax", "rental", "financial"]).describe("Feature category"),
+          category: z.enum(["size", "age", "location", "value", "condition", "amenities", "bedrooms", "bathrooms", "market_value", "tax", "rental", "financial"]).describe("Feature category. Dont use word zestimate, use word - valuation."),
           title: z.string().describe("Feature title"),
           description: z.string().describe("Feature description")
         })).describe("Key property features organized by category"),
@@ -141,24 +149,7 @@ export async function POST(request: Request) {
           rentYield: z.number().optional().describe("Potential rental yield percentage"),
           ageCategory: z.enum(["new", "modern", "established", "vintage"]).describe("Property age category")
         })
-      }),
-      prompt: `Analyze this property data and provide structured insights:
-
-Property Details:
-- Address: ${address || finalPropertyData.address || 'Property Address'}
-- Property Type: ${finalPropertyData.propertyType || 'N/A'}
-- Bedrooms: ${finalPropertyData.bedrooms || 'N/A'}
-- Bathrooms: ${finalPropertyData.bathrooms || 'N/A'}
-- Living Area: ${finalPropertyData.livingArea || 'N/A'} sq ft
-- Year Built: ${finalPropertyData.yearBuilt || 'N/A'}
-- Lot Size: ${finalPropertyData.lotSize || 'N/A'}
-- Current Zestimate: $${finalPropertyData.zestimate?.toLocaleString() || 'N/A'}
-- Price per Sq Ft: $${finalPropertyData.pricePerSquareFoot || 'N/A'}
-- Home Status: ${finalPropertyData.homeStatus || 'N/A'}
-- Annual Tax: $${finalPropertyData.taxAnnualAmount?.toLocaleString() || 'N/A'}
-- Rent Estimate: $${finalPropertyData.rentZestimate?.toLocaleString() || 'N/A'}
-
-Focus on factual analysis, market positioning, and investment potential based on the data provided.`
+      })
     });
 
     console.log('✅ AI generation successful! Result structure:', {
