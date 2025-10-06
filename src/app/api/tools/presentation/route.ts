@@ -102,7 +102,7 @@ export async function POST(request: Request) {
     // Generate structured AI property summary
     console.log('🤖 Starting AI generation...');
     const result = await generateObject({
-      model: openai("gpt-4o-mini"),
+      model: openai("gpt-4o"),
       system: `You are a professional real estate analyst. Generate a structured property summary that's informative and factual without being overly promotional.
       
       For keyFeatures categories, use only these options: size, age, location, value, condition, amenities, bedrooms, bathrooms, market_value, tax, rental, financial

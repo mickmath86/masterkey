@@ -22,13 +22,8 @@ import {
   StepperSeparator,
   StepperTrigger,
 } from "@/components/ui/stepper";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
 
 interface ImprovementDetail {
   improvement: string;
@@ -116,7 +111,7 @@ const improvementOptions = [
 function RealEstateSellPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { prefetchPropertyData, isLoading, setQuestionnaireData } = usePropertyData();
+  const { prefetchPropertyData, isLoading, setQuestionnaireData, propertyData } = usePropertyData();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -287,6 +282,39 @@ function RealEstateSellPageContent() {
         // Continue with redirect even if webhook fails
       }
       
+      // Prefetch images and value data before redirecting for faster loading
+      try {
+        if (propertyData?.zpid) {
+          console.log('Prefetching images and value data for zpid:', propertyData.zpid);
+          
+          // Prefetch images
+          const imagePromise = fetch(`/api/zillow/images?zpid=${encodeURIComponent(propertyData.zpid)}`);
+          
+          // Prefetch value data
+          const valuePromise = fetch(`/api/zillow/values?zpid=${encodeURIComponent(propertyData.zpid)}`);
+          
+          // Wait for both requests to complete
+          const [imageResponse, valueResponse] = await Promise.all([imagePromise, valuePromise]);
+          
+          if (imageResponse.ok) {
+            const imageData = await imageResponse.json();
+            console.log('Images prefetched successfully:', imageData);
+          } else {
+            console.log('Image prefetch failed, but continuing with redirect');
+          }
+          
+          if (valueResponse.ok) {
+            const valueData = await valueResponse.json();
+            console.log('Value data prefetched successfully:', valueData);
+          } else {
+            console.log('Value data prefetch failed, but continuing with redirect');
+          }
+        }
+      } catch (prefetchError) {
+        console.error('Prefetch error:', prefetchError);
+        // Continue with redirect even if prefetch fails
+      }
+      
       // Redirect to property-profile with address and contact information as query parameters
       // Property data is already prefetched via PropertyDataContext
       const queryParams = new URLSearchParams({
@@ -298,7 +326,9 @@ function RealEstateSellPageContent() {
       });
       
       router.push(`/property-profile?${queryParams.toString()}`);
-    } finally {
+      // Don't set isSubmitting to false here - let the redirect happen with loading state
+    } catch (error) {
+      console.error('Form submission error:', error);
       setIsSubmitting(false);
     }
   };
@@ -1024,9 +1054,16 @@ function RealEstateSellPageContent() {
               <Button
                 onClick={handleSubmit}
                 disabled={!isStepValid() || isSubmitting}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit'}
+                {isSubmitting ? (
+                  <>
+                    <Spinner className="w-4 h-4" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit'
+                )}
               </Button>
             )}
           </div>

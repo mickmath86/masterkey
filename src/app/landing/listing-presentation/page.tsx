@@ -10,31 +10,37 @@ import { FadeInStagger } from "@/components/animations"
 import { CloudArrowUpIcon, LockClosedIcon, ServerIcon } from '@heroicons/react/20/solid'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { StarIcon } from '@heroicons/react/20/solid'
-import { Home, Key, DollarSign, ArrowRight, SparkleIcon, Sparkles } from "lucide-react"
+import { Home, Key, DollarSign, ArrowRight, SparkleIcon, Sparkles, ShieldAlert } from "lucide-react"
 import { GooglePlacesInput } from '@/components/ui/google-places-input'
 import { Button } from '@/components/button'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { usePropertyData } from '@/contexts/PropertyDataContext'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CheckBadgeIcon } from "@heroicons/react/16/solid";
 import { Gradient } from "@/components/gradient";
 import { PlusGrid } from "@/components/plus-grid";
 import { MasterKeyMark } from '@/components/logo'
+import { Spinner } from "@/components/ui/spinner";
 
 function AddressTest() {
 
   const [address, setAddress] = useState('');
   const router = useRouter();
-  const { prefetchPropertyData, isLoading } = usePropertyData();
+  const { prefetchPropertyData, isLoading, propertyTypeError, setPropertyTypeError } = usePropertyData();
 
   const handleGetStarted = async () => {
     if (address.trim()) {
       // Prefetch property data before navigating
       console.log('Prefetching property data for address:', address);
-      await prefetchPropertyData(address);
+      const result = await prefetchPropertyData(address);
       
-      // Navigate to questionnaire with pre-filled address, starting at step 2 (timeline)
-      router.push(`/questionnaire/listing-presentation?address=${encodeURIComponent(address)}&step=2`);
+      // If property type is not supported, the modal will show automatically
+      // Only navigate if we got valid property data
+      if (result && !propertyTypeError) {
+        // Navigate to questionnaire with pre-filled address, starting at step 2 (timeline)
+        router.push(`/questionnaire/listing-presentation?address=${encodeURIComponent(address)}&step=2`);
+      }
     } else {
       // Navigate to questionnaire without pre-filled address
       router.push('/questionnaire/listing-presentation');
@@ -86,7 +92,7 @@ function AddressTest() {
                     disabled={isLoading}
                     className="px-8 py-3 bg-sky-500 hover:bg-sky-600 disabled:bg-sky-300 text-white font-medium rounded-sm transition-colors duration-200"
                     >
-                    {isLoading ? 'Loading...' : 'Get Started'}
+                    {isLoading ? <div className="flex flex-row items-center gap-2"><p>Loading... </p><Spinner /></div> : 'Get Started'}
                   </Button>
                 </div>
               </div>
@@ -124,6 +130,39 @@ function AddressTest() {
         </div>
         <div className="absolute inset-x-0 bottom-0 -z-10 h-24 bg-linear-to-t from-white sm:h-32 dark:from-gray-900" />
       </div>
+      
+      {/* Property Type Error Modal */}
+      <Dialog open={!!propertyTypeError} onOpenChange={() => setPropertyTypeError(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-orange-500 flex flex-row items-center gap-2"><ShieldAlert className="inline-block h-5 w-5 "/>Property Type Not Supported</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-gray-700">
+              {propertyTypeError}
+            </p>
+            <ul className="text-sm text-gray-600 space-y-2 list-disc list-inside">
+              <li>Try entering a different property address</li>
+              <li>
+                <a 
+                  href="/questionnaire/real-estate-sell" 
+                  className="text-sky-600 hover:text-sky-700 underline font-medium"
+                >
+                  Click here to provide us with your property address information for a valuation consultation
+                </a>
+              </li>
+            </ul>
+            <div className="flex justify-end">
+              <Button
+                onClick={() => setPropertyTypeError(null)}
+                className="bg-sky-500 hover:bg-sky-600 text-white"
+              >
+                Understood
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -266,6 +305,7 @@ function Testimonials() {
                       {[...Array(5)].map((_, i) => (
                         <StarIcon key={i} className="w-4 h-4 text-yellow-400 fill-current" />
                       ))}
+                      <span className="ml-2 text-xs text-gray-500">Google Reviews</span>
                     </div>
                     <div className="mt-2 flex-1 text-sm/6 text-gray-500">
                     {service.quote}

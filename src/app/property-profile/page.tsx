@@ -1,8 +1,9 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { PropertyDataModule } from '@/components/property-data-module'
+import { PropertyLoadingSequence } from '@/components/property-loading-sequence'
 import Navbar3 from '@/components/navbar3'
 import { Footer } from '@/components/footer'
 import { usePropertyData } from '@/contexts/PropertyDataContext'
@@ -10,6 +11,7 @@ import { usePropertyData } from '@/contexts/PropertyDataContext'
 function PropertyProfileContent() {
     const searchParams = useSearchParams()
     const address = searchParams.get('address')
+    const [showLoading, setShowLoading] = useState(true)
 
     if (!address) {
         return (
@@ -30,9 +32,17 @@ function PropertyProfileContent() {
         )
     }
 
+    if (showLoading) {
+        return (
+            <PropertyLoadingSequence 
+                address={address}
+                onComplete={() => setShowLoading(false)}
+            />
+        )
+    }
+
     return (
         <>
-             
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                 <PropertyDataModule address={address} />
             </div>

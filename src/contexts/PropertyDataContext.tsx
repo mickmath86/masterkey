@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useState, useCallback } from 'react'
 import type { ReactNode } from 'react'
 
 interface PropertyData {
@@ -23,7 +23,7 @@ interface PropertyData {
   isFallback?: boolean
 }
 
-interface ImprovementDetail {
+export interface ImprovementDetail {
   improvement: string
   yearsAgo?: number
   cost?: number
@@ -63,6 +63,8 @@ interface PropertyDataContextType {
     totalDepreciatedValue: number
     improvementValuations: ImprovementValuation[]
   }
+  propertyTypeError: string | null
+  setPropertyTypeError: (error: string | null) => void
 }
 
 // Useful life mapping for different improvement types
@@ -109,25 +111,38 @@ export function PropertyDataProvider({ children }: { children: ReactNode }) {
   const [propertyData, setPropertyData] = useState<PropertyData | null>(null)
   const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [propertyTypeError, setPropertyTypeError] = useState<string | null>(null)
 
-  const prefetchPropertyData = async (address: string): Promise<PropertyData | null> => {
+  const prefetchPropertyData = useCallback(async (address: string): Promise<PropertyData | null> => {
     if (!address.trim()) return null
 
     setIsLoading(true)
+    setPropertyTypeError(null) // Clear any previous errors
+    
     try {
       // Convert URL-friendly address format to API-friendly format
       const apiAddress = address.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-      console.log('🔄 Prefetching property data for:', apiAddress)
+      console.log(' Prefetching property data for:', apiAddress)
 
       const response = await fetch(`/api/zillow/property?address=${encodeURIComponent(apiAddress)}`)
       
       if (!response.ok) {
-        console.error('❌ Failed to prefetch property data:', response.status)
+        console.error('Failed to prefetch property data:', response.status)
         return null
       }
 
       const data = await response.json()
-      console.log('✅ Property data prefetched successfully')
+      console.log('Property data prefetched successfully')
+      
+      // Check if property type is supported
+      const supportedHomeTypes = ['SINGLE_FAMILY', 'CONDO']
+      const homeType = data.rawData?.homeType || data.propertyType
+      
+      if (homeType && !supportedHomeTypes.includes(homeType)) {
+        console.log(`Unsupported property type: ${homeType}`)
+        setPropertyTypeError(`We currently only provide AI Reports for Single Family Residences and Condos. This property appears to be a ${homeType.toLowerCase().replace('_', ' ')}.`)
+        return null
+      }
       
       setPropertyData(data)
       return data
@@ -137,7 +152,7 @@ export function PropertyDataProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   const calculateImprovementValue = (improvementDetails: ImprovementDetail[]) => {
     const improvementValuations: ImprovementValuation[] = []
@@ -189,6 +204,8 @@ export function PropertyDataProvider({ children }: { children: ReactNode }) {
         setIsLoading,
         prefetchPropertyData,
         calculateImprovementValue,
+        propertyTypeError,
+        setPropertyTypeError,
       }}
     >
       {children}
