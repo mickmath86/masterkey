@@ -3,7 +3,15 @@
 import { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
-import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, StarIcon } from '@heroicons/react/16/solid';
+import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, StarIcon, XMarkIcon } from '@heroicons/react/16/solid';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { GooglePlacesInput } from '@/components/ui/google-places-input';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePropertyData } from '@/contexts/PropertyDataContext';
@@ -22,12 +30,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+interface ImprovementDetail {
+  improvement: string;
+  yearsAgo?: number;
+  cost?: number;
+}
+
 interface FormData {
   propertyAddress: string;
   sellingIntent: string;
   sellingTimeline: string;
   sellingMotivation: string;
   propertyCondition: string;
+  propertyImprovements: string[];
+  improvementDetails: ImprovementDetail[];
   priceExpectation: string;
   firstName: string;
   lastName: string;
@@ -72,6 +88,31 @@ const priceExpectationOptions = [
   'Not sure - need professional guidance'
 ];
 
+const improvementOptions = [
+  'Kitchen remodel',
+  'Bathroom renovation',
+  'Room addition',
+  'Basement finishing',
+  'Attic conversion',
+  'New flooring',
+  'Fresh paint (interior)',
+  'Fresh paint (exterior)',
+  'New roof',
+  'HVAC system upgrade',
+  'Windows replacement',
+  'Deck/patio addition',
+  'Landscaping improvements',
+  'Garage addition/renovation',
+  'Electrical upgrades',
+  'Plumbing upgrades',
+  'Insulation improvements',
+  'Driveway replacement',
+  'Fence installation',
+  'Pool installation',
+  'Solar panels',
+  'Smart home features'
+];
+
 function RealEstateSellPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -87,12 +128,30 @@ function RealEstateSellPageContent() {
     sellingTimeline: '',
     sellingMotivation: '',
     propertyCondition: '',
+    propertyImprovements: [],
+    improvementDetails: [],
     priceExpectation: '',
     firstName: '',
     lastName: '',
     email: '',
     phone: ''
   });
+  const [improvementSearch, setImprovementSearch] = useState('');
+  const [showImprovementDropdown, setShowImprovementDropdown] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target && !target.closest('.improvement-dropdown')) {
+        setShowImprovementDropdown(false);
+      }
+    };
+    
+    if (showImprovementDropdown) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showImprovementDropdown]);
 
   // Handle URL parameters for pre-filling address and setting step
   useEffect(() => {
@@ -111,7 +170,7 @@ function RealEstateSellPageContent() {
     }
   }, [searchParams]);
 
-  const totalSteps = 7;
+  const totalSteps = 9;
   
   // LeadConnector webhook URL
   const WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/0972671d-e4b7-46c5-ad30-53d734b97e8c';
@@ -120,7 +179,14 @@ function RealEstateSellPageContent() {
     if (currentStep < totalSteps) {
       setIsTransitioning(true);
       setTimeout(() => {
-        setCurrentStep(currentStep + 1);
+        let nextStep = currentStep + 1;
+        
+        // Skip improvement details if no improvements selected on step 6
+        if (currentStep === 6 && formData.propertyImprovements.length === 0) {
+          nextStep = 8; // Skip step 7 (improvement details) and go to step 8 (pricing)
+        }
+        
+        setCurrentStep(nextStep);
         setIsTransitioning(false);
       }, 150);
     }
@@ -147,8 +213,13 @@ function RealEstateSellPageContent() {
         }
         
         // Skip pricing step for curious users
-        if (currentStep === 5 && formData.sellingIntent === 'I am just curious about market conditions') {
-          nextStep = 7; // Skip step 6 (pricing) and go directly to step 7 (contact)
+        if (currentStep === 7 && formData.sellingIntent === 'I am just curious about market conditions') {
+          nextStep = 9; // Skip step 8 (pricing) and go directly to step 9 (contact)
+        }
+        
+        // Skip improvement details if no improvements selected
+        if (currentStep === 6 && formData.propertyImprovements.length === 0) {
+          nextStep = 8; // Skip step 7 (improvement details) and go to step 8 (pricing)
         }
         
         setCurrentStep(nextStep);
@@ -188,6 +259,8 @@ function RealEstateSellPageContent() {
         sellingTimeline: submissionData.sellingTimeline,
         propertyType: '', // Will be populated from Zillow API data when available
         propertyCondition: submissionData.propertyCondition,
+        propertyImprovements: submissionData.propertyImprovements,
+        improvementDetails: submissionData.improvementDetails,
         name: `${submissionData.firstName} ${submissionData.lastName}`.trim(),
         email: submissionData.email,
         phone: submissionData.phone
@@ -214,9 +287,17 @@ function RealEstateSellPageContent() {
         // Continue with redirect even if webhook fails
       }
       
-      // Redirect directly to property-profile with address parameter
+      // Redirect to property-profile with address and contact information as query parameters
       // Property data is already prefetched via PropertyDataContext
-      router.push(`/property-profile?address=${encodeURIComponent(submissionData.propertyAddress)}`);
+      const queryParams = new URLSearchParams({
+        address: submissionData.propertyAddress,
+        first_name: `${submissionData.firstName}`.trim(),
+        last_name: `${submissionData.lastName}`.trim(),
+        email: submissionData.email,
+        phone: submissionData.phone
+      });
+      
+      router.push(`/property-profile?${queryParams.toString()}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -227,6 +308,21 @@ function RealEstateSellPageContent() {
     return emailRegex.test(email);
   };
 
+  const formatPhoneNumber = (phone: string): string => {
+    // Remove all non-digits
+    const digits = phone.replace(/\D/g, '');
+    
+    // Format as XXX-XXX-XXXX
+    if (digits.length >= 10) {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+    } else if (digits.length >= 6) {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+    } else if (digits.length >= 3) {
+      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    }
+    return digits;
+  };
+
   const handleEmailChange = (email: string) => {
     setFormData({ ...formData, email });
     if (email.trim() && !validateEmail(email)) {
@@ -234,6 +330,100 @@ function RealEstateSellPageContent() {
     } else {
       setEmailError('');
     }
+  };
+
+  const handlePhoneChange = (phone: string) => {
+    const formattedPhone = formatPhoneNumber(phone);
+    setFormData({ ...formData, phone: formattedPhone });
+  };
+
+  // Improvement selection functions
+  const handleImprovementSelect = (improvement: string) => {
+    if (!formData.propertyImprovements.includes(improvement)) {
+      setFormData({
+        ...formData,
+        propertyImprovements: [...formData.propertyImprovements, improvement]
+      });
+    }
+    setImprovementSearch('');
+    setShowImprovementDropdown(false);
+  };
+
+  const handleImprovementRemove = (improvement: string) => {
+    setFormData({
+      ...formData,
+      propertyImprovements: formData.propertyImprovements.filter(item => item !== improvement)
+    });
+  };
+
+  const handleCustomImprovementAdd = () => {
+    const customImprovement = improvementSearch.trim();
+    if (customImprovement && !formData.propertyImprovements.includes(customImprovement)) {
+      setFormData({
+        ...formData,
+        propertyImprovements: [...formData.propertyImprovements, customImprovement]
+      });
+    }
+    setImprovementSearch('');
+    setShowImprovementDropdown(false);
+  };
+
+  const getFilteredImprovements = () => {
+    return improvementOptions.filter(option => 
+      option.toLowerCase().includes(improvementSearch.toLowerCase()) &&
+      !formData.propertyImprovements.includes(option)
+    );
+  };
+
+  const getNextButtonText = () => {
+    if (currentStep === 6) {
+      return formData.propertyImprovements.length > 0 ? 'Next' : 'Skip';
+    }
+    if (currentStep === 7) {
+      const hasDetails = formData.improvementDetails.some(detail => 
+        detail.yearsAgo !== undefined || detail.cost !== undefined
+      );
+      return hasDetails ? 'Next' : 'Skip';
+    }
+    return 'Next';
+  };
+
+  // Initialize improvement details when improvements are selected
+  useEffect(() => {
+    if (formData.propertyImprovements.length > 0) {
+      const newDetails = formData.propertyImprovements.map(improvement => ({
+        improvement,
+        yearsAgo: undefined,
+        cost: undefined
+      }));
+      setFormData(prev => ({ ...prev, improvementDetails: newDetails }));
+    } else {
+      setFormData(prev => ({ ...prev, improvementDetails: [] }));
+    }
+  }, [formData.propertyImprovements]);
+
+  // Update improvement detail
+  const updateImprovementDetail = (index: number, field: 'yearsAgo' | 'cost', value: number | undefined) => {
+    const updatedDetails = [...formData.improvementDetails];
+    updatedDetails[index] = { ...updatedDetails[index], [field]: value };
+    setFormData({ ...formData, improvementDetails: updatedDetails });
+  };
+
+  // Format currency for display
+  const formatCurrency = (value: number | undefined): string => {
+    if (!value) return '';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  // Parse currency input (remove formatting)
+  const parseCurrencyInput = (value: string): number | undefined => {
+    const numericValue = value.replace(/[^0-9]/g, '');
+    return numericValue ? parseInt(numericValue) : undefined;
   };
 
   const isStepValid = () => {
@@ -249,8 +439,12 @@ function RealEstateSellPageContent() {
       case 5:
         return formData.propertyCondition !== '';
       case 6:
-        return formData.priceExpectation !== '';
+        return true; // Improvements step is optional
       case 7:
+        return true; // Improvement details step is optional
+      case 8:
+        return formData.priceExpectation !== '';
+      case 9:
         return formData.firstName.trim() !== '' && formData.lastName.trim() !== '' && 
                formData.email.trim() !== '' && validateEmail(formData.email) && formData.phone.trim() !== '';
       default:
@@ -507,6 +701,192 @@ function RealEstateSellPageContent() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-3xl font-semibold text-gray-900 mb-2">
+                  Have you made any improvements to your property?
+                </h3>
+                <p className="text-gray-600 mb-8">
+                  Tell us about any renovations, upgrades, or improvements you've made during your ownership. This helps us highlight value-adding features to potential buyers.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                {/* Selected improvements */}
+                {formData.propertyImprovements.length > 0 && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Selected Improvements:
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.propertyImprovements.map((improvement, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                        >
+                          <span>{improvement}</span>
+                          <button
+                            onClick={() => handleImprovementRemove(improvement)}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <XMarkIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Search input */}
+                <div className="relative improvement-dropdown">
+                  <label htmlFor="improvementSearch" className="block text-sm font-medium text-gray-700 mb-2">
+                    Search or add improvements:
+                  </label>
+                  <input
+                    type="text"
+                    id="improvementSearch"
+                    value={improvementSearch}
+                    onChange={(e) => {
+                      setImprovementSearch(e.target.value);
+                      setShowImprovementDropdown(true);
+                    }}
+                    onFocus={() => setShowImprovementDropdown(true)}
+                    placeholder="Type to search improvements or add your own..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  
+                  {/* Dropdown */}
+                  {showImprovementDropdown && (improvementSearch.length > 0 || getFilteredImprovements().length > 0) && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {getFilteredImprovements().map((improvement, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleImprovementSelect(improvement)}
+                          className="w-full text-left px-4 py-2 hover:bg-gray-100 border-b border-gray-100 last:border-b-0"
+                        >
+                          {improvement}
+                        </button>
+                      ))}
+                      
+                      {/* Custom option */}
+                      {improvementSearch.trim() && 
+                       !improvementOptions.some(option => 
+                         option.toLowerCase() === improvementSearch.toLowerCase()
+                       ) && 
+                       !formData.propertyImprovements.includes(improvementSearch.trim()) && (
+                        <button
+                          onClick={handleCustomImprovementAdd}
+                          className="w-full text-left px-4 py-2 hover:bg-gray-100 text-blue-600 font-medium"
+                        >
+                          + Add "{improvementSearch.trim()}"
+                        </button>
+                      )}
+                      
+                      {getFilteredImprovements().length === 0 && !improvementSearch.trim() && (
+                        <div className="px-4 py-2 text-gray-500 text-sm">
+                          Start typing to search improvements...
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick select common improvements */}
+                {formData.propertyImprovements.length === 0 && !improvementSearch && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Common improvements:
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {improvementOptions.slice(0, 6).map((improvement) => (
+                        <button
+                          key={improvement}
+                          onClick={() => handleImprovementSelect(improvement)}
+                          className="p-2 text-sm border border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 text-left"
+                        >
+                          {improvement}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {currentStep === 7 && formData.propertyImprovements.length > 0 && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-3xl font-semibold text-gray-900 mb-2">
+                  Tell us more about your improvements
+                </h3>
+                <p className="text-gray-600 mb-8">
+                  Help us better understand the value of your improvements by providing additional details. This information is optional but helps with accurate valuation.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[40%]">Improvement</TableHead>
+                      <TableHead className="w-[30%]">Years Ago</TableHead>
+                      <TableHead className="w-[30%]">Approximate Cost</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {formData.improvementDetails.map((detail, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">
+                          {detail.improvement}
+                        </TableCell>
+                        <TableCell>
+                          <select
+                            value={detail.yearsAgo || ''}
+                            onChange={(e) => updateImprovementDetail(
+                              index, 
+                              'yearsAgo', 
+                              e.target.value ? parseInt(e.target.value) : undefined
+                            )}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          >
+                            <option value="">Select...</option>
+                            <option value="0">Less than 1 year</option>
+                            <option value="1">1 year ago</option>
+                            <option value="2">2 years ago</option>
+                            <option value="3">3 years ago</option>
+                            <option value="4">4 years ago</option>
+                            <option value="5">5 years ago</option>
+                            <option value="6">6-10 years ago</option>
+                            <option value="11">More than 10 years ago</option>
+                          </select>
+                        </TableCell>
+                        <TableCell>
+                          <input
+                            type="text"
+                            value={detail.cost ? formatCurrency(detail.cost) : ''}
+                            onChange={(e) => updateImprovementDetail(
+                              index, 
+                              'cost', 
+                              parseCurrencyInput(e.target.value)
+                            )}
+                            placeholder="$0"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                
+                <div className="text-sm text-gray-500 mt-4">
+                  <p>💡 <strong>Tip:</strong> Providing this information helps us give you a more accurate property valuation and highlight value-adding improvements to potential buyers.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentStep === 8 && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-3xl font-semibold text-gray-900 mb-2">
                   What's your pricing priority?
                 </h3>
                 <p className="text-gray-600 mb-8">
@@ -539,7 +919,7 @@ function RealEstateSellPageContent() {
             </div>
           )}
 
-          {currentStep === 7 && (
+          {currentStep === 9 && (
             <div className="space-y-6">
               <div>
                 <h3 className="text-3xl font-semibold text-gray-900 mb-2">
@@ -607,8 +987,8 @@ function RealEstateSellPageContent() {
                     type="tel"
                     id="phone"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="(555) 123-4567"
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    placeholder="555-123-4567"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -637,7 +1017,7 @@ function RealEstateSellPageContent() {
                 disabled={!isStepValid()}
                 className="flex items-center gap-2"
               >
-                Next
+                {getNextButtonText()}
                 <ChevronRightIcon className="w-4 h-4" />
               </Button>
             ) : (

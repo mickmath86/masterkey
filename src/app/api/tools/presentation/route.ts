@@ -69,11 +69,10 @@ export async function POST(request: Request) {
         const data = await response.json();
         if (data.error) {
           throw new Error(`API request failed: ${data.error}`);
-        } else {
-          throw new Error(`API request failed: ${response.status}`);
         }
+        finalPropertyData = data;
       } else {
-        finalPropertyData = await response.json();
+        throw new Error(`API request failed: ${response.status}`);
       }
     } else {
       console.log('✅ Using provided property data for presentation generation');

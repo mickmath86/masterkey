@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { usePropertyData } from "@/contexts/PropertyDataContext"
-import Image from "next/image"
+
 import { Toaster } from "@/components/ui/sonner"
 import { useRouter } from 'next/navigation'
 import {
@@ -55,6 +55,15 @@ import { MapboxMap } from "./ui/mapbox-map"
 import { ComparablesDataTable } from "./ui/comparables-data-table"
 import { PropertyDetailsSheet } from "./property-details-sheet"
 import { FadeIn, FadeInStagger } from "./animations/fade-in"
+import { ValuationAreaChart } from "./ui/valuation-area-chart"
+import { Separator } from "./ui/separator"
+import { Button } from "./ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
+import { Textarea } from "./ui/textarea"
+import { Input } from "./ui/input"
+import { Label } from "./ui/label"
+import { Send, User } from "lucide-react"
+import { toast } from "sonner"
 
 
 const usd = new Intl.NumberFormat("en-US", {
@@ -62,6 +71,8 @@ const usd = new Intl.NumberFormat("en-US", {
   currency: "USD",
   maximumFractionDigits: 0, // or 2 if you want cents
 });
+
+// const GaugeComponent = dynamic(() => import('react-gauge-component'), { ssr: false });
 
 const agentData = {
   name: "Mike Mathias",
@@ -79,7 +90,7 @@ interface PropertyDataModuleProps {
 
 export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps) {
   const router = useRouter()
-  const { propertyData: prefetchedPropertyData, questionnaireData } = usePropertyData()
+  const { propertyData: prefetchedPropertyData, questionnaireData, calculateImprovementValue } = usePropertyData()
   
   // need to kill this
   const [propertyData, setPropertyData] = useState<any>(null) 
@@ -98,6 +109,12 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   const [isPropertySheetOpen, setIsPropertySheetOpen] = useState(false)
   const [valueData, setValueData] = useState<any>(null)
   const [showAgentCard, setShowAgentCard] = useState(false)
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false)
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
+  const [contactMessage, setContactMessage] = useState('')
+  const [contactSubject, setContactSubject] = useState('')
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false)
+  const [urlContactData, setUrlContactData] = useState<{firstName?: string, lastName?: string, email?: string, phone?: string}>({})
   const [propertySummary, setPropertySummary] = useState<string>('')
   const [summaryLoading, setSummaryLoading] = useState(false)
   const [summaryState, setSummaryState] = useState<'idle' | 'preparing' | 'fetching-data' | 'analyzing' | 'complete' | 'error'>('idle')
@@ -186,21 +203,21 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
           if (valueDataResponse.ok) {
             const valueDataResult = await valueDataResponse.json()
             console.log('✅ Value data fetched successfully:', valueDataResult)
-            console.log('📊 Value data structure:', {
-              isArray: Array.isArray(valueDataResult),
-              length: Array.isArray(valueDataResult) ? valueDataResult.length : 0,
-              firstItem: valueDataResult?.[0],
-              hasCorrectFormat: !!(valueDataResult?.[0]?.t && valueDataResult?.[0]?.v)
-            })
             setValueData(valueDataResult)
+          } else if (valueDataResponse.status === 429) {
+            console.warn('⚠️ Rate limit exceeded for value data. Using fallback data.')
+            setValueData(MOCK_VALUE_DATA)
           } else {
             console.error('❌ Value data fetch failed:', valueDataResponse.status)
+            setValueData(MOCK_VALUE_DATA)
           }
         } catch (error) {
           console.error('Value data fetch error:', error)
+          setValueData(MOCK_VALUE_DATA)
         }
       } else {
         console.log('❌ No zpid available for value data fetch')
+        setValueData(MOCK_VALUE_DATA)
       }
     } catch (error) {
       console.error('Error fetching additional data:', error)
@@ -421,6 +438,103 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       })
     }
   }, [dataLoadingComplete, subjectPropertyData, address, valuationTriggered, useMockData]) // Removed valueData dependency - let API handle fetching if needed
+
+  // Load calendar widget script when modal opens
+  useEffect(() => {
+    if (isCalendarModalOpen) {
+      console.log('📅 Calendar modal opened, questionnaire data:', questionnaireData)
+      
+      const script = document.createElement('script')
+      script.src = 'https://api.leadconnectorhq.com/js/form_embed.js'
+      script.type = 'text/javascript'
+      script.async = true
+      document.head.appendChild(script)
+      
+      return () => {
+        // Cleanup script when modal closes
+        const existingScript = document.querySelector('script[src="https://api.leadconnectorhq.com/js/form_embed.js"]')
+        if (existingScript) {
+          document.head.removeChild(existingScript)
+        }
+      }
+    }
+  }, [isCalendarModalOpen, questionnaireData])
+
+  // Extract contact information from URL parameters on component mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const contactData = {
+        firstName: urlParams.get('first_name') || '',
+        lastName: urlParams.get('last_name') || '',
+        email: urlParams.get('email') || '',
+        phone: urlParams.get('phone') || ''
+      };
+      
+      // Only set if we have some contact data
+      if (contactData.firstName || contactData.lastName || contactData.email || contactData.phone) {
+        setUrlContactData(contactData);
+        console.log('📋 Contact data extracted from URL:', contactData);
+      }
+    }
+  }, [])
+
+  // Prefill contact subject when modal opens
+  useEffect(() => {
+    if (isContactModalOpen && !contactSubject) {
+      const propertyAddress = questionnaireData?.propertyAddress || address || 'Property'
+      setContactSubject(`Inquiry about ${propertyAddress}`)
+    }
+  }, [isContactModalOpen, questionnaireData?.propertyAddress, address, contactSubject])
+
+  // Handle contact form submission
+  const handleContactSubmit = async () => {
+    setIsSubmittingContact(true)
+    
+    try {
+      const contactData = {
+        to: 'mike@masterkey.com', // Replace with actual email
+        subject: contactSubject,
+        message: contactMessage,
+        from: {
+          name: questionnaireData?.name || `${urlContactData.firstName} ${urlContactData.lastName}`.trim() || 'Website Visitor',
+          email: questionnaireData?.email || urlContactData.email || '',
+          phone: questionnaireData?.phone || urlContactData.phone || ''
+        },
+        propertyAddress: questionnaireData?.propertyAddress || address || '',
+        timestamp: new Date().toISOString()
+      }
+
+      // Placeholder webhook URL - replace with your actual webhook
+      const CONTACT_WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/d2fefb94-6488-482d-be99-ff57472e4fca'
+      
+      const response = await fetch(CONTACT_WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contactData),
+      })
+
+      if (response.ok) {
+        console.log('Contact message sent successfully:', contactData)
+        // Reset form and close modal
+        setContactMessage('')
+        setContactSubject('')
+        setIsContactModalOpen(false)
+        // Show success toast
+        toast.success("Message sent!", {
+          description: "Your message has been sent to Mike successfully.",
+        })
+      } else {
+        console.error('Contact submission failed:', response.status, response.statusText)
+      }
+    } catch (error) {
+      console.error('Contact submission error:', error)
+    } finally {
+      setIsSubmittingContact(false)
+    }
+  }
 
   // Consistent function to get days on market for the subject property
   const getDaysOnMarket = () => {
@@ -647,6 +761,25 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount)
+  }
+
+  // Calculate improvement value based on questionnaire data
+  const getImprovementValue = () => {
+    if (!questionnaireData?.improvementDetails || questionnaireData.improvementDetails.length === 0) {
+      return {
+        totalDepreciatedValue: 0,
+        improvementValuations: []
+      }
+    }
+    
+    return calculateImprovementValue(questionnaireData.improvementDetails)
+  }
+
+  // Get the enhanced property value (base + improvements)
+  const getEnhancedPropertyValue = () => {
+    const baseValue = subjectPropertyData?.zestimate || subjectPropertyData?.price || 0
+    const improvementValue = getImprovementValue().totalDepreciatedValue
+    return baseValue + improvementValue
   }
 
   const scrollToSection = (sectionId: string) => {
@@ -1188,11 +1321,49 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
               <CardContent>
                   <FadeIn className="flex flex-col justify-center items-center gap-y-4 ">
                     <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold">Valuation Range</h2>
+                    <div className="w-full md:w-3/4 my-4">
+                    {/* <ValuationAreaChart />   */}
+                    {/* <GaugeComponent
+                      type="semicircle"
+                      style={{ width: '100%' }}
+                      arc={{
+                        colorArray: ['#00FF15', '#FF2121'],
+                        padding: 0.02,
+                        subArcs:
+                          [
+                            { limit: 40 },
+                            { limit: 60 },
+                            { limit: 70 },
+                            {},
+                            {},
+                            {},
+                      
+                          ]
+                      }}
+                      pointer={{type: "needle", animationDelay: 0 }}
+                      value={50}
+                      labels={{
+                        valueLabel: {
+                          formatTextValue: (value) => formatCurrency(value * 10000), // Multiply by 10k to get realistic property values
+                          style: { fontSize: '16px', fontWeight: 'bold' }
+                        }
+                      }}
+                    /> */}
+                    </div>
+                    
                     <div className="flex flex-col mt-4 w-full md:w-3/4 mb-10">
+                    <div className="relative w-full">
+                      <div className="absolute bg-gray-700 left-1/2 transform -translate-x-1/2 h-full w-1 z-10"></div>
+                      {/* <Separator orientation="vertical" className="absolute bg-green-500 mx-auto justify-center" /> */}
                       <Progress className="h-10 rounded-sm " value={100} />
+                    </div>
+                     
                     <div className="flex items-center justify-between text-gray-600">
                       <div>
                         Low Estimate
+                      </div>
+                      <div>
+                        Valuation
                       </div>
                       <div>
                         High Estimate
@@ -1200,59 +1371,76 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <div>
-                        {avmData?.priceRangeLow < subjectPropertyData?.zestimate ? (
-                          <>
-                          <span className="font-semibold text-lg">{formatCurrency(avmData?.priceRangeLow || 0)}</span>
-                          <div>
-                            {avmData?.priceRangeLow && avmData?.subjectProperty?.squareFootage 
-                              ? formatCurrency(avmData?.priceRangeLow / avmData?.subjectProperty?.squareFootage) 
-                              : '$0'}/sf
-                          </div>
-                          </>
-                        ) : (
-                          <>
-                          <span className="font-semibold text-lg">{formatCurrency(subjectPropertyData?.zestimate || 0)}</span>
-                          <div>
-                            {subjectPropertyData?.pricePerSquareFoot
-                              ? formatCurrency(subjectPropertyData?.pricePerSquareFoot) 
-                              : '$0'}/sf
-                          </div>
-                          </>
-                        )}
+                        <span className="font-semibold text-md">{formatCurrency(getEnhancedPropertyValue() * 0.9)}</span>
+                        <div className="text-sm text-gray-500">
+                          -10% Range
+                        </div>
+                      </div>
+                      <div className="flex flex-col text-center">
+                        <span className="font-semibold text-2xl">{formatCurrency(getEnhancedPropertyValue())}</span>
+                        <div className="text-sm text-gray-500">
+                          {getImprovementValue().totalDepreciatedValue > 0 ? 'Enhanced Value' : 'Base Value'}
+                        </div>
                       </div>
                       <div className="flex flex-col text-right">
-                        {avmData?.priceRangeHigh > subjectPropertyData?.zestimate ? (
-                          <>  
-                          <span className="font-semibold text-lg">{formatCurrency(avmData?.priceRangeHigh || 0)}</span>
-                          <div>
-                          {avmData?.priceRangeHigh && avmData?.subjectProperty?.squareFootage 
-                            ? formatCurrency(avmData?.priceRangeHigh / avmData?.subjectProperty?.squareFootage) 
-                            : '$0'}/sf
-                          </div>
-                        </>
-                        ) : (
-                          <>  
-                          <span className="font-semibold text-lg">{formatCurrency(subjectPropertyData?.zestimate || 0)}</span>
-                          <div>
-                          {subjectPropertyData?.pricePerSquareFoot
-                            ? formatCurrency(subjectPropertyData?.pricePerSquareFoot) 
-                            : '$0'}/sf
-                          </div>
-                        </>
-                        )}
-                          
-                          
-                        
+                        <span className="font-semibold text-md">{formatCurrency(getEnhancedPropertyValue() * 1.1)}</span>
+                        <div className="text-sm text-gray-500">
+                          +10% Range
+                        </div>
                       </div>
                     </div>
                   </div>  
                   
                   </FadeIn>
+
+                  {/* Improvement Value Breakdown */}
+                  {questionnaireData?.improvementDetails && questionnaireData.improvementDetails.length > 0 && (
+                    <FadeIn className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Award className="w-5 h-5 text-green-600" />
+                        <h3 className="text-lg font-semibold text-green-800">Property Improvement Value</h3>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700">Base Property Value:</span>
+                          <span className="font-semibold">{formatCurrency(subjectPropertyData?.zestimate || subjectPropertyData?.price || 0)}</span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700">Improvement Added Value:</span>
+                          <span className="font-semibold text-green-600">+{formatCurrency(getImprovementValue().totalDepreciatedValue)}</span>
+                        </div>
+                        
+                        <div className="border-t border-green-300 pt-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-lg font-semibold text-green-800">Enhanced Property Value:</span>
+                            <span className="text-xl font-bold text-green-800">{formatCurrency(getEnhancedPropertyValue())}</span>
+                          </div>
+                        </div>
+                        
+                        {/* Improvement Details */}
+                        <div className="mt-4 pt-3 border-t border-green-200">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-2">Improvement Breakdown:</h4>
+                          <div className="space-y-1 text-sm">
+                            {getImprovementValue().improvementValuations.map((improvement, index) => (
+                              <div key={index} className="flex justify-between text-gray-600">
+                                <span>{improvement.improvement} ({improvement.yearsAgo} yrs ago)</span>
+                                <span>{formatCurrency(improvement.depreciatedValue)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </FadeIn>
+                  )}
                   <FadeIn className="border my-4 text-sm px-4 py-2 rounded-sm text-sky-600 dark:text-gray-400 bg-gray-50">
                     <div className="flex items-center space-x-2"> 
                       <Sparkles className="w-4 h-4 mr-2 text-sky-600 dark:text-sky-400" /> 
                       <h3 className="text-lg font-semibold">AI Valuation Analysis</h3>
+                     
                     </div>
+                    <p className="text-sm text-gray-500">Based on the base valuation and does not include any improvements or depreciation.</p>
                    
                     {valuationLoading ? (
                       <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 mt-2">
@@ -1428,7 +1616,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
                           return (
                             <div  className="flex flex-row justify-between gap-y-2">
-                              <p className="text-green-500 font-semibold">Sellers Market</p>
+                              <p className={`  ${barValue < 60 ? 'text-sky-500 font-semibold' : 'text-gray-500'}`}>Sellers Market</p>
                               <div className="flex flex-col w-full justify-center px-2">
                                 <Progress className="w-full h-10 rounded-sm " value={barValue} />
                                 <div className="flex flex-row  text-xs justify-between">
@@ -1438,7 +1626,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                                 
                                 </div>
                               </div>
-                              <p className="text-blue-500 font-semibold text-right">Buyers Market</p>
+                              <p className={` text-right ${barValue > 60 ? 'text-sky-500 font-semibold' : 'text-gray-500'}`}>Buyers Market</p>
 
                             </div>
                           )
@@ -1812,9 +2000,150 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                 </p>
                 
                 {/* Contact button */}
-                <button className="w-full bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-md font-medium transition-colors">
-                  Contact Mike
-                </button>
+                <div className="flex flex-col gap-2">
+                  <Dialog open={isContactModalOpen} onOpenChange={setIsContactModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-md font-medium transition-colors">
+                        Contact Mike
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <Send className="h-5 w-5" />
+                          Send Message to Mike
+                        </DialogTitle>
+                      </DialogHeader>
+                      
+                      {/* Email-like interface */}
+                      <div className="space-y-4">
+                        {/* To field with avatar */}
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                          <Label className="text-sm font-medium text-gray-600 min-w-[40px]">To:</Label>
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                              <img
+                                src={agentData.avatar || "/placeholder.svg"}
+                                alt="Mike Mathias"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <span className="text-sm font-medium">Mike Mathias</span>
+                            <span className="text-sm text-gray-500">&lt;mike@masterkey.com&gt;</span>
+                          </div>
+                        </div>
+
+                        {/* Subject field */}
+                        <div className="space-y-2">
+                          <Label htmlFor="subject" className="text-sm font-medium">Subject</Label>
+                          <Input
+                            id="subject"
+                            value={contactSubject}
+                            onChange={(e) => setContactSubject(e.target.value)}
+                            placeholder="Enter subject..."
+                            className="w-full"
+                          />
+                        </div>
+
+                        {/* Message field */}
+                        <div className="space-y-2">
+                          <Label htmlFor="message" className="text-sm font-medium">Message</Label>
+                          <Textarea
+                            id="message"
+                            value={contactMessage}
+                            onChange={(e) => setContactMessage(e.target.value)}
+                            placeholder="Type your message here..."
+                            className="min-h-[120px] resize-none"
+                          />
+                        </div>
+
+                        {/* From info display */}
+                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="text-xs text-blue-600 font-medium mb-1">Sending as:</div>
+                          <div className="text-sm">
+                            {questionnaireData?.name || `${urlContactData.firstName} ${urlContactData.lastName}`.trim() || 'Website Visitor'}
+                          </div>
+                          {(questionnaireData?.email || urlContactData.email) && (
+                            <div className="text-sm text-gray-600">
+                              {questionnaireData?.email || urlContactData.email}
+                            </div>
+                          )}
+                          {(questionnaireData?.phone || urlContactData.phone) && (
+                            <div className="text-sm text-gray-600">
+                              {questionnaireData?.phone || urlContactData.phone}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Send button */}
+                        <div className="flex justify-end gap-2 pt-4">
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsContactModalOpen(false)}
+                            disabled={isSubmittingContact}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleContactSubmit}
+                            disabled={isSubmittingContact || !contactMessage.trim() || !contactSubject.trim()}
+                            className="bg-sky-500 hover:bg-sky-600"
+                          >
+                            {isSubmittingContact ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                Sending...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="h-4 w-4 mr-2" />
+                                Send Message
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  
+                  <Dialog open={isCalendarModalOpen} onOpenChange={setIsCalendarModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-md font-medium transition-colors">
+                        Schedule Zoom Call
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-scroll">
+                      <DialogHeader>
+                        <DialogTitle>Schedule a Call with Mike</DialogTitle>
+                      </DialogHeader>
+                      <div className="w-full h-[600px] overflow-y-auto">
+              
+                        <iframe 
+                          src={`https://api.leadconnectorhq.com/widget/booking/dC0pazbNghUa1xKcbXiY${
+                            questionnaireData || urlContactData.firstName || urlContactData.lastName || urlContactData.email || urlContactData.phone ? 
+                            `?first_name=${encodeURIComponent(
+                              questionnaireData?.name?.split(' ')[0] || urlContactData.firstName || ''
+                            )}&last_name=${encodeURIComponent(
+                              questionnaireData?.name?.split(' ').slice(1).join(' ') || urlContactData.lastName || ''
+                            )}&email=${encodeURIComponent(
+                              questionnaireData?.email || urlContactData.email || ''
+                            )}&phone=${encodeURIComponent(
+                              questionnaireData?.phone || urlContactData.phone || ''
+                            )}&address=${encodeURIComponent(
+                              questionnaireData?.propertyAddress || address || ''
+                            )}` 
+                            : ''
+                          }`}
+                          style={{ width: '100%', height: '100%', border: 'none', overflow: 'hidden' }} 
+                          scrolling="no" 
+                          id="dC0pazbNghUa1xKcbXiY_1759783015630"
+                          title="Schedule Appointment"
+                        />
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              
               </div>
             </div>
           )}

@@ -201,7 +201,7 @@ export async function POST(request: Request) {
       model: openai("gpt-4o-mini"), // Using gpt-4o-mini for better structured output
       system: `You are a professional real estate valuation analyst. Generate a structured valuation analysis that's informative yet accessible to home sellers. Instead of saying Zestimate anywhere make sure to call our valuation. `,
       schema: z.object({
-        summary: z.string().describe("Brief 2-3 sentence overview of the property's valuation"),
+        summary: z.string().describe("Brief 2-3 sentence overview of the property's valuation. Remind reader this is based of the base valuation and does not include any improvements or depreciation. "),
         marketTrend: z.object({
           direction: z.enum(["increasing", "decreasing", "stable"]).describe("Overall trend direction"),
           strength: z.enum(["strong", "moderate", "weak"]).describe("Strength of the trend"),
