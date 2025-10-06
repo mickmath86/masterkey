@@ -38,7 +38,8 @@ import {
   Maximize,
   Receipt,
   HomeIcon,
-  LoaderCircle
+  LoaderCircle,
+  CircleCheck
 
 } from "lucide-react"
 import { extractZipcode } from "@/lib/utils/address"
@@ -78,7 +79,7 @@ interface PropertyDataModuleProps {
 
 export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps) {
   const router = useRouter()
-  const { propertyData: prefetchedPropertyData } = usePropertyData()
+  const { propertyData: prefetchedPropertyData, questionnaireData } = usePropertyData()
   
   // need to kill this
   const [propertyData, setPropertyData] = useState<any>(null) 
@@ -493,7 +494,8 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       
       const requestBody = { 
         address: propertyAddress,
-        propertyData: propertyData || subjectPropertyData // Pass prefetched data
+        propertyData: propertyData || subjectPropertyData, // Pass prefetched data
+        questionnaireData: questionnaireData // Pass questionnaire data including condition
       };
       
       console.log('📤 Sending presentation API request:', {
@@ -1050,7 +1052,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                             </h3>
                             <FadeInStagger className="grid grid-cols-1 md:grid-cols-3 gap-3">
                               {structuredSummary.keyFeatures.map((feature: any, index: number) => (
-                                <div key={index} className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                                <div key={index} className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 min-h-16">
                                   <div className="flex items-start gap-3">
                                     <div className="p-2 rounded-full bg-blue-100 text-blue-600">
                                       {feature.category === 'size' && <Maximize className="w-4 h-4" />}
@@ -1094,15 +1096,10 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                               </h3>
                               <FadeInStagger className="gap-3 grid grid-cols-1 lg:grid-cols-4">
                                 {structuredSummary.investmentHighlights.map((highlight: any, index: number) => (
-                                  <div key={index} className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                                  <div key={index} className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 min-h-24">
                                     <div className="flex items-start gap-2">
-                                      <span className={`h-2 w-2 rounded-full mt-2 ${
-                                        highlight.type === 'appreciation' ? 'bg-green-500' :
-                                        highlight.type === 'rental_income' ? 'bg-blue-500' :
-                                        highlight.type === 'tax_benefits' ? 'bg-purple-500' :
-                                        highlight.type === 'location' ? 'bg-orange-500' :
-                                        'bg-gray-500'
-                                      }`}></span>
+                                   
+                                      <CircleCheck className="bg-sky-50 text-sky-600 w-5 h-5 rounded-full "/>
                                       <div className="flex-1">
                                         <h4 className="font-medium text-gray-800 dark:text-gray-200 text-sm">
                                           {highlight.title}
@@ -1251,7 +1248,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                   </div>  
                   
                   </FadeIn>
-                  <FadeIn className="border my-4 text-sm px-4 py-2 rounded-sm text-sky-600 dark:text-gray-400">
+                  <FadeIn className="border my-4 text-sm px-4 py-2 rounded-sm text-sky-600 dark:text-gray-400 bg-gray-50">
                     <div className="flex items-center space-x-2"> 
                       <Sparkles className="w-4 h-4 mr-2 text-sky-600 dark:text-sky-400" /> 
                       <h3 className="text-lg font-semibold">AI Valuation Analysis</h3>
@@ -1281,7 +1278,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                     ) : structuredValuation ? (
                       <FadeInStagger className="mt-4 space-y-4">
                         {/* Summary */}
-                        <div className=" p-3 rounded-md bg-sky-50 border-l-4 border-sky-500">
+                        <div className=" p-3 rounded-md bg-sky-50 border-l-4 border-1 border-sky-500">
                           <p className="text-gray-700 leading-relaxed">{structuredValuation.summary}</p>
                         </div>
 
@@ -1324,7 +1321,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                           <div className="space-y-2">
                             <h4 className="font-semibold  text-gray-800">Key Insights</h4>
                             {structuredValuation.insights.map((insight: any, index: number) => (
-                              <div key={index} className={`p-2 rounded-md border`}>
+                              <div key={index} className={`p-2 rounded-md border bg-white`}>
                   
                                 <div className="flex items-center gap-2 w-auto">
                                   <span className={`h-2 w-2 rounded-full text-xs font-medium ${
@@ -1341,7 +1338,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                         )}
 
                         {/* Recommendation */}
-                        <div className="bg-white p-3 rounded-md border flex flex-col gap-y-2 border-sky-200">
+                        <div className="bg-white p-3 rounded-md border-2  flex flex-col gap-y-2 border-sky-200">
                           <h2 className="font-semibold text-gray-800 ">Recommendation to Seller</h2>
                           <p className="text-sm text-gray-600">For those who may be considering selling in the near term looking for maximum value, we recommend:</p>
                           <div className="flex items-center gap-2 mb-2">

@@ -37,17 +37,18 @@ export async function POST(request: Request) {
     }
 
     console.log('📥 Parsing request body...');
-    const { address, propertyData } = await request.json();
+    const { address, propertyData, questionnaireData } = await request.json();
     console.log('📋 Request data:', {
-      address: address || 'NOT PROVIDED',
+      address,
       hasPropertyData: !!propertyData,
-      propertyDataKeys: propertyData ? Object.keys(propertyData) : 'NONE'
+      propertyDataKeys: propertyData ? Object.keys(propertyData) : [],
+      hasQuestionnaireData: !!questionnaireData,
+      propertyCondition: questionnaireData?.propertyCondition
     });
 
     if (!address) {
       return Response.json({ error: 'Address is required' }, { status: 400 });
     }
-
     let finalPropertyData = propertyData;
 
     // Only fetch from API if no property data was provided
@@ -125,11 +126,13 @@ export async function POST(request: Request) {
 Property Details:
 ${JSON.stringify(finalPropertyData, null, 2)}
 
-Generate a comprehensive property summary focusing on key selling points and market position. Be factual and informative without being overly promotional. Use "valuation" instead of "Zestimate" in all descriptions.`,
+${questionnaireData?.propertyCondition ? `Property Condition (from owner): ${questionnaireData.propertyCondition}` : ''}
+
+Generate a comprehensive property summary focusing on key selling points and market position. Be factual and informative without being overly promotional. Use "valuation" instead of "Zestimate" in all descriptions.${questionnaireData?.propertyCondition ? ` Take into account the property condition provided by the owner: "${questionnaireData.propertyCondition}". Include this condition assessment in the keyFeatures with category "condition" and reference it appropriately in the overview and investment highlights.` : ''}`,
       schema: z.object({
         overview: z.string().describe("Brief 2-3 sentence overview of the property"),
         keyFeatures: z.array(z.object({
-          category: z.enum(["size", "age", "location", "value", "condition", "amenities", "bedrooms", "bathrooms", "market_value", "tax", "rental", "financial"]).describe("Feature category. Dont use word zestimate, use word - valuation."),
+          category: z.enum(["size", "age", "location", "value", "condition", "amenities", "bedrooms", "bathrooms", "market_value", "tax", "rental", "financial"]).describe(`Feature category. Dont use word zestimate, use word - valuation.  ${questionnaireData?.propertyCondition ? `Take into account the property condition provided by the owner: "${questionnaireData.propertyCondition}"` : ''}`),
           title: z.string().describe("Feature title"),
           description: z.string().describe("Feature description")
         })).describe("Key property features organized by category"),

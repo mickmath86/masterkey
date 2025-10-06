@@ -23,9 +23,22 @@ interface PropertyData {
   isFallback?: boolean
 }
 
+interface QuestionnaireData {
+  propertyAddress?: string
+  sellingIntent?: string
+  sellingTimeline?: string
+  propertyType?: string
+  propertyCondition?: string
+  name?: string
+  email?: string
+  phone?: string
+}
+
 interface PropertyDataContextType {
   propertyData: PropertyData | null
   setPropertyData: (data: PropertyData | null) => void
+  questionnaireData: QuestionnaireData | null
+  setQuestionnaireData: (data: QuestionnaireData | null) => void
   isLoading: boolean
   setIsLoading: (loading: boolean) => void
   prefetchPropertyData: (address: string) => Promise<PropertyData | null>
@@ -35,6 +48,7 @@ const PropertyDataContext = createContext<PropertyDataContextType | undefined>(u
 
 export function PropertyDataProvider({ children }: { children: ReactNode }) {
   const [propertyData, setPropertyData] = useState<PropertyData | null>(null)
+  const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const prefetchPropertyData = async (address: string): Promise<PropertyData | null> => {
@@ -71,6 +85,8 @@ export function PropertyDataProvider({ children }: { children: ReactNode }) {
       value={{
         propertyData,
         setPropertyData,
+        questionnaireData,
+        setQuestionnaireData,
         isLoading,
         setIsLoading,
         prefetchPropertyData,

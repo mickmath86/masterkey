@@ -6,6 +6,7 @@ import { Gradient } from '@/components/gradient';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, StarIcon } from '@heroicons/react/16/solid';
 import { GooglePlacesInput } from '@/components/ui/google-places-input';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { usePropertyData } from '@/contexts/PropertyDataContext';
 import {
   Stepper,
   StepperIndicator,
@@ -68,14 +69,13 @@ const conditionOptions = [
 const priceExpectationOptions = [
   'Maximum market value',
   'Quick sale, competitive price',
-  'Not sure - need professional guidance',
-  'Have a specific price in mind'
+  'Not sure - need professional guidance'
 ];
-
 
 function RealEstateSellPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { prefetchPropertyData, isLoading, setQuestionnaireData } = usePropertyData();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -180,6 +180,18 @@ function RealEstateSellPageContent() {
         formType: 'real-estate-sell',
         source: 'questionnaire'
       };
+
+      // Store questionnaire data in context for use by presentation API
+      setQuestionnaireData({
+        propertyAddress: submissionData.propertyAddress,
+        sellingIntent: submissionData.sellingIntent,
+        sellingTimeline: submissionData.sellingTimeline,
+        propertyType: '', // Will be populated from Zillow API data when available
+        propertyCondition: submissionData.propertyCondition,
+        name: `${submissionData.firstName} ${submissionData.lastName}`.trim(),
+        email: submissionData.email,
+        phone: submissionData.phone
+      });
 
       // Send form data to LeadConnector webhook
       try {
