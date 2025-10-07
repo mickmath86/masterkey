@@ -208,16 +208,7 @@ function ContactForm() {
                   >
                     Schedule a Zoom
                   </button>
-                  <button
-                    type="button"
-                    className="flex-1 rounded-md bg-white px-4 py-2.5 text-center text-sm font-semibold text-sky-600 shadow-xs ring-1 ring-inset ring-sky-600 hover:bg-sky-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:bg-gray-800 dark:text-sky-400 dark:ring-sky-400 dark:hover:bg-gray-700"
-                    onClick={() => {
-                      // Add your chat integration here (e.g., Intercom, Zendesk Chat, etc.)
-                      console.log('Chat now clicked');
-                    }}
-                  >
-                    Chat Now
-                  </button>
+                 
                 </div>
                 <dl className="hidden">
                 </dl>

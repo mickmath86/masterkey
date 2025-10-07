@@ -129,12 +129,12 @@ const Hero = () => {
           
           <div className="mt-10 flex items-center gap-x-6">
             <a
-              href="#"
+              href="/contact"
               className="rounded-md bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-green-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600 dark:bg-green-500 dark:hover:bg-green-400 dark:focus-visible:outline-green-500"
             >
            Get Management Quote
             </a>
-            <a href="#" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
+            <a href="/property-management#services" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
               View Services <span aria-hidden="true">→</span>
             </a>
           </div>
