@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { BuildingOffice2Icon, EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline'
 import Navbar3 from '@/components/navbar3'
 import { Footer } from '@/components/footer'
@@ -17,6 +18,35 @@ declare global {
 }
 
 function ContactForm() {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+
+  // Load calendar script when modal opens
+  useEffect(() => {
+    if (isCalendarModalOpen) {
+      const script = document.createElement('script');
+      script.src = 'https://link.msgsndr.com/js/form_embed.js';
+      script.type = 'text/javascript';
+      document.body.appendChild(script);
+      
+      return () => {
+        // Cleanup script when modal closes
+        const existingScript = document.querySelector('script[src="https://link.msgsndr.com/js/form_embed.js"]');
+        if (existingScript) {
+          document.body.removeChild(existingScript);
+        }
+      };
+    }
+  }, [isCalendarModalOpen]);
+
   const handlePhoneClick = (phoneNumber: string) => {
     // Track conversion first
     if (typeof window !== 'undefined' && window.gtag) {
@@ -31,11 +61,62 @@ function ContactForm() {
     window.location.href = phoneNumber;
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      const submissionData = {
+        ...formData,
+        submittedAt: new Date().toISOString(),
+        formType: 'contact-form',
+        source: 'website'
+      };
+
+      const response = await fetch('https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/aa5e62b9-da98-4e0a-9416-61183023caf4', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submissionData),
+      });
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        // Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phoneNumber: '',
+          message: ''
+        });
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
     return (
+      <>
         <div className="relative isolate bg-white dark:bg-gray-900">
-            <Navbar3 /> 
+          <Navbar3 /> 
           <div className="mx-auto grid max-w-7xl grid-cols-1 lg:grid-cols-2">
-            <div className="relative px-6 pt-24 pb-20 sm:pt-32 lg:static lg:px-8 lg:py-48">
+          <div className="relative px-6 pt-24 pb-20 sm:pt-32 lg:static lg:px-8 lg:py-48">
               <div className="mx-auto max-w-xl lg:mx-0 lg:max-w-lg">
                 <div className="absolute inset-y-0 left-0 -z-10 w-full overflow-hidden bg-gray-100 ring-1 ring-gray-900/10 lg:w-1/2 dark:bg-gray-900 dark:ring-white/10">
                   <svg
@@ -123,7 +204,7 @@ function ContactForm() {
                   <button
                     type="button"
                     className="flex-1 rounded-md bg-sky-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-xs hover:bg-sky-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 dark:focus-visible:outline-sky-500"
-                    onClick={() => window.open('https://calendly.com/masterkey', '_blank')}
+                    onClick={() => setIsCalendarModalOpen(true)}
                   >
                     Schedule a Zoom
                   </button>
@@ -142,7 +223,7 @@ function ContactForm() {
                 </dl>
               </div>
             </div>
-            <form action="#" method="POST" className="px-6 pt-20 pb-24 sm:pb-32 lg:px-8 lg:py-48">
+            <form onSubmit={handleSubmit} className="px-6 pt-20 pb-24 sm:pb-32 lg:px-8 lg:py-48">
               <div className="mx-auto max-w-xl lg:mr-0 lg:max-w-lg">
                 <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
                   <div>
@@ -152,9 +233,11 @@ function ContactForm() {
                     <div className="mt-2.5">
                       <input
                         id="first-name"
-                        name="first-name"
+                        name="firstName"
                         type="text"
                         autoComplete="given-name"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
                         className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-sky-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-sky-500"
                       />
                     </div>
@@ -166,9 +249,11 @@ function ContactForm() {
                     <div className="mt-2.5">
                       <input
                         id="last-name"
-                        name="last-name"
+                        name="lastName"
                         type="text"
                         autoComplete="family-name"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
                         className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-sky-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-sky-500"
                       />
                     </div>
@@ -183,6 +268,8 @@ function ContactForm() {
                         name="email"
                         type="email"
                         autoComplete="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
                         className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-sky-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-sky-500"
                       />
                     </div>
@@ -194,9 +281,11 @@ function ContactForm() {
                     <div className="mt-2.5">
                       <input
                         id="phone-number"
-                        name="phone-number"
+                        name="phoneNumber"
                         type="tel"
                         autoComplete="tel"
+                        value={formData.phoneNumber}
+                        onChange={handleInputChange}
                         className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-sky-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-sky-500"
                       />
                     </div>
@@ -210,24 +299,96 @@ function ContactForm() {
                         id="message"
                         name="message"
                         rows={4}
+                        value={formData.message}
+                        onChange={handleInputChange}
                         className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-sky-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-sky-500"
-                        defaultValue={''}
                       />
                     </div>
                   </div>
                 </div>
+                {/* Success/Error Messages */}
+                {submitStatus === 'success' && (
+                  <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
+                    <p className="text-green-800 text-sm">
+                      Thank you! Your message has been sent successfully. We'll get back to you soon.
+                    </p>
+                  </div>
+                )}
+                
+                {submitStatus === 'error' && (
+                  <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-red-800 text-sm">
+                      Sorry, there was an error sending your message. Please try again or contact us directly.
+                    </p>
+                  </div>
+                )}
+
                 <div className="mt-8 flex justify-end">
                   <button
                     type="submit"
-                    className="rounded-md bg-sky-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-xs hover:bg-sky-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 dark:focus-visible:outline-sky-500"
+                    disabled={isSubmitting}
+                    className={`rounded-md px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                      isSubmitting 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-sky-600 hover:bg-sky-500 focus-visible:outline-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 dark:focus-visible:outline-sky-500'
+                    }`}
                   >
-                    Send message
+                    {isSubmitting ? 'Sending...' : 'Send message'}
                   </button>
                 </div>
               </div>
             </form>
           </div>
         </div>
+
+        {/* Calendar Modal */}
+        {isCalendarModalOpen && (
+          <div className="fixed inset-0 z-50 overflow-y-scroll">
+            <div className="flex min-h-screen items-center justify-center p-4">
+              {/* Backdrop */}
+              <div 
+                className="fixed inset-0 bg-white/20 backdrop-blur-sm transition-all duration-300"
+                onClick={() => setIsCalendarModalOpen(false)}
+              />
+              
+              {/* Modal Content */}
+              <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+                {/* Header - Fixed */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Schedule a Zoom Call
+                  </h3>
+                  <button
+                    onClick={() => setIsCalendarModalOpen(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                {/* Calendar Iframe - Scrollable */}
+                <div className="flex-1 overflow-hidden p-6">
+                  <div className="w-full min-h-[600px]">
+                    <iframe 
+                      src="https://api.leadconnectorhq.com/widget/booking/dC0pazbNghUa1xKcbXiY" 
+                      style={{ 
+                        width: '100%', 
+                        height: '800px',
+                        border: 'none'
+                      }} 
+                      scrolling="yes" 
+                      id="dC0pazbNghUa1xKcbXiY_1759871109473"
+                      title="Schedule Appointment"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     )
 }
 
