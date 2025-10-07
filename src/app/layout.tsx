@@ -1,7 +1,8 @@
 import '@/styles/tailwind.css'
 import type { Metadata } from 'next'
 import { GoogleTagManager } from '@next/third-parties/google'
-import { PropertyDataProvider } from '@/contexts/PropertyDataContext' 
+import { PropertyDataProvider } from '@/contexts/PropertyDataContext'
+import { Analytics } from '@vercel/analytics/react'
 
 export const metadata: Metadata = {
   title: {
@@ -33,6 +34,7 @@ export default function RootLayout({
         <PropertyDataProvider>
           {children}
         </PropertyDataProvider>
+        <Analytics />
       </body>
     </html>
   )

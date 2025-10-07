@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/stepper";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
+import { createFormAnalytics } from '@/lib/analytics';
+import { track } from '@vercel/analytics';
 
 interface ImprovementDetail {
   improvement: string;
@@ -117,6 +119,10 @@ function RealEstateSellPageContent() {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [isTransitioning, setIsTransitioning] = useState(false);
+  
+  // Analytics tracking
+  const [analytics] = useState(() => createFormAnalytics());
+  const [hasTrackedFormStart, setHasTrackedFormStart] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     propertyAddress: '',
     sellingIntent: '',
@@ -166,12 +172,88 @@ function RealEstateSellPageContent() {
   }, [searchParams]);
 
   const totalSteps = 9;
+
+  // Helper function to get step name for analytics
+  const getStepName = (step: number): string => {
+    const stepNames = {
+      1: 'property_address',
+      2: 'selling_intent', 
+      3: 'selling_timeline',
+      4: 'selling_motivation',
+      5: 'property_condition',
+      6: 'property_improvements',
+      7: 'improvement_details',
+      8: 'price_expectations',
+      9: 'contact_information'
+    };
+    return stepNames[step as keyof typeof stepNames] || `step_${step}`;
+  };
+
+  // Track form start when component mounts
+  useEffect(() => {
+    if (!hasTrackedFormStart) {
+      analytics.trackFormStart();
+      track('questionnaire_start', {
+        form_name: 'listing_presentation',
+        step: 1,
+        step_name: 'property_address'
+      });
+      setHasTrackedFormStart(true);
+    }
+  }, [analytics, hasTrackedFormStart]);
+
+  // Track page visibility changes to detect abandonment
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && currentStep < totalSteps) {
+        // User is leaving the page before completion
+        analytics.trackFormAbandon(currentStep, formData);
+        track('questionnaire_abandon', {
+          step: currentStep,
+          step_name: getStepName(currentStep),
+          completion_percentage: Math.round((currentStep / totalSteps) * 100),
+          user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
+        });
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      if (currentStep < totalSteps) {
+        analytics.trackFormAbandon(currentStep, formData);
+        track('questionnaire_abandon', {
+          step: currentStep,
+          step_name: getStepName(currentStep),
+          completion_percentage: Math.round((currentStep / totalSteps) * 100),
+          user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [currentStep, totalSteps, formData, analytics]);
   
   // LeadConnector webhook URL
   const WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/0972671d-e4b7-46c5-ad30-53d734b97e8c';
 
   const handleNext = async () => {
     if (currentStep < totalSteps) {
+      const previousStep = currentStep;
+      
+      // Track step completion before advancing
+      analytics.trackStepComplete(currentStep, formData);
+      track('questionnaire_step_complete', {
+        step: currentStep,
+        step_name: getStepName(currentStep),
+        completion_percentage: Math.round((currentStep / totalSteps) * 100),
+        user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
+      });
+      
       // If we're on step 1 (address entry), prefetch property data and validate
       if (currentStep === 1 && formData.propertyAddress.trim()) {
         setIsTransitioning(true);
@@ -185,26 +267,35 @@ function RealEstateSellPageContent() {
           if (result && !propertyTypeError) {
             // Proceed to next step
             setTimeout(() => {
-              setCurrentStep(currentStep + 1);
+              const nextStep = currentStep + 1;
+              analytics.trackStepNavigation(previousStep, nextStep, 'forward', formData);
+              setCurrentStep(nextStep);
               setIsTransitioning(false);
             }, 150);
           } else if (propertyTypeError) {
             // Property type error - stop here and show modal
+            analytics.trackValidationError(currentStep, 'propertyAddress', 'Unsupported property type', formData);
             setIsTransitioning(false);
             return;
           } else {
             // API error - still allow progression but log it
             console.warn('Property data prefetch failed, but allowing progression');
+            analytics.trackValidationError(currentStep, 'propertyAddress', 'Property data prefetch failed', formData);
             setTimeout(() => {
-              setCurrentStep(currentStep + 1);
+              const nextStep = currentStep + 1;
+              analytics.trackStepNavigation(previousStep, nextStep, 'forward', formData);
+              setCurrentStep(nextStep);
               setIsTransitioning(false);
             }, 150);
           }
         } catch (error) {
           console.error('Error during property data prefetch:', error);
+          analytics.trackValidationError(currentStep, 'propertyAddress', 'Property validation error', formData);
           // Allow progression even if prefetch fails
           setTimeout(() => {
-            setCurrentStep(currentStep + 1);
+            const nextStep = currentStep + 1;
+            analytics.trackStepNavigation(previousStep, nextStep, 'forward', formData);
+            setCurrentStep(nextStep);
             setIsTransitioning(false);
           }, 150);
         }
@@ -219,6 +310,7 @@ function RealEstateSellPageContent() {
             nextStep = 8; // Skip step 7 (improvement details) and go to step 8 (pricing)
           }
           
+          analytics.trackStepNavigation(previousStep, nextStep, 'forward', formData);
           setCurrentStep(nextStep);
           setIsTransitioning(false);
         }, 150);
@@ -227,7 +319,17 @@ function RealEstateSellPageContent() {
   };
 
   const handleOptionSelect = (field: keyof FormData, value: string) => {
-    setFormData({ ...formData, [field]: value });
+    const updatedFormData = { ...formData, [field]: value };
+    setFormData(updatedFormData);
+    
+    // Track option selection
+    track('questionnaire_option_select', {
+      step: currentStep,
+      step_name: getStepName(currentStep),
+      field: field,
+      value: field === 'sellingIntent' ? (value === 'I am just curious about market conditions' ? 'curious' : 'selling') : value,
+      completion_percentage: Math.round((currentStep / totalSteps) * 100)
+    });
     
     // Auto-advance to next step with fade animation (except for the last step)
     if (currentStep < totalSteps) {
@@ -266,9 +368,21 @@ function RealEstateSellPageContent() {
 
   const handlePrevious = () => {
     if (currentStep > 1) {
+      const previousStep = currentStep;
+      const nextStep = currentStep - 1;
+      
+      // Track backward navigation
+      track('questionnaire_step_back', {
+        from_step: previousStep,
+        from_step_name: getStepName(previousStep),
+        to_step: nextStep,
+        to_step_name: getStepName(nextStep),
+        completion_percentage: Math.round((nextStep / totalSteps) * 100)
+      });
+      
       setIsTransitioning(true);
       setTimeout(() => {
-        setCurrentStep(currentStep - 1);
+        setCurrentStep(nextStep);
         setIsTransitioning(false);
       }, 150);
     }
@@ -276,6 +390,16 @@ function RealEstateSellPageContent() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    
+    // Track form completion
+    track('questionnaire_complete', {
+      user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling',
+      property_location: formData.propertyAddress.split(',').slice(-2).join(',').trim(),
+      total_steps: totalSteps,
+      completion_time: Date.now() - (analytics as any).startTime,
+      has_improvements: formData.propertyImprovements.length > 0,
+      improvement_count: formData.propertyImprovements.length
+    });
     
     try {
       // Prepare form data for submission
@@ -396,6 +520,12 @@ function RealEstateSellPageContent() {
     setFormData({ ...formData, email });
     if (email.trim() && !validateEmail(email)) {
       setEmailError('Please enter a valid email address');
+      track('questionnaire_validation_error', {
+        step: currentStep,
+        step_name: getStepName(currentStep),
+        field: 'email',
+        error: 'invalid_format'
+      });
     } else {
       setEmailError('');
     }

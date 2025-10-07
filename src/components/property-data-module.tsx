@@ -66,6 +66,7 @@ import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import { Send, User } from "lucide-react"
 import { toast } from "sonner"
+import Image from "next/image"
 
 
 const usd = new Intl.NumberFormat("en-US", {
@@ -106,6 +107,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [imageLoadingState, setImageLoadingState] = useState<'idle' | 'fetching' | 'loaded' | 'failed' | 'timeout'>('idle')
+  const [imageLoadingTimeout, setImageLoadingTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [individualImageStates, setIndividualImageStates] = useState<{[key: number]: 'loading' | 'loaded' | 'error'}>({})
   const [isImageModalOpen, setIsImageModalOpen] = useState(false)
   const [selectedProperty, setSelectedProperty] = useState<any>(null)
   const [isPropertySheetOpen, setIsPropertySheetOpen] = useState(false)
@@ -151,22 +155,63 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
       // Fetch Property Images using zpid from subject property data
       if (propertyZpid) {
+        setImageLoadingState('fetching')
+        console.log('🖼️ Starting image fetch for zpid:', propertyZpid)
+        
+        // Set a timeout for the entire image loading process
+        const timeout = setTimeout(() => {
+          console.warn('⏰ Image loading timeout reached (20 seconds)')
+          setImageLoadingState('timeout')
+          setPropertyImages({ images: [], error: 'timeout' })
+        }, 20000) // 20 second timeout for the entire process
+        
+        setImageLoadingTimeout(timeout)
+        
         try {
           const propertyImagesResponse = await fetch(`/api/zillow/images?zpid=${encodeURIComponent(propertyZpid)}`, {
             signal: AbortSignal.timeout(15000) // 15 second timeout
           })
+          
+          clearTimeout(timeout)
+          setImageLoadingTimeout(null)
+          
           if (propertyImagesResponse.ok) {
             const propertyImagesResult = await propertyImagesResponse.json()
+            console.log('🖼️ Image API response:', {
+              hasImages: !!(propertyImagesResult?.images),
+              imageCount: propertyImagesResult?.images?.length || 0,
+              firstImageUrl: propertyImagesResult?.images?.[0]?.substring(0, 50) + '...'
+            })
+            
             if (propertyImagesResult && propertyImagesResult.images && propertyImagesResult.images.length > 0) {
               setPropertyImages(propertyImagesResult)
+              setImageLoadingState('loaded')
+              // Initialize individual image loading states
+              const initialStates: {[key: number]: 'loading' | 'loaded' | 'error'} = {}
+              propertyImagesResult.images.forEach((_: string, index: number) => {
+                initialStates[index] = 'loading'
+              })
+              setIndividualImageStates(initialStates)
             } else {
-              console.log('No property images found for zpid:', propertyZpid)
+              console.log('📷 No property images found for zpid:', propertyZpid)
+              setImageLoadingState('failed')
+              setPropertyImages({ images: [], error: 'no_images' })
             }
           } else {
-            console.warn('Property images API returned non-OK status:', propertyImagesResponse.status)
+            console.warn('🚨 Property images API returned non-OK status:', propertyImagesResponse.status)
+            setImageLoadingState('failed')
+            setPropertyImages({ images: [], error: `api_error_${propertyImagesResponse.status}` })
           }
         } catch (error) {
-          console.error('Failed to fetch property images:', error)
+          clearTimeout(timeout)
+          setImageLoadingTimeout(null)
+          console.error('❌ Failed to fetch property images:', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            zpid: propertyZpid,
+            timestamp: new Date().toISOString()
+          })
+          setImageLoadingState('failed')
+          setPropertyImages({ images: [], error: 'fetch_error' })
         }
       }
 
@@ -287,22 +332,63 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
           //Fetch Property Images using zpid from subject property data
           if (subjectPropertyResult?.zpid) {
+            setImageLoadingState('fetching')
+            console.log('🖼️ Starting fresh image fetch for zpid:', subjectPropertyResult.zpid)
+            
+            // Set a timeout for the entire image loading process
+            const timeout = setTimeout(() => {
+              console.warn('⏰ Fresh image loading timeout reached (20 seconds)')
+              setImageLoadingState('timeout')
+              setPropertyImages({ images: [], error: 'timeout' })
+            }, 20000) // 20 second timeout
+            
+            setImageLoadingTimeout(timeout)
+            
             try {
               const propertyImagesResponse = await fetch(`/api/zillow/images?zpid=${encodeURIComponent(subjectPropertyResult.zpid)}`, {
                 signal: AbortSignal.timeout(15000) // 15 second timeout
               })
+              
+              clearTimeout(timeout)
+              setImageLoadingTimeout(null)
+              
               if (propertyImagesResponse.ok) {
                 const propertyImagesResult = await propertyImagesResponse.json()
+                console.log('🖼️ Fresh image API response:', {
+                  hasImages: !!(propertyImagesResult?.images),
+                  imageCount: propertyImagesResult?.images?.length || 0,
+                  firstImageUrl: propertyImagesResult?.images?.[0]?.substring(0, 50) + '...'
+                })
+                
                 if (propertyImagesResult && propertyImagesResult.images && propertyImagesResult.images.length > 0) {
                   setPropertyImages(propertyImagesResult)
+                  setImageLoadingState('loaded')
+                  // Initialize individual image loading states
+                  const initialStates: {[key: number]: 'loading' | 'loaded' | 'error'} = {}
+                  propertyImagesResult.images.forEach((_: string, index: number) => {
+                    initialStates[index] = 'loading'
+                  })
+                  setIndividualImageStates(initialStates)
                 } else {
-                  console.log('No property images found for zpid:', subjectPropertyResult.zpid)
+                  console.log('📷 No property images found for fresh zpid:', subjectPropertyResult.zpid)
+                  setImageLoadingState('failed')
+                  setPropertyImages({ images: [], error: 'no_images' })
                 }
               } else {
-                console.warn('Property images API returned non-OK status:', propertyImagesResponse.status)
+                console.warn('🚨 Fresh property images API returned non-OK status:', propertyImagesResponse.status)
+                setImageLoadingState('failed')
+                setPropertyImages({ images: [], error: `api_error_${propertyImagesResponse.status}` })
               }
             } catch (error) {
-              console.error('Failed to fetch property images:', error)
+              clearTimeout(timeout)
+              setImageLoadingTimeout(null)
+              console.error('❌ Failed to fetch fresh property images:', {
+                error: error instanceof Error ? error.message : 'Unknown error',
+                zpid: subjectPropertyResult.zpid,
+                timestamp: new Date().toISOString()
+              })
+              setImageLoadingState('failed')
+              setPropertyImages({ images: [], error: 'fetch_error' })
             }
           }
         }
@@ -440,6 +526,16 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       })
     }
   }, [dataLoadingComplete, subjectPropertyData, address, valuationTriggered, useMockData]) // Removed valueData dependency - let API handle fetching if needed
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (imageLoadingTimeout) {
+        clearTimeout(imageLoadingTimeout)
+        console.log('🧹 Cleaned up image loading timeout on unmount')
+      }
+    }
+  }, [imageLoadingTimeout])
 
   // Load calendar widget script when modal opens
   useEffect(() => {
@@ -1037,25 +1133,48 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                           <h3 className=" absolute top-2 left-2 bg-white px-2 py-1 rounded text-sky-600 dark:text-gray-400 text-sm font-semibold mb-2 z-10">
                             {propertyImages.images.length === 1 ? 'Property Image' : 'Property Images'}
                           </h3>
-                          <img
+                          <Image
+                            width={1000}
+                            height={1000}
                             src={propertyImages.images[currentImageIndex]}
                             alt={`Property photo ${currentImageIndex + 1}`}
                             className="w-full max-h-[50vh] h-[50vh]  object-cover rounded-lg"
                             loading="lazy"
                             onLoad={() => {
-                              // Image loaded successfully
+                              console.log('✅ Individual image loaded successfully:', {
+                                index: currentImageIndex,
+                                url: propertyImages.images[currentImageIndex]?.substring(0, 50) + '...'
+                              })
+                              setIndividualImageStates(prev => ({
+                                ...prev,
+                                [currentImageIndex]: 'loaded'
+                              }))
                             }}
                             onError={(e) => {
-                              console.error('Failed to load property image:', e)
+                              console.error('❌ Failed to load individual property image:', {
+                                index: currentImageIndex,
+                                url: propertyImages.images[currentImageIndex],
+                                error: e,
+                                timestamp: new Date().toISOString()
+                              })
+                              
+                              setIndividualImageStates(prev => ({
+                                ...prev,
+                                [currentImageIndex]: 'error'
+                              }))
+                              
                               // Try to remove the failed image from the array
                               const target = e.target as HTMLImageElement
                               if (target && propertyImages?.images) {
                                 const updatedImages = propertyImages.images.filter((_: string, index: number) => index !== currentImageIndex)
                                 if (updatedImages.length > 0) {
+                                  console.log('🔄 Removing failed image, remaining count:', updatedImages.length)
                                   setPropertyImages({ ...propertyImages, images: updatedImages })
                                   setCurrentImageIndex(0)
                                 } else {
-                                  setPropertyImages(null) // No valid images left
+                                  console.log('🚫 No valid images left after removing failed image')
+                                  setPropertyImages({ images: [], error: 'all_images_failed' })
+                                  setImageLoadingState('failed')
                                 }
                               }
                             }}
@@ -1089,15 +1208,75 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                           )}
                         </div>
                       ) : (
-                        // Loading skeleton for images
+                        // Enhanced loading/error states for images
                         <div className="relative mt-2">
-                          <div className="absolute top-2 left-2 bg-gray-200 px-2 py-1 rounded text-transparent text-sm font-semibold mb-2 z-10 animate-pulse">
-                            Loading Images...
+                          <div className="absolute top-2 left-2 bg-gray-200 px-2 py-1 rounded text-gray-600 text-sm font-semibold mb-2 z-10">
+                            {imageLoadingState === 'fetching' && 'Loading Images...'}
+                            {imageLoadingState === 'failed' && 'Images Unavailable'}
+                            {imageLoadingState === 'timeout' && 'Image Load Timeout'}
+                            {imageLoadingState === 'idle' && 'Preparing Images...'}
                           </div>
-                          <div className="w-full max-h-[50vh] h-[50vh] bg-gray-200 rounded-lg animate-pulse flex items-center justify-center">
+                          <div className="w-full max-h-[50vh] h-[50vh] bg-gray-200 rounded-lg flex items-center justify-center">
                             <div className="text-gray-400 text-center">
-                              <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-full animate-pulse"></div>
-                              <p className="text-sm">Loading property images...</p>
+                              {imageLoadingState === 'fetching' && (
+                                <>
+                                  <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-full animate-pulse"></div>
+                                  <p className="text-sm">Loading property images...</p>
+                                  <p className="text-xs text-gray-500 mt-1">This may take a few moments</p>
+                                </>
+                              )}
+                              {imageLoadingState === 'failed' && (
+                                <>
+                                  <div className="w-16 h-16 mx-auto mb-2 bg-red-200 rounded-full flex items-center justify-center">
+                                    <X className="w-8 h-8 text-red-500" />
+                                  </div>
+                                  <p className="text-sm text-red-600">Images could not be loaded</p>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {propertyImages?.error === 'no_images' && 'No images available for this property'}
+                                    {propertyImages?.error === 'fetch_error' && 'Network error loading images'}
+                                    {propertyImages?.error?.startsWith('api_error_') && `API error: ${propertyImages.error.split('_')[2]}`}
+                                    {propertyImages?.error === 'all_images_failed' && 'All images failed to load'}
+                                  </p>
+                                  <button 
+                                    onClick={() => {
+                                      console.log('🔄 User requested image retry')
+                                      setImageLoadingState('idle')
+                                      setPropertyImages(null)
+                                      // Trigger a re-fetch by updating a dependency
+                                      window.location.reload()
+                                    }}
+                                    className="mt-3 px-3 py-1 bg-sky-500 text-white text-xs rounded hover:bg-sky-600 transition-colors"
+                                  >
+                                    Retry Loading Images
+                                  </button>
+                                </>
+                              )}
+                              {imageLoadingState === 'timeout' && (
+                                <>
+                                  <div className="w-16 h-16 mx-auto mb-2 bg-yellow-200 rounded-full flex items-center justify-center">
+                                    <Clock className="w-8 h-8 text-yellow-600" />
+                                  </div>
+                                  <p className="text-sm text-yellow-700">Image loading timed out</p>
+                                  <p className="text-xs text-gray-500 mt-1">Please check your connection and try again</p>
+                                  <button 
+                                    onClick={() => {
+                                      console.log('🔄 User requested timeout retry')
+                                      setImageLoadingState('idle')
+                                      setPropertyImages(null)
+                                      window.location.reload()
+                                    }}
+                                    className="mt-3 px-3 py-1 bg-sky-500 text-white text-xs rounded hover:bg-sky-600 transition-colors"
+                                  >
+                                    Retry Loading Images
+                                  </button>
+                                </>
+                              )}
+                              {imageLoadingState === 'idle' && (
+                                <>
+                                  <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-full animate-pulse"></div>
+                                  <p className="text-sm">Preparing to load images...</p>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
