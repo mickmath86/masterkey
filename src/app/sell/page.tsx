@@ -131,7 +131,7 @@ const Hero = () => {
                 <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
               ))}
             </div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">4.9 out of 5</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">5 out of 5</span>
           </div>
           
           <div className="mt-10 flex items-center gap-x-6">
