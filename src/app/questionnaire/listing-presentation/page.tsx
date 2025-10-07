@@ -46,6 +46,7 @@ interface FormData {
   lastName: string;
   email: string;
   phone: string;
+  privacyPolicyConsent: boolean;
 }
 
 const sellingIntentOptions = [
@@ -135,7 +136,8 @@ function RealEstateSellPageContent() {
     firstName: '',
     lastName: '',
     email: '',
-    phone: ''
+    phone: '',
+    privacyPolicyConsent: false
   });
   const [improvementSearch, setImprovementSearch] = useState('');
   const [showImprovementDropdown, setShowImprovementDropdown] = useState(false);
@@ -645,12 +647,24 @@ function RealEstateSellPageContent() {
         return formData.priceExpectation !== '';
       case 9:
         return formData.firstName.trim() !== '' && formData.lastName.trim() !== '' && 
-               formData.email.trim() !== '' && validateEmail(formData.email) && formData.phone.trim() !== '';
+               formData.email.trim() !== '' && validateEmail(formData.email) && formData.phone.trim() !== '' &&
+               formData.privacyPolicyConsent;
       default:
         return false;
     }
   };
 
+  const handlePrivacyPolicyConsentChange = (consent: boolean) => {
+    setFormData({ ...formData, privacyPolicyConsent: consent });
+    
+    // Track privacy policy consent
+    track('questionnaire_privacy_consent', {
+      step: currentStep,
+      step_name: getStepName(currentStep),
+      consent: consent,
+      completion_percentage: Math.round((currentStep / totalSteps) * 100)
+    });
+  };
   return (
     <div className="h-screen flex">
       {/* Left Side - Hero Image */}
@@ -1190,6 +1204,29 @@ function RealEstateSellPageContent() {
                     placeholder="555-123-4567"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
+                </div>
+                
+                {/* Privacy Policy Consent */}
+                <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="privacyConsent"
+                    checked={formData.privacyPolicyConsent}
+                    onChange={(e) => handlePrivacyPolicyConsentChange(e.target.checked)}
+                    className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="privacyConsent" className="text-sm text-gray-700">
+                    I agree to the{' '}
+                    <a 
+                      href="/privacy-policy" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Privacy Policy
+                    </a>{' '}
+                    and consent to the collection and use of my personal information as described therein. *
+                  </label>
                 </div>
                 
               </div>
