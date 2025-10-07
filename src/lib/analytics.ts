@@ -63,8 +63,8 @@ export class FormAnalytics {
       console.log('📊 Form Analytics Event:', event);
       
       // Example: Send to Google Analytics 4
-      if (typeof gtag !== 'undefined') {
-        gtag('event', event.event, {
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', event.event, {
           custom_parameter_form_name: event.properties.form_name,
           custom_parameter_step_number: event.properties.step_number,
           custom_parameter_step_name: event.properties.step_name,
