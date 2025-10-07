@@ -27,7 +27,14 @@ function AddressTest() {
 
   const [address, setAddress] = useState('');
   const router = useRouter();
-  const { prefetchPropertyData, isLoading, propertyTypeError, setPropertyTypeError } = usePropertyData();
+  const { prefetchPropertyData, isLoading, propertyTypeError, setPropertyTypeError, setIsLoading } = usePropertyData();
+
+  // Reset loading state when component unmounts
+  useEffect(() => {
+    return () => {
+      setIsLoading(false);
+    };
+  }, [setIsLoading]);
 
   const handleGetStarted = async () => {
     if (address.trim()) {

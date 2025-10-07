@@ -122,35 +122,37 @@ export function PropertyDataProvider({ children }: { children: ReactNode }) {
     try {
       // Convert URL-friendly address format to API-friendly format
       const apiAddress = address.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-      console.log(' Prefetching property data for:', apiAddress)
+      console.log('🔄 Prefetching property data for:', apiAddress)
 
       const response = await fetch(`/api/zillow/property?address=${encodeURIComponent(apiAddress)}`)
       
       if (!response.ok) {
-        console.error('Failed to prefetch property data:', response.status)
+        console.error('❌ Failed to prefetch property data:', response.status)
+        setIsLoading(false)
         return null
       }
 
       const data = await response.json()
-      console.log('Property data prefetched successfully')
+      console.log('✅ Property data prefetched successfully')
       
       // Check if property type is supported
       const supportedHomeTypes = ['SINGLE_FAMILY', 'CONDO']
       const homeType = data.rawData?.homeType || data.propertyType
       
       if (homeType && !supportedHomeTypes.includes(homeType)) {
-        console.log(`Unsupported property type: ${homeType}`)
+        console.log(`❌ Unsupported property type: ${homeType}`)
         setPropertyTypeError(`We currently only provide AI Reports for Single Family Residences and Condos. This property appears to be a ${homeType.toLowerCase().replace('_', ' ')}.`)
+        setIsLoading(false)
         return null
       }
       
       setPropertyData(data)
+      // Don't set isLoading to false here - let the redirect happen with loading state
       return data
     } catch (error) {
       console.error('Error prefetching property data:', error)
-      return null
-    } finally {
       setIsLoading(false)
+      return null
     }
   }, [])
 

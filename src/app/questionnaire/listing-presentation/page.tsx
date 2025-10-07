@@ -111,7 +111,7 @@ const improvementOptions = [
 function RealEstateSellPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { prefetchPropertyData, isLoading, setQuestionnaireData, propertyData } = usePropertyData();
+  const { prefetchPropertyData, isLoading, setQuestionnaireData, propertyData, propertyTypeError, setPropertyTypeError } = usePropertyData();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -170,20 +170,59 @@ function RealEstateSellPageContent() {
   // LeadConnector webhook URL
   const WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/0972671d-e4b7-46c5-ad30-53d734b97e8c';
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < totalSteps) {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        let nextStep = currentStep + 1;
+      // If we're on step 1 (address entry), prefetch property data and validate
+      if (currentStep === 1 && formData.propertyAddress.trim()) {
+        setIsTransitioning(true);
         
-        // Skip improvement details if no improvements selected on step 6
-        if (currentStep === 6 && formData.propertyImprovements.length === 0) {
-          nextStep = 8; // Skip step 7 (improvement details) and go to step 8 (pricing)
+        try {
+          console.log('Prefetching property data for address:', formData.propertyAddress);
+          const result = await prefetchPropertyData(formData.propertyAddress);
+          
+          // If property type is not supported, the modal will show automatically via propertyTypeError
+          // Only proceed if we got valid property data and no property type error
+          if (result && !propertyTypeError) {
+            // Proceed to next step
+            setTimeout(() => {
+              setCurrentStep(currentStep + 1);
+              setIsTransitioning(false);
+            }, 150);
+          } else if (propertyTypeError) {
+            // Property type error - stop here and show modal
+            setIsTransitioning(false);
+            return;
+          } else {
+            // API error - still allow progression but log it
+            console.warn('Property data prefetch failed, but allowing progression');
+            setTimeout(() => {
+              setCurrentStep(currentStep + 1);
+              setIsTransitioning(false);
+            }, 150);
+          }
+        } catch (error) {
+          console.error('Error during property data prefetch:', error);
+          // Allow progression even if prefetch fails
+          setTimeout(() => {
+            setCurrentStep(currentStep + 1);
+            setIsTransitioning(false);
+          }, 150);
         }
-        
-        setCurrentStep(nextStep);
-        setIsTransitioning(false);
-      }, 150);
+      } else {
+        // Normal progression for other steps
+        setIsTransitioning(true);
+        setTimeout(() => {
+          let nextStep = currentStep + 1;
+          
+          // Skip improvement details if no improvements selected on step 6
+          if (currentStep === 6 && formData.propertyImprovements.length === 0) {
+            nextStep = 8; // Skip step 7 (improvement details) and go to step 8 (pricing)
+          }
+          
+          setCurrentStep(nextStep);
+          setIsTransitioning(false);
+        }, 150);
+      }
     }
   };
 
@@ -1044,11 +1083,20 @@ function RealEstateSellPageContent() {
             {currentStep < totalSteps ? (
               <Button
                 onClick={handleNext}
-                disabled={!isStepValid()}
+                disabled={!isStepValid() || (currentStep === 1 && isLoading)}
                 className="flex items-center gap-2"
               >
-                {getNextButtonText()}
-                <ChevronRightIcon className="w-4 h-4" />
+                {currentStep === 1 && isLoading ? (
+                  <>
+                    <span>Loading...</span>
+                    <Spinner className="w-4 h-4" />
+                  </>
+                ) : (
+                  <>
+                    {getNextButtonText()}
+                    <ChevronRightIcon className="w-4 h-4" />
+                  </>
+                )}
               </Button>
             ) : (
               <Button
@@ -1139,6 +1187,46 @@ function RealEstateSellPageContent() {
               className="w-full"
             >
               Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Property Type Error Modal */}
+      <Dialog open={!!propertyTypeError} onOpenChange={() => setPropertyTypeError(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+              <XMarkIcon className="h-8 w-8 text-red-600" aria-hidden="true" />
+            </div>
+            <DialogTitle className="text-center text-xl font-bold">
+              Property Type Not Supported
+            </DialogTitle>
+            <DialogDescription className="text-center text-gray-600">
+              {propertyTypeError}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="bg-gray-50 rounded-lg p-4 my-4">
+            <h4 className="font-semibold text-gray-900 mb-2">We currently support:</h4>
+            <ul className="space-y-1 text-sm text-gray-600">
+              <li className="flex items-center">
+                <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                Single Family Residences
+              </li>
+              <li className="flex items-center">
+                <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                Condominiums
+              </li>
+            </ul>
+          </div>
+
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setPropertyTypeError(null)}
+              className="bg-sky-500 hover:bg-sky-600 text-white"
+            >
+              Understood
             </Button>
           </div>
         </DialogContent>

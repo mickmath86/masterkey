@@ -130,18 +130,14 @@ ${questionnaireData?.propertyCondition ? `Property Condition (from owner): ${que
 Generate a comprehensive property summary focusing on key selling points and market position. Be factual and informative without being overly promotional. Use "valuation" instead of "Zestimate" in all descriptions.${questionnaireData?.propertyCondition ? ` Take into account the property condition provided by the owner: "${questionnaireData.propertyCondition}". Include this condition assessment in the keyFeatures with category "condition" and reference it appropriately in the overview and investment highlights.` : ''}`,
       schema: z.object({
         overview: z.string().describe("Brief 2-3 sentence overview of the property"),
-        keyFeatures: z.array(z.object({
-          category: z.enum(["size", "age", "location", "value", "condition", "amenities", "bedrooms", "bathrooms", "market_value", "tax", "rental", "financial"]).describe(`Feature category. Dont use word zestimate, use word - valuation.  ${questionnaireData?.propertyCondition ? `Take into account the property condition provided by the owner: "${questionnaireData.propertyCondition}"` : ''}`),
-          title: z.string().describe("Feature title"),
-          description: z.string().describe("Feature description")
-        })).describe("Key property features organized by category"),
+        
         marketPosition: z.object({
           pricePoint: z.enum(["below_market", "market_rate", "above_market"]).describe("Price positioning"),
           competitiveness: z.enum(["high", "moderate", "low"]).describe("Market competitiveness"),
           description: z.string().describe("Market position explanation")
         }),
         investmentHighlights: z.array(z.object({
-          type: z.enum(["appreciation", "rental_income", "tax_benefits", "location", "condition", "value", "financial"]).describe("Investment aspect"),
+          type: z.enum(["appreciation", "rental_income", "tax_benefits", "location", "condition", "value", "financial"]).describe(`Investment aspect. ${questionnaireData?.propertyCondition ? `Take into account the property condition provided by the owner: "${questionnaireData.propertyCondition}". ` : ''}${finalPropertyData?.rentZestimate ? `Market rent estimate is $${finalPropertyData.rentZestimate}/month - use this for rental income calculations.` : ''}`),
           title: z.string().describe("Highlight title"),
           value: z.string().describe("Specific value or benefit")
         })).describe("Investment potential highlights"),
@@ -156,7 +152,7 @@ Generate a comprehensive property summary focusing on key selling points and mar
 
     console.log('✅ AI generation successful! Result structure:', {
       hasOverview: !!result.object.overview,
-      keyFeaturesCount: result.object.keyFeatures?.length || 0,
+   
       hasMarketPosition: !!result.object.marketPosition,
       investmentHighlightsCount: result.object.investmentHighlights?.length || 0,
       hasPropertyStats: !!result.object.propertyStats

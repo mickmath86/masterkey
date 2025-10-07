@@ -42,9 +42,11 @@ import {
   CircleCheck
 
 } from "lucide-react"
+import { MasterKeyMark } from '@/components/logo'
 import { extractZipcode } from "@/lib/utils/address"
 
 import { MOCK_PROPERTY_DATA, MOCK_MARKET_DATA, USE_MOCK_DATA, MOCK_SUBJECT_PROPERTY_DATA, MOCK_AVM_DATA, MOCK_COMPS_DATA, MOCK_PROPERTY_IMAGE, MOCK_VALUE_DATA } from "@/lib/mock-data"
+import { PropertyCache } from "@/lib/property-cache"
 
 
 import { ChartAreaInteractive } from "./ui/chart-area-interactive"
@@ -601,6 +603,16 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     setSummaryState('preparing')
     setStructuredSummary(null) // Clear existing summary
     
+    // Check cache first
+    const cached = PropertyCache.get(propertyAddress);
+    if (cached?.presentationData) {
+      console.log('🗄️ Using cached presentation data for:', propertyAddress);
+      setStructuredSummary(cached.presentationData);
+      setSummaryState('complete');
+      setSummaryLoading(false);
+      return;
+    }
+    
     try {
       // Phase 1: Preparing request (with delay to show state)
       await new Promise(resolve => setTimeout(resolve, 500))
@@ -648,6 +660,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         keyFeaturesCount: data.keyFeatures?.length || 0
       });
       
+      // Cache the presentation data
+      PropertyCache.set(propertyAddress, { presentationData: data });
+      
       setStructuredSummary(data)
       setSummaryState('complete')
       setSummaryLoading(false)
@@ -682,6 +697,16 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     setValuationLoading(true)
     setValuationState('preparing')
     setStructuredValuation(null) // Clear existing analysis
+    
+    // Check cache first
+    const cached = PropertyCache.get(propertyAddress);
+    if (cached?.valuationData) {
+      console.log('🗄️ Using cached valuation data for:', propertyAddress);
+      setStructuredValuation(cached.valuationData);
+      setValuationState('complete');
+      setValuationLoading(false);
+      return;
+    }
     
     try {
       // Phase 1: Preparing request (with delay to show state)
@@ -732,6 +757,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         hasMarketTrend: !!data.marketTrend,
         hasKeyMetrics: !!data.keyMetrics
       });
+      
+      // Cache the valuation data
+      PropertyCache.set(propertyAddress, { valuationData: data });
       
       setStructuredValuation(data)
       setValuationState('complete')
@@ -912,7 +940,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         
           <div className="flex h-16 justify-between items-center">
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push('/landing/listing-presentation')}
               className="inline-flex items-center gap-x-2 text-sm font-semibold leading-6 text-gray-900 hover:text-gray-700 dark:text-white dark:hover:text-gray-300"
             >
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
@@ -929,8 +957,15 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       {/* Navigation */}
       <div className="bg-sky-50 border-b border-sky-200 dark:bg-sky-900/20 dark:border-sky-800 sticky top-0 z-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Mobile: Horizontal scroll, Desktop: Normal flex */}
-          <nav className="flex space-x-4 md:space-x-8 py-4 overflow-x-auto scrollbar-hide">
+          {/* Navigation with Logo */}
+          <nav className="flex items-center justify-between py-4">
+            {/* Logo */}
+            <div className="flex items-center flex-shrink-0">
+              <MasterKeyMark className="h-8 w-auto" />
+            </div>
+            
+            {/* Navigation Links */}
+            <div className="flex space-x-4 md:space-x-8 overflow-x-auto scrollbar-hide">
             <button
               onClick={() => scrollToSection("property-summary")}
               className="text-sky-700 hover:text-sky-900 hover:bg-sky-100 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap flex-shrink-0"
@@ -955,7 +990,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
             >
               Sales Comparables
             </button>
-           
+            </div>
           </nav>
         </div>
       </div>
@@ -1177,7 +1212,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                           </FadeIn>
 
                         {/* Key Features */}
-                        {structuredSummary.keyFeatures && structuredSummary.keyFeatures.length > 0 && (
+                        {/* {structuredSummary.keyFeatures && structuredSummary.keyFeatures.length > 0 && (
                           <FadeIn>
                             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
                               <Award className="w-5 h-5 text-sky-600" />
@@ -1214,7 +1249,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                               ))}
                             </FadeInStagger>
                           </FadeIn>
-                        )}
+                        )} */}
 
                         {/* Market Position & Investment Highlights */}
                         <div className=" ">
