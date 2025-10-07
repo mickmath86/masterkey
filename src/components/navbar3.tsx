@@ -153,18 +153,7 @@ const propertyManagementLinks: Array<{
         href: '/property-management', 
         icon: ChartPieIcon 
       },
-      { 
-        name: 'Single Family Management', 
-        description: 'Thorough background checks and tenant verification services', 
-        href: '#', 
-        icon: CursorArrowRaysIcon 
-      },
-      { 
-        name: 'Multifamily Management', 
-        description: 'Vacancy reduction, turns, and building-level ops', 
-        href: '#', 
-        icon: FingerPrintIcon 
-      },
+      
      
       { 
         name: 'Property Management Services', 
@@ -178,6 +167,12 @@ const propertyManagementLinks: Array<{
         href: '/property-management#pricing', 
         icon: SparkleIcon 
       },
+      { 
+        name: 'PM FAQs', 
+        description: 'Fees, pets, inspections, renewals, and notices—quick answers', 
+        href: '/property-management#faqs', 
+        icon: SquaresPlusIcon 
+      },
       // { 
       //   name: 'Owner Reporting & Statements', 
       //   description: 'Monthly statements, rent roll, year-end docs', 
@@ -187,32 +182,14 @@ const propertyManagementLinks: Array<{
    
     ],
     resources: [
-      { 
-        name: 'AI Rental Report', 
-        description: 'Instant rent comps, vacancy trend, yield scenarios', 
-        href: '/property-management#pricing', 
-        icon: SparkleIcon, 
-        color: 'text-sky-600 font-semibold',
-      },
-      { 
-        name: 'New Landlord Guide', 
-        description: 'Essential steps before renting your property for the first time', 
-        href: '/guides/new-landlord-guide', 
-        icon: CursorArrowRaysIcon 
-      },
-      { 
-        name: 'Rent-Ready Checklist', 
-        description: 'Complete checklist to prepare your property for new tenants', 
-        href: '/guides/rent-ready-checklist', 
-        icon: FingerPrintIcon 
-      },
-      { 
-        name: 'PM FAQs', 
-        description: 'Fees, pets, inspections, renewals, and notices—quick answers', 
-        href: '/property-management#faqs', 
-        icon: SquaresPlusIcon 
-      },
-  
+      // { 
+      //   name: 'AI Rental Report', 
+      //   description: 'Instant rent comps, vacancy trend, yield scenarios', 
+      //   href: '/property-management#pricing', 
+      //   icon: SparkleIcon, 
+      //   color: 'text-sky-600 font-semibold',
+      // },
+      
     ], 
 
 
@@ -241,13 +218,14 @@ function PropertyManagementNav({ onMouseEnter, onMouseLeave, isActive }: { onMou
         >
         <div className="w-screen max-w-4xl flex-auto overflow-hidden rounded-3xl bg-white text-sm/6 shadow-lg outline-1 outline-gray-900/5 dark:bg-gray-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 p-10">
-            <div className="grid space-y-1 gap-6 grid-cols-1 lg:grid-cols-2">
+            <div className="flex flex-col space-y-1 ">
               <div>
-                <h3 className="text-lg font-semibold">Services</h3>
-              {propertyManagementLinks[0].services.map((item, index) => (
+                <h3 className="text-lg font-semibold mb-4">Services</h3>
+                <div className="flex flex-col gap-4 w-full" >
+                {propertyManagementLinks[0].services.map((item, index) => (
                 <div
                   key={item.name}
-                  className="group relative flex gap-x-6 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-white/5 animate-in slide-in-from-right-2 duration-300"
+                  className="group relative flex gap-x-6 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-white/5 animate-in slide-in-from-right-2 duration-300 border border-gray-200 dark:border-gray-700"
                 >
                   <div className="mt-1 flex size-4 flex-none items-center justify-center rounded-sm bg-gray-50 group-hover:bg-white dark:bg-gray-700/50 dark:group-hover:bg-gray-700">
                     <item.icon
@@ -264,30 +242,10 @@ function PropertyManagementNav({ onMouseEnter, onMouseLeave, isActive }: { onMou
                   </div>
                 </div>
               ))}
-              </div>
-              <div>
-              <h3 className="text-lg font-semibold">Resources</h3>
-              {propertyManagementLinks[0].resources.map((item, index) => (
-                <div
-                  key={item.name}
-                  className="group relative flex gap-x-6 rounded-sm p-4 hover:bg-gray-50 dark:hover:bg-white/5 animate-in slide-in-from-right-2 duration-300"
-                >
-                  <div className="mt-1 flex size-4 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white dark:bg-gray-700/50 dark:group-hover:bg-gray-700">
-                    <item.icon
-                      aria-hidden="true"
-                      className={`size-6 ${item.color || 'text-gray-600'} group-hover:text-emerald-600 dark:text-gray-400 dark:group-hover:text-white`}
-                    />
-                  </div>
-                  <div>
-                    <a href={item.href} className=" text-gray-900 dark:text-white">
-                      {item.name}
-                      <span className="absolute inset-0" />
-                    </a>
-                    {/* <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p> */}
-                  </div>
                 </div>
-              ))}
+              
               </div>
+              
               
             </div>
             
@@ -688,6 +646,12 @@ export default function Navbar3() {
                   className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5"
                 >
                   Company
+                </a>
+                <a
+                  href="/contact"
+                  className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5"
+                >
+                  Contact
                 </a>
               </div>
               <div className="py-6">

@@ -75,7 +75,7 @@ const Hero = () => {
           /> */}
           <div className="mt-24 sm:mt-32 lg:mt-16">
             <a href="#" className="inline-flex space-x-6">
-              <span className="rounded-full bg-sky-50 px-3 py-1 text-sm/6 font-semibold text-sky-600 ring-1 ring-sky-600/20 ring-inset dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/25">
+              <span className="text-center rounded-full bg-sky-50 px-3 py-1 text-sm/6 font-semibold text-sky-600 ring-1 ring-sky-600/20 ring-inset dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/25">
                 Buyer Specialists
               </span>
               <span className="inline-flex items-center space-x-2 text-sm/6 font-medium text-gray-600 dark:text-gray-300">
@@ -106,7 +106,7 @@ const Hero = () => {
                 <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
               ))}
             </div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">4.9 out of 5</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">5 out of 5</span>
           </div>
           
           <div className="mt-10 flex items-center gap-x-6">

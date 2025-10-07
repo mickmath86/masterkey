@@ -84,7 +84,7 @@ function Hero() {
                     <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <span className="text-sm text-gray-950/75">4.9 out of 5</span>
+                <span className="text-sm text-gray-950/75">5 out of 5</span>
               </div>
             </FadeInUp>
             {/* <div className="mt-12 flex flex-col gap-x-6 gap-y-4 sm:flex-row">

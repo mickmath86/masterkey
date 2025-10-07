@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
+import Image from 'next/image';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, StarIcon, XMarkIcon } from '@heroicons/react/16/solid';
 import {
   Table,
@@ -691,8 +692,16 @@ function RealEstateSellPageContent() {
         </div>
         {/* Content overlay */}
         <div className="relative z-10 h-full flex items-center justify-center p-12">
-          <div className="text-center text-white">
-            <h1 className="text-5xl font-bold mb-6">Sell Your Home with Confidence</h1>
+          <div className="text-center mx-auto flex flex-col items-center text-white">
+            <Image 
+              src="/logos/white-mark.png"
+              alt="Hero Image"
+              width={100}
+              height={100}
+              className="mb-6"
+            />
+            
+            <h1 className="text-5xl font-bold mb-6">Discover the true value of your property</h1>
             <p className="text-xl mx-auto opacity-90 max-w-md">
               Get maximum value for your property with our expert guidance and proven marketing strategies.
             </p>

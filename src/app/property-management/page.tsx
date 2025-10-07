@@ -93,7 +93,7 @@ const Hero = () => {
           /> */}
           <div className="mt-24 sm:mt-32 lg:mt-16">
             <a href="#" className="inline-flex space-x-6">
-              <span className="rounded-full bg-green-50 px-3 py-1 text-sm/6 font-semibold text-green-600 ring-1 ring-green-600/20 ring-inset dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/25">
+              <span className=" text-center rounded-full bg-green-50 px-3 py-1 text-sm/6 font-semibold text-green-600 ring-1 ring-green-600/20 ring-inset dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/25">
                 Professional Management
               </span>
               <span className="inline-flex items-center space-x-2 text-sm/6 font-medium text-gray-600 dark:text-gray-300">
@@ -124,7 +124,7 @@ const Hero = () => {
                 <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
               ))}
             </div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">4.9 out of 5</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">5 out of 5</span>
           </div>
           
           <div className="mt-10 flex items-center gap-x-6">
@@ -1017,7 +1017,7 @@ const features = [
 
 function ServicesList() {
   return (
-    <div className="bg-white py-24 sm:py-32 dark:bg-gray-900">
+    <div id="services"className="bg-white py-24 sm:py-32 dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:text-center">
           <h2 className="text-base/7 font-semibold text-green-600 dark:text-green-400">Full-Service Property Management</h2>
