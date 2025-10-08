@@ -58,7 +58,7 @@ export function useUtmTrackOnce() {
 }
 
 // New function to get current UTM data for custom events
-export function getUtmContext() {
+export function getUtmContext(): Record<string, string> {
   try {
     const raw = document.cookie
       .split("; ")
@@ -69,15 +69,21 @@ export function getUtmContext() {
 
     const utms = JSON.parse(decodeURIComponent(raw));
     
-    return {
-      utm_source: utms.utm_source || "(none)",
-      utm_medium: utms.utm_medium || "(none)", 
-      utm_campaign: utms.utm_campaign || "(none)",
-      utm_term: utms.utm_term || "",
-      utm_content: utms.utm_content || "",
-      gclid: utms.gclid || "",
-      attribution_type: utms.first_seen === utms.last_updated ? 'first_touch' : 'multi_touch'
-    };
+    // Only return properties that have actual values (not undefined/null)
+    const context: Record<string, string> = {};
+    
+    if (utms.utm_source) context.utm_source = String(utms.utm_source);
+    if (utms.utm_medium) context.utm_medium = String(utms.utm_medium);
+    if (utms.utm_campaign) context.utm_campaign = String(utms.utm_campaign);
+    if (utms.utm_term) context.utm_term = String(utms.utm_term);
+    if (utms.utm_content) context.utm_content = String(utms.utm_content);
+    if (utms.gclid) context.gclid = String(utms.gclid);
+    
+    if (utms.first_seen && utms.last_updated) {
+      context.attribution_type = utms.first_seen === utms.last_updated ? 'first_touch' : 'multi_touch';
+    }
+    
+    return context;
   } catch (error) {
     return {};
   }
@@ -87,12 +93,14 @@ export function getUtmContext() {
 export function trackWithUtm(eventName: string, eventData: Record<string, any> = {}) {
   const utmContext = getUtmContext();
   
-  track(eventName, {
-    ...eventData,
-    ...utmContext
-  });
+  // Only spread UTM context if it has values
+  const finalEventData = Object.keys(utmContext).length > 0 
+    ? { ...eventData, ...utmContext }
+    : eventData;
+  
+  track(eventName, finalEventData);
   
   if (process.env.NODE_ENV === 'development') {
-    console.log(`📊 Tracked "${eventName}" with UTM context:`, { ...eventData, ...utmContext });
+    console.log(`📊 Tracked "${eventName}" with UTM context:`, finalEventData);
   }
 }
