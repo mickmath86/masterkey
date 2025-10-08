@@ -1,16 +1,16 @@
 
 "use client";
 
-import Link from "next/link"
 import { Container } from "@/components/container"
 import { Heading } from "@/components/text"
 import { Lead } from "@/components/text"
 import { Subheading } from "@/components/text"
 import { FadeInStagger } from "@/components/animations"
-import { CloudArrowUpIcon, LockClosedIcon, ServerIcon } from '@heroicons/react/20/solid'
-import { ChevronRightIcon } from '@heroicons/react/20/solid'
+import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, XMarkIcon, CloudArrowUpIcon, LockClosedIcon, ServerIcon } from '@heroicons/react/16/solid';
 import { StarIcon } from '@heroicons/react/20/solid'
+import { trackWithUtm } from '@/hooks/useUtmTrack';
 import { Home, Key, DollarSign, ArrowRight, SparkleIcon, Sparkles, ShieldAlert } from "lucide-react"
+import Link from 'next/link'
 import { GooglePlacesInput } from '@/components/ui/google-places-input'
 import { Button } from '@/components/button'
 import { useState, useEffect } from 'react'
@@ -483,7 +483,17 @@ function NextSteps() {
           {/* <SparkleIcon className="w-12 h-12 text-sky-500 mb-4"/>   */}
           {/* <h2 className="text-2xl font-medium tracking-tight">Ready to Get Started?</h2> */}
           <p className="my-2 text-sm text-gray-500">Start your journey to finding your dream home today.</p>
-          <Link  className="mx-auto font-semibold flex items-center justify-center w-full bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/listing-presentation">Get Started</Link>
+          <Link  
+            className="mx-auto font-semibold flex items-center justify-center w-full bg-sky-500 text-white px-6 py-2 rounded-md"
+            href="/questionnaire/listing-presentation"
+            onClick={() => trackWithUtm('cta_click', {
+              button_text: 'Get Started',
+              page: '/landing/listing-presentation',
+              section: 'next_steps'
+            })}
+          >
+            Get Started
+          </Link>
         </div>
         </div>
        

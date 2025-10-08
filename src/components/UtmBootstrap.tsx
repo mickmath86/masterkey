@@ -1,11 +1,23 @@
 "use client";
 
-import { useUtmTrackOnce } from "@/hooks/useUtmTrack";
+import { useUtmTrackOnce, trackWithUtm } from "@/hooks/useUtmTrack";
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 export default function UtmBootstrap() {
+  const pathname = usePathname();
+  
   // Track UTMs to Vercel Analytics (once per session)
   useUtmTrackOnce();
+
+  // Track page views with UTM context
+  useEffect(() => {
+    // Track page view with UTM context (if UTMs exist)
+    trackWithUtm('page_view', {
+      page: pathname,
+      timestamp: Date.now()
+    });
+  }, [pathname]);
 
   // Also push to GTM/GA4 dataLayer (every page load)
   useEffect(() => {
