@@ -5,6 +5,7 @@ import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
 import Image from 'next/image';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, StarIcon, XMarkIcon } from '@heroicons/react/16/solid';
+import { trackWithUtm } from '@/hooks/useUtmTrack';
 import {
   Table,
   TableBody,
@@ -196,7 +197,7 @@ function RealEstateSellPageContent() {
   useEffect(() => {
     if (!hasTrackedFormStart) {
       analytics.trackFormStart();
-      track('questionnaire_start', {
+      trackWithUtm('questionnaire_start', {
         form_name: 'listing_presentation',
         step: 1,
         step_name: 'property_address'
@@ -211,7 +212,7 @@ function RealEstateSellPageContent() {
       if (document.visibilityState === 'hidden' && currentStep < totalSteps) {
         // User is leaving the page before completion
         analytics.trackFormAbandon(currentStep, formData);
-        track('questionnaire_abandon', {
+        trackWithUtm('questionnaire_abandon', {
           step: currentStep,
           step_name: getStepName(currentStep),
           completion_percentage: Math.round((currentStep / totalSteps) * 100),
@@ -223,7 +224,7 @@ function RealEstateSellPageContent() {
     const handleBeforeUnload = () => {
       if (currentStep < totalSteps) {
         analytics.trackFormAbandon(currentStep, formData);
-        track('questionnaire_abandon', {
+        trackWithUtm('questionnaire_abandon', {
           step: currentStep,
           step_name: getStepName(currentStep),
           completion_percentage: Math.round((currentStep / totalSteps) * 100),
@@ -250,7 +251,7 @@ function RealEstateSellPageContent() {
       
       // Track step completion before advancing
       analytics.trackStepComplete(currentStep, formData);
-      track('questionnaire_step_complete', {
+      trackWithUtm('questionnaire_step_complete', {
         step: currentStep,
         step_name: getStepName(currentStep),
         completion_percentage: Math.round((currentStep / totalSteps) * 100),
@@ -326,7 +327,7 @@ function RealEstateSellPageContent() {
     setFormData(updatedFormData);
     
     // Track option selection
-    track('questionnaire_option_select', {
+    trackWithUtm('questionnaire_option_select', {
       step: currentStep,
       step_name: getStepName(currentStep),
       field: field,
@@ -375,7 +376,7 @@ function RealEstateSellPageContent() {
       const nextStep = currentStep - 1;
       
       // Track backward navigation
-      track('questionnaire_step_back', {
+      trackWithUtm('questionnaire_step_back', {
         from_step: previousStep,
         from_step_name: getStepName(previousStep),
         to_step: nextStep,
@@ -395,7 +396,7 @@ function RealEstateSellPageContent() {
     setIsSubmitting(true);
     
     // Track form completion
-    track('questionnaire_complete', {
+    trackWithUtm('questionnaire_complete', {
       user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling',
       property_location: formData.propertyAddress.split(',').slice(-2).join(',').trim(),
       total_steps: totalSteps,
@@ -523,7 +524,7 @@ function RealEstateSellPageContent() {
     setFormData({ ...formData, email });
     if (email.trim() && !validateEmail(email)) {
       setEmailError('Please enter a valid email address');
-      track('questionnaire_validation_error', {
+      trackWithUtm('questionnaire_validation_error', {
         step: currentStep,
         step_name: getStepName(currentStep),
         field: 'email',
@@ -659,7 +660,7 @@ function RealEstateSellPageContent() {
     setFormData({ ...formData, privacyPolicyConsent: consent });
     
     // Track privacy policy consent
-    track('questionnaire_privacy_consent', {
+    trackWithUtm('questionnaire_privacy_consent', {
       step: currentStep,
       step_name: getStepName(currentStep),
       consent: consent,
