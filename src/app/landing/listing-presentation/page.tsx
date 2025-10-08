@@ -77,12 +77,12 @@ function AddressTest() {
                 <div className="flex flex-row items-start gap-2">
                 
                     {/* <Sparkles className="h-24 w-24 not-dark:hidden"/> */}
-                  <h1 className="mt-10 text-5xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-7xl dark:text-white">
+                  <h1 className="text-center md:text-left mt-10 text-5xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-7xl dark:text-white">
                   <Sparkles className="h-4 w-4 dark:hidden top-2 md:h-10 md:w-10 inline-block left-24 text-sky-500"/> Discover Your Home's <span className="text-sky-500">True Worth</span>
                   </h1>
                 </div>
                
-                <p className="mt-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
+                <p className="text-center md:text-left mt-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
                   Get instant <span className="text-sky-500">AI-powered</span> insights on your property value and local market conditions. Simply enter your address to unlock comprehensive analysis and data-driven recommendations.
                 </p>
                 <div className="mt-10 flex flex-col md:flex-row md:items-start mx-auto  gap-6">
@@ -91,7 +91,7 @@ function AddressTest() {
                         value={address}
                         onChange={setAddress}
                         placeholder="Enter your property address..."
-                        className="w-full px-4  py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-base"
+                        className="w-full px-4  bg-white py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-base"
                       />
                   </div>
                   <Button
@@ -241,7 +241,7 @@ function LandingHero() {
           <SparkleIcon className="w-12 h-12 text-sky-500 mb-4"/>  
           <h2 className="text-2xl font-medium tracking-tight">Ready to Get Started?</h2>
           <p className="my-2 text-sm text-gray-500">Start your journey to finding your dream home today.</p>
-          <Link  className="mx-auto flex items-center justify-center w-100 bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/listing-presentation">Get Started</Link>
+          <Link  className="mx-auto flex items-center justify-center w-full bg-sky-500 text-white px-6 py-2 rounded-md" href="/questionnaire/listing-presentation">Get Started</Link>
         </div>
         </div>
        
@@ -327,7 +327,7 @@ function Testimonials() {
           <SparkleIcon className="w-12 h-12 text-sky-500 mb-4"/>  
           <h2 className="text-2xl font-medium tracking-tight">Become a Future Success Story</h2>
           <p className="my-2 text-sm text-gray-500">Start your journey to finding your dream home today.</p>
-          <Link  className="mx-auto flex items-center justify-center w-100 bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/listing-presentation">Get Started</Link>
+          <Link  className="mx-auto flex items-center justify-center w-full bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/listing-presentation">Get Started</Link>
         </div>
         </div>
        
@@ -483,7 +483,7 @@ function NextSteps() {
           {/* <SparkleIcon className="w-12 h-12 text-sky-500 mb-4"/>   */}
           {/* <h2 className="text-2xl font-medium tracking-tight">Ready to Get Started?</h2> */}
           <p className="my-2 text-sm text-gray-500">Start your journey to finding your dream home today.</p>
-          <Link  className="mx-auto font-semibold flex items-center justify-center w-100 bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/listing-presentation">Get Started</Link>
+          <Link  className="mx-auto font-semibold flex items-center justify-center w-full bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/listing-presentation">Get Started</Link>
         </div>
         </div>
        
