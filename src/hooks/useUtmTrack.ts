@@ -101,14 +101,6 @@ export function getUtmContext(): Record<string, string> {
 export function trackWithUtm(eventName: string, eventData: Record<string, any> = {}) {
   const utmContext = getUtmContext();
   
-  // Debug logging
-  console.log('🔍 UTM Context Debug:', {
-    utmContext,
-    hasUtmData: Object.keys(utmContext).length > 0,
-    eventData,
-    eventName
-  });
-  
   // Only spread UTM context if it has values
   const finalEventData = Object.keys(utmContext).length > 0 
     ? { ...eventData, ...utmContext }
@@ -116,5 +108,10 @@ export function trackWithUtm(eventName: string, eventData: Record<string, any> =
   
   track(eventName, finalEventData);
   
-  console.log(`📊 Tracked "${eventName}" with final data:`, finalEventData);
+  // Always log in development for debugging
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`📊 Tracked "${eventName}":`, finalEventData);
+    console.log(`🔍 UTM Context:`, utmContext);
+    console.log(`📏 Event Size:`, JSON.stringify(finalEventData).length, 'characters');
+  }
 }

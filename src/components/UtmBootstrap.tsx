@@ -10,14 +10,7 @@ export default function UtmBootstrap() {
   // Track UTMs to Vercel Analytics (once per session)
   useUtmTrackOnce();
 
-  // Track page views with UTM context
-  useEffect(() => {
-    // Track page view with UTM context (if UTMs exist)
-    trackWithUtm('page_view', {
-      page: pathname,
-      timestamp: Date.now()
-    });
-  }, [pathname]);
+  // Page view tracking is now handled inside the UTM processing useEffect
 
   // Also push to GTM/GA4 dataLayer (every page load)
   useEffect(() => {
@@ -30,37 +23,52 @@ export default function UtmBootstrap() {
         .find((c) => c.startsWith("masterkey_utms="))
         ?.split("=")[1];
 
-      if (raw) {
+      // Always check URL for new UTMs first
+      const urlParams = new URLSearchParams(window.location.search);
+      const foundUtms: any = {};
+      
+      const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "fbclid", "msclkid", "ttclid", "li_fat_id"];
+      
+      UTM_KEYS.forEach(key => {
+        const value = urlParams.get(key);
+        if (value) foundUtms[key] = value;
+      });
+      
+      if (Object.keys(foundUtms).length > 0) {
+        // New UTMs found in URL - update cookie
+        console.log("🆕 Found NEW UTMs in URL:", foundUtms);
+        
+        const existingUtms = raw ? JSON.parse(decodeURIComponent(raw)) : {};
+        
+        const utmData = {
+          ...existingUtms,
+          ...foundUtms,
+          first_seen: existingUtms.first_seen || Date.now(), // Preserve original first_seen
+          last_updated: Date.now()
+        };
+        
+        // Update cookie with new UTMs
+        document.cookie = `masterkey_utms=${encodeURIComponent(JSON.stringify(utmData))}; path=/; max-age=${60 * 60 * 24 * 90}; SameSite=Lax`;
+        utms = utmData;
+        
+        console.log("🍪 Updated UTM cookie:", utmData);
+      } else if (raw) {
+        // No new UTMs in URL, use existing cookie
         utms = JSON.parse(decodeURIComponent(raw));
-        console.log("📊 Found UTMs in cookie:", utms);
-      } else {
-        // Fallback: Check URL for UTMs and create cookie client-side
-        const urlParams = new URLSearchParams(window.location.search);
-        const foundUtms: any = {};
-        
-        const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "fbclid", "msclkid", "ttclid", "li_fat_id"];
-        
-        UTM_KEYS.forEach(key => {
-          const value = urlParams.get(key);
-          if (value) foundUtms[key] = value;
-        });
-        
-        if (Object.keys(foundUtms).length > 0) {
-          console.log("🔥 FALLBACK: Found UTMs in URL, creating cookie:", foundUtms);
-          
-          const utmData = {
-            ...foundUtms,
-            first_seen: Date.now(),
-            last_updated: Date.now()
-          };
-          
-          // Set cookie client-side
-          document.cookie = `masterkey_utms=${encodeURIComponent(JSON.stringify(utmData))}; path=/; max-age=${60 * 60 * 24 * 90}; SameSite=Lax`;
-          utms = utmData;
-        }
+        console.log("📊 Using existing UTMs from cookie:", utms);
       }
 
       if (!utms) return;
+      
+      // Track page view immediately after UTM processing
+      trackWithUtm('page_view', {
+        page: pathname,
+        timestamp: Date.now(),
+        referrer: document.referrer || 'direct',
+        utm_processed: true
+      });
+      
+      console.log(`🔄 Page Navigation (with UTMs): ${pathname}`);
 
       // Initialize dataLayer if it doesn't exist (GTM should do this, but ensure it exists)
       (window as any).dataLayer = (window as any).dataLayer || [];
