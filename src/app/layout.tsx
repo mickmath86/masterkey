@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { GoogleTagManager } from '@next/third-parties/google'
 import { PropertyDataProvider } from '@/contexts/PropertyDataContext'
 import { Analytics } from '@vercel/analytics/react'
+import UtmBootstrap from '@/components/UtmBootstrap'
 
 export const metadata: Metadata = {
   title: {
@@ -20,7 +21,14 @@ export default function RootLayout({
     <html lang="en">
       
       <head>
-      <GoogleTagManager gtmId="GTM-WTJD5VKJ" />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+          `
+        }} />
+        <GoogleTagManager gtmId="GTM-WTJD5VKJ" />
         <link
           rel="stylesheet"
           href="https://api.fontshare.com/css?f%5B%5D=switzer@400,500,600,700&amp;display=swap"
@@ -33,6 +41,7 @@ export default function RootLayout({
 
         <PropertyDataProvider>
           {children}
+          <UtmBootstrap />
         </PropertyDataProvider>
         <Analytics />
       </body>
