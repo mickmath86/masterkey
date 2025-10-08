@@ -60,14 +60,22 @@ export function useUtmTrackOnce() {
 // New function to get current UTM data for custom events
 export function getUtmContext(): Record<string, string> {
   try {
+    console.log('🍪 All cookies:', document.cookie);
+    
     const raw = document.cookie
       .split("; ")
       .find((c) => c.startsWith("masterkey_utms="))
       ?.split("=")[1];
     
-    if (!raw) return {};
+    console.log('🍪 Raw UTM cookie:', raw);
+    
+    if (!raw) {
+      console.log('❌ No UTM cookie found');
+      return {};
+    }
 
     const utms = JSON.parse(decodeURIComponent(raw));
+    console.log('🍪 Parsed UTM data:', utms);
     
     // Only return properties that have actual values (not undefined/null)
     const context: Record<string, string> = {};
@@ -93,6 +101,14 @@ export function getUtmContext(): Record<string, string> {
 export function trackWithUtm(eventName: string, eventData: Record<string, any> = {}) {
   const utmContext = getUtmContext();
   
+  // Debug logging
+  console.log('🔍 UTM Context Debug:', {
+    utmContext,
+    hasUtmData: Object.keys(utmContext).length > 0,
+    eventData,
+    eventName
+  });
+  
   // Only spread UTM context if it has values
   const finalEventData = Object.keys(utmContext).length > 0 
     ? { ...eventData, ...utmContext }
@@ -100,7 +116,5 @@ export function trackWithUtm(eventName: string, eventData: Record<string, any> =
   
   track(eventName, finalEventData);
   
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`📊 Tracked "${eventName}" with UTM context:`, finalEventData);
-  }
+  console.log(`📊 Tracked "${eventName}" with final data:`, finalEventData);
 }
