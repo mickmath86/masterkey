@@ -163,12 +163,12 @@ export default function PrivacyPolicyPage() {
                   If you have any questions about this privacy policy or our privacy practices, 
                   please contact us at:
                 </p>
-                <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="border border-gray-200 p-4 rounded-lg">
                   <p className="text-gray-700">
                     <strong>MasterKey</strong><br />
-                    Email: privacy@masterkey.com<br />
-                    Phone: (555) 123-4567<br />
-                    Address: 123 Main Street, Suite 100, San Francisco, CA 94105
+                    Email: info@masterkey.com<br />
+                    Phone: 805-262-9707<br />
+                    Address: 1000 Business Circle, Suite 112, Newbury Park, CA 91320
                   </p>
                 </div>
               </section>

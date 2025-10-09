@@ -42,7 +42,7 @@ import {
   CircleCheck
 
 } from "lucide-react"
-import { MasterKeyMark } from '@/components/logo'
+import { MasterKeyLogoInlineBlack } from '@/components/logo'
 import { extractZipcode } from "@/lib/utils/address"
 
 import { MOCK_PROPERTY_DATA, MOCK_MARKET_DATA, USE_MOCK_DATA, MOCK_SUBJECT_PROPERTY_DATA, MOCK_AVM_DATA, MOCK_COMPS_DATA, MOCK_PROPERTY_IMAGE, MOCK_VALUE_DATA } from "@/lib/mock-data"
@@ -80,9 +80,10 @@ const usd = new Intl.NumberFormat("en-US", {
 const agentData = {
   name: "Mike Mathias",
   avatar: "/mike-avatar.png",
-  title: "Senior Real Estate Agent",
-  rating: 4.9,
-  reviews: 127,
+  title: "Senior Real Estate Broker",
+  license: "CA 01892427",
+  phone: "805-262-9707",
+  company: "MasterKey Real Estate", 
   yearsExperience: 8,
 }
 
@@ -1030,19 +1031,28 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      
       {/* Header with navigation */}
       <div className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800">
+      <MasterKeyLogoInlineBlack className="h-8 w-auto flex mx-auto items-center py-4 md:hidden" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
-          <div className="flex h-16 justify-between items-center">
+          <div className="grid grid-cols-2 py-4 justify-between items-center">
+            <div className="flex items-center gap-x-4">
             <button
               onClick={() => router.push('/landing/listing-presentation')}
-              className="inline-flex items-center gap-x-2 text-sm font-semibold leading-6 text-gray-900 hover:text-gray-700 dark:text-white dark:hover:text-gray-300"
+              className="inline-flex items-center gap-x-4 text-sm font-semibold leading-6 text-gray-900 hover:text-gray-700 dark:text-white dark:hover:text-gray-300"
             >
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               Back to search
             </button>
-            <div className="flex items-center gap-x-2 text-sm text-gray-500 dark:text-gray-400">
+            <button className="hidden md:inline-flex  border border-gray-800 rounded-sm px-2 py-1 items-center gap-x-2 text-sm font-semibold leading-6 text-gray-900 hover:text-gray-700 dark:text-white dark:hover:text-gray-300">
+             
+              Visit Website
+            </button>
+            </div>
+           
+            <div className="flex text-right items-center gap-x-2 text-sm text-gray-500 dark:text-gray-400">
               <MapPin className="h-4 w-4" />
               <span>{displayAddress}</span>
             </div>
@@ -1056,8 +1066,8 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
           {/* Navigation with Logo */}
           <nav className="flex items-center justify-between py-4">
             {/* Logo */}
-            <div className="flex items-center flex-shrink-0">
-              <MasterKeyMark className="h-8 w-auto" />
+            <div className="hidden md:flex items-center flex-shrink-0">
+              <MasterKeyLogoInlineBlack className="h-8 w-auto" />
             </div>
             
             {/* Navigation Links */}
@@ -1536,39 +1546,13 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                   <FadeIn className="flex flex-col justify-center items-center gap-y-4 ">
                     <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold">Valuation Range</h2>
                     <div className="w-full md:w-3/4 my-4">
-                    {/* <ValuationAreaChart />   */}
-                    {/* <GaugeComponent
-                      type="semicircle"
-                      style={{ width: '100%' }}
-                      arc={{
-                        colorArray: ['#00FF15', '#FF2121'],
-                        padding: 0.02,
-                        subArcs:
-                          [
-                            { limit: 40 },
-                            { limit: 60 },
-                            { limit: 70 },
-                            {},
-                            {},
-                            {},
-                      
-                          ]
-                      }}
-                      pointer={{type: "needle", animationDelay: 0 }}
-                      value={50}
-                      labels={{
-                        valueLabel: {
-                          formatTextValue: (value) => formatCurrency(value * 10000), // Multiply by 10k to get realistic property values
-                          style: { fontSize: '16px', fontWeight: 'bold' }
-                        }
-                      }}
-                    /> */}
+                  
                     </div>
                     
                     <div className="flex flex-col mt-4 w-full md:w-3/4 mb-10">
                     <div className="relative w-full">
                       <div className="absolute bg-gray-700 left-1/2 transform -translate-x-1/2 h-full w-1 z-10"></div>
-                      {/* <Separator orientation="vertical" className="absolute bg-green-500 mx-auto justify-center" /> */}
+                     
                       <Progress className="h-10 rounded-sm " value={100} />
                     </div>
                      
@@ -1602,6 +1586,15 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                           +10% Range
                         </div>
                       </div>
+                    </div>
+                    
+                    {/* Valuation Disclaimer */}
+                    <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                      <p className="text-xs text-gray-600 text-center leading-relaxed">
+                        <span className="font-medium">Disclaimer:</span> Valuations are estimates based on available market data and comparable sales. 
+                        Actual property value may vary based on home condition, unique features, local market conditions, 
+                        and other factors. For precise valuation, a professional appraisal is recommended.
+                      </p>
                     </div>
                   </div>  
                   
@@ -2180,8 +2173,8 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         onOpenChange={setIsPropertySheetOpen}
         property={selectedProperty}
       />
-      <div className="fixed bottom-4 right-4 z-50">
-          {showAgentCard && (
+      <div className="fixed bottom-4 right-0 z-50">
+          {showAgentCard ? (
             <div className="bg-white  rounded-lg shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 w-80 animate-in slide-in-from-bottom-2 duration-300">
               <div className="relative p-4">
                 {/* Close button */}
@@ -2202,8 +2195,16 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
                     />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">{agentData.name}</h3>
+                    <h3 className="font-bold uppercase text-gray-900 dark:text-white">{agentData.name}</h3>
+                    <p className="text-sm text-black font-semibold uppercase dark:text-sky-400">{agentData.company}</p>
                     <p className="text-sm text-sky-600 dark:text-sky-400">{agentData.title}</p>
+                    <a 
+                      href={`tel:${agentData.phone}`}
+                      className="text-sm text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 underline cursor-pointer transition-colors"
+                    >
+                      {agentData.phone}
+                    </a>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{agentData.license}</p>
                     
                   </div>
                 </div>
@@ -2360,6 +2361,21 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
               
               </div>
             </div>
+          ) : (
+            /* Collapsed Agent Icon */
+            <button
+              onClick={() => setShowAgentCard(true)}
+              className="bg-sky-500 hover:bg-sky-600 text-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 animate-in slide-in-from-bottom-2"
+              title="Chat with Mike"
+            >
+              <div className="flex items-center justify-center">
+                <img
+                  src={agentData.avatar || "/placeholder.svg"}
+                  alt={agentData.name}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              </div>
+            </button>
           )}
           <Toaster />
       </div>

@@ -20,7 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { CheckBadgeIcon } from "@heroicons/react/16/solid";
 import { Gradient } from "@/components/gradient";
 import { PlusGrid } from "@/components/plus-grid";
-import { MasterKeyMark } from '@/components/logo'
+import { MasterKeyLogoInlineBlack } from '@/components/logo'
 import { Spinner } from "@/components/ui/spinner";
 
 function AddressTest() {
@@ -61,8 +61,9 @@ function AddressTest() {
             <div className="mx-auto max-w-2xl">
               <div className="max-w-lg">
           
-                <MasterKeyMark className="h-11  dark:hidden"/>
-                <MasterKeyMark className="h-11  not-dark:hidden"/>
+                <MasterKeyLogoInlineBlack className="h-11  dark:hidden"/>
+                <MasterKeyLogoInlineBlack className="h-11  not-dark:hidden"/>
+                
                 {/* <div className="mt-24 sm:mt-32 lg:mt-16">
                   <a href="/questionnaire/listing-presentation" className="inline-flex space-x-6">
                     <span className="rounded-full bg-sky-50 px-3 py-1 text-sm/6 font-semibold text-sky-600 ring-1 ring-sky-600/20 ring-inset dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/25">
@@ -93,6 +94,7 @@ function AddressTest() {
                         placeholder="Enter your property address..."
                         className="w-full px-4  bg-white py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-base"
                       />
+                      <p className="text-sm mt-2 text-gray-500 dark:text-gray-400 flex flex-col"><span className="font-semibold">MasterKey Real Estate</span> DRE# 02250486</p>
                   </div>
                   <Button
                     onClick={handleGetStarted}

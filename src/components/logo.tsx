@@ -137,3 +137,15 @@ export function MasterKeyMark({ className }: { className?: string }) {
       />
   )
 }
+
+export function MasterKeyLogoInlineBlack({ className }: { className?: string }) {
+  return (
+    <Image 
+        alt=""
+        src="/logos/masterkey-black-inline.png"
+        width={100}
+        height={100}
+        className={`w-auto dark:hidden ${className}`}
+      />
+  )
+}

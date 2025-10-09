@@ -695,9 +695,9 @@ function RealEstateSellPageContent() {
         <div className="relative z-10 h-full flex items-center justify-center p-12">
           <div className="text-center mx-auto flex flex-col items-center text-white">
             <Image 
-              src="/logos/white-mark.png"
+              src="/logos/masterkey-inline-white.png"
               alt="Hero Image"
-              width={100}
+              width={300}
               height={100}
               className="mb-6"
             />
@@ -706,6 +706,7 @@ function RealEstateSellPageContent() {
             <p className="text-xl mx-auto opacity-90 max-w-md">
               Get maximum value for your property with our expert guidance and proven marketing strategies.
             </p>
+            <p className="mt-4 text-sm mx-auto opacity-90 max-w-md">DRE# 02250486</p>
           </div>
         </div>
       </div>
