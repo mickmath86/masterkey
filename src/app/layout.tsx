@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { GoogleTagManager } from '@next/third-parties/google'
 import { PropertyDataProvider } from '@/contexts/PropertyDataContext'
 import { Analytics } from '@vercel/analytics/react'
-import UtmBootstrap from '@/components/UtmBootstrap'
+import { AnalyticsProvider } from '@/components/AnalyticsProvider'
 
 export const metadata: Metadata = {
   title: {
@@ -40,8 +40,9 @@ export default function RootLayout({
       height="0" width="0" style={{ display: "none", visibility: "hidden" }}></iframe></noscript>
 
         <PropertyDataProvider>
-          {children}
-          <UtmBootstrap />
+          <AnalyticsProvider>
+            {children}
+          </AnalyticsProvider>
         </PropertyDataProvider>
         <Analytics />
       </body>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UTM Debug Test</title>
+</head>
+<body>
+    <h1>UTM Parameter Debug Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        function debugUTMFlow() {
+            const results = document.getElementById('results');
+            
+            // Test 1: Check if cookie exists
+            console.log('🍪 All cookies:', document.cookie);
+            
+            const raw = document.cookie
+                .split("; ")
+                .find((c) => c.startsWith("masterkey_utms="))
+                ?.split("=")[1];
+            
+            results.innerHTML += `<h3>Test 1: Cookie Check</h3>`;
+            results.innerHTML += `<p>Raw cookie: ${raw || 'NOT FOUND'}</p>`;
+            
+            if (raw) {
+                try {
+                    const utms = JSON.parse(decodeURIComponent(raw));
+                    results.innerHTML += `<p>Parsed UTMs: ${JSON.stringify(utms, null, 2)}</p>`;
+                    
+                    // Test 2: Check getUtmContext logic
+                    const context = {};
+                    if (utms.utm_source) context.utm_source = String(utms.utm_source);
+                    if (utms.utm_medium) context.utm_medium = String(utms.utm_medium);
+                    if (utms.utm_campaign) context.utm_campaign = String(utms.utm_campaign);
+                    
+                    results.innerHTML += `<h3>Test 2: Context Generation</h3>`;
+                    results.innerHTML += `<p>Generated context: ${JSON.stringify(context, null, 2)}</p>`;
+                    results.innerHTML += `<p>Context has keys: ${Object.keys(context).length > 0}</p>`;
+                    
+                } catch (error) {
+                    results.innerHTML += `<p>Error parsing cookie: ${error.message}</p>`;
+                }
+            }
+            
+            // Test 3: URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            results.innerHTML += `<h3>Test 3: URL Parameters</h3>`;
+            results.innerHTML += `<p>Current URL params: ${urlParams.toString()}</p>`;
+            
+            const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
+            UTM_KEYS.forEach(key => {
+                const value = urlParams.get(key);
+                if (value) {
+                    results.innerHTML += `<p>Found ${key}: ${value}</p>`;
+                }
+            });
+        }
+        
+        // Run test on page load
+        window.addEventListener('load', debugUTMFlow);
+        
+        // Also run after a delay to check timing issues
+        setTimeout(debugUTMFlow, 2000);
+    </script>
+</body>
+</html>

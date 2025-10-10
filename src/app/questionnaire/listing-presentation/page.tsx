@@ -5,7 +5,7 @@ import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
 import Image from 'next/image';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, StarIcon, XMarkIcon } from '@heroicons/react/16/solid';
-import { trackWithUtm } from '@/hooks/useUtmTrack';
+import { useQuestionnaireTracking } from '@/hooks/useSimpleAnalytics';
 import {
   Table,
   TableBody,
@@ -126,6 +126,7 @@ function RealEstateSellPageContent() {
   // Analytics tracking
   const [analytics] = useState(() => createFormAnalytics());
   const [hasTrackedFormStart, setHasTrackedFormStart] = useState(false);
+  const { trackStep, trackFormComplete, trackButtonClick } = useQuestionnaireTracking();
   const [formData, setFormData] = useState<FormData>({
     propertyAddress: '',
     sellingIntent: '',
@@ -197,10 +198,8 @@ function RealEstateSellPageContent() {
   useEffect(() => {
     if (!hasTrackedFormStart) {
       analytics.trackFormStart();
-      trackWithUtm('questionnaire_start', {
-        form_name: 'listing_presentation',
-        step: 1,
-        step_name: 'property_address'
+      trackStep(1, 'property_address', 'start', {
+        form_name: 'listing_presentation'
       });
       setHasTrackedFormStart(true);
     }

@@ -60,13 +60,19 @@ export default function UtmBootstrap() {
 
       if (!utms) return;
       
-      // Track page view immediately after UTM processing
-      trackWithUtm('page_view', {
-        page: pathname,
-        timestamp: Date.now(),
-        referrer: document.referrer || 'direct',
-        utm_processed: true
-      });
+      // Track page view immediately after UTM processing (only once per page)
+      const pageViewKey = `page_view_${pathname}`;
+      if (!sessionStorage.getItem(pageViewKey)) {
+        trackWithUtm('page_view', {
+          page: pathname,
+          timestamp: Date.now(),
+          referrer: document.referrer || 'direct',
+          utm_processed: true
+        });
+        
+        // Mark this page as tracked for this session
+        sessionStorage.setItem(pageViewKey, '1');
+      }
       
       console.log(`🔄 Page Navigation (with UTMs): ${pathname}`);
 
@@ -124,7 +130,7 @@ export default function UtmBootstrap() {
         console.warn('UTM Bootstrap error:', error);
       }
     }
-  }, []);
+  }, [pathname]); // Add pathname as dependency to prevent infinite loops
 
   return null;
 }
