@@ -53,57 +53,27 @@ export function useUtmCapture() {
     if (Object.keys(currentUtms).length > 0) {
       storeUtmParams(currentUtms);
       
-      // Send initial attribution event
+      // Only send a simple attribution event - let Vercel handle page views
       track('utm_attribution', {
-        ...currentUtms,
-        page: window.location.pathname,
+        utm_source: currentUtms.utm_source,
+        utm_medium: currentUtms.utm_medium,
+        utm_campaign: currentUtms.utm_campaign,
+        utm_term: currentUtms.utm_term || '',
+        utm_content: currentUtms.utm_content || '',
+        initial_page: window.location.pathname,
         timestamp: Date.now()
       });
       
-      console.log('✅ UTM attribution tracked:', currentUtms);
+      console.log('✅ UTM attribution tracked (Vercel will handle page views):', currentUtms);
+    } else {
+      console.log('📊 No UTM parameters found - Vercel will track regular page views');
     }
   }, []);
 }
 
-// Hook to track page views with UTM context on route changes
-export function usePageTracking(pathname: string) {
-  useEffect(() => {
-    // Add a small delay to avoid rate limiting
-    const timer = setTimeout(() => {
-      const storedUtms = getStoredUtmParams();
-      
-      if (Object.keys(storedUtms).length > 0) {
-        // Send a specific UTM-tracked page view
-        track('utm_page_view', {
-          page_path: pathname,
-          utm_source: storedUtms.utm_source || 'unknown',
-          utm_medium: storedUtms.utm_medium || 'unknown', 
-          utm_campaign: storedUtms.utm_campaign || 'unknown',
-          utm_term: storedUtms.utm_term || '',
-          utm_content: storedUtms.utm_content || '',
-          timestamp: Date.now()
-        });
-        
-        console.log('📊 UTM Page view tracked:', { 
-          page: pathname, 
-          utm_campaign: storedUtms.utm_campaign,
-          utm_source: storedUtms.utm_source,
-          utm_medium: storedUtms.utm_medium
-        });
-      } else {
-        // Regular page view without UTM context
-        track('page_navigation', {
-          page_path: pathname,
-          timestamp: Date.now()
-        });
-        
-        console.log('📊 Page navigation tracked (no UTMs):', pathname);
-      }
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, [pathname]);
-}
+// Note: Page view tracking is handled automatically by Vercel Analytics
+// UTM parameters are automatically included in Vercel's built-in page tracking
+// We only need to track custom events (buttons, forms, etc.) with UTM context
 
 // Simple tracking function that includes UTM context
 export function trackEvent(eventName: string, properties: Record<string, any> = {}) {

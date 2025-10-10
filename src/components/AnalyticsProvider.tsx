@@ -1,16 +1,10 @@
 "use client";
 
-import { useUtmCapture, usePageTracking } from '@/hooks/useSimpleAnalytics';
-import { usePathname } from 'next/navigation';
+import { useUtmCapture } from '@/hooks/useSimpleAnalytics';
 
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  
-  // Capture UTM params on initial load
+  // Only capture UTM params on initial load - let Vercel handle page tracking
   useUtmCapture();
-  
-  // Track page views on every route change (with UTM context if available)
-  usePageTracking(pathname);
   
   return <>{children}</>;
 }
