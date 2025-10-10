@@ -8,7 +8,7 @@ import { Subheading } from "@/components/text"
 import { FadeInStagger } from "@/components/animations"
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, XMarkIcon, CloudArrowUpIcon, LockClosedIcon, ServerIcon } from '@heroicons/react/16/solid';
 import { StarIcon } from '@heroicons/react/20/solid'
-import { useUtmCapture, trackEvent } from '@/hooks/useSimpleAnalytics';
+import { trackEvent } from '@/hooks/useSimpleAnalytics';
 import { Home, Key, DollarSign, ArrowRight, SparkleIcon, Sparkles, ShieldAlert } from "lucide-react"
 import Link from 'next/link'
 import { GooglePlacesInput } from '@/components/ui/google-places-input'
@@ -24,9 +24,6 @@ import { MasterKeyLogoInlineBlack } from '@/components/logo'
 import { Spinner } from "@/components/ui/spinner";
 
 function AddressTest() {
-  // Capture UTM parameters on page load
-  useUtmCapture();
-
   const [address, setAddress] = useState('');
   const router = useRouter();
   const { prefetchPropertyData, isLoading, propertyTypeError, setPropertyTypeError, setIsLoading } = usePropertyData();

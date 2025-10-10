@@ -62,19 +62,27 @@ export function useUtmCapture() {
       
       console.log('✅ UTM attribution tracked:', currentUtms);
     }
-    
+  }, []);
+}
+
+// Hook to track page views with UTM context on route changes
+export function usePageTracking(pathname: string) {
+  useEffect(() => {
     // Always send page view with stored UTM context (if any)
     const storedUtms = getStoredUtmParams();
+    
+    track('page_view', {
+      page: pathname,
+      timestamp: Date.now(),
+      ...storedUtms
+    });
+    
     if (Object.keys(storedUtms).length > 0) {
-      track('page_view', {
-        page: window.location.pathname,
-        timestamp: Date.now(),
-        ...storedUtms
-      });
-      
-      console.log('📊 Page view with UTM context:', { page: window.location.pathname, ...storedUtms });
+      console.log('📊 Page view with UTM context:', { page: pathname, ...storedUtms });
+    } else {
+      console.log('📊 Page view (no UTM context):', { page: pathname });
     }
-  }, []);
+  }, [pathname]);
 }
 
 // Simple tracking function that includes UTM context
