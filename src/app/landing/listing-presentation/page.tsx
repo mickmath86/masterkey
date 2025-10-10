@@ -8,7 +8,7 @@ import { Subheading } from "@/components/text"
 import { FadeInStagger } from "@/components/animations"
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, XMarkIcon, CloudArrowUpIcon, LockClosedIcon, ServerIcon } from '@heroicons/react/16/solid';
 import { StarIcon } from '@heroicons/react/20/solid'
-import { trackWithUtm } from '@/hooks/useUtmTrack';
+import { useUtmCapture, trackEvent } from '@/hooks/useSimpleAnalytics';
 import { Home, Key, DollarSign, ArrowRight, SparkleIcon, Sparkles, ShieldAlert } from "lucide-react"
 import Link from 'next/link'
 import { GooglePlacesInput } from '@/components/ui/google-places-input'
@@ -24,6 +24,8 @@ import { MasterKeyLogoInlineBlack } from '@/components/logo'
 import { Spinner } from "@/components/ui/spinner";
 
 function AddressTest() {
+  // Capture UTM parameters on page load
+  useUtmCapture();
 
   const [address, setAddress] = useState('');
   const router = useRouter();
@@ -488,7 +490,7 @@ function NextSteps() {
           <Link  
             className="mx-auto font-semibold flex items-center justify-center w-full bg-sky-500 text-white px-6 py-2 rounded-md"
             href="/questionnaire/listing-presentation"
-            onClick={() => trackWithUtm('cta_click', {
+            onClick={() => trackEvent('cta_click', {
               button_text: 'Get Started',
               page: '/landing/listing-presentation',
               section: 'next_steps'

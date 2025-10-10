@@ -62,6 +62,18 @@ export function useUtmCapture() {
       
       console.log('✅ UTM attribution tracked:', currentUtms);
     }
+    
+    // Always send page view with stored UTM context (if any)
+    const storedUtms = getStoredUtmParams();
+    if (Object.keys(storedUtms).length > 0) {
+      track('page_view', {
+        page: window.location.pathname,
+        timestamp: Date.now(),
+        ...storedUtms
+      });
+      
+      console.log('📊 Page view with UTM context:', { page: window.location.pathname, ...storedUtms });
+    }
   }, []);
 }
 
