@@ -203,7 +203,7 @@ function RealEstateSellPageContent() {
       });
       setHasTrackedFormStart(true);
     }
-  }, [analytics, hasTrackedFormStart]);
+  }, [analytics, hasTrackedFormStart, trackStep]);
 
   // Track page visibility changes to detect abandonment
   useEffect(() => {
@@ -211,9 +211,7 @@ function RealEstateSellPageContent() {
       if (document.visibilityState === 'hidden' && currentStep < totalSteps) {
         // User is leaving the page before completion
         analytics.trackFormAbandon(currentStep, formData);
-        trackWithUtm('questionnaire_abandon', {
-          step: currentStep,
-          step_name: getStepName(currentStep),
+        trackStep(currentStep, getStepName(currentStep), 'abandon', {
           completion_percentage: Math.round((currentStep / totalSteps) * 100),
           user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
         });
@@ -223,9 +221,7 @@ function RealEstateSellPageContent() {
     const handleBeforeUnload = () => {
       if (currentStep < totalSteps) {
         analytics.trackFormAbandon(currentStep, formData);
-        trackWithUtm('questionnaire_abandon', {
-          step: currentStep,
-          step_name: getStepName(currentStep),
+        trackStep(currentStep, getStepName(currentStep), 'abandon', {
           completion_percentage: Math.round((currentStep / totalSteps) * 100),
           user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
         });
@@ -250,9 +246,7 @@ function RealEstateSellPageContent() {
       
       // Track step completion before advancing
       analytics.trackStepComplete(currentStep, formData);
-      trackWithUtm('questionnaire_step_complete', {
-        step: currentStep,
-        step_name: getStepName(currentStep),
+      trackStep(currentStep, getStepName(currentStep), 'complete', {
         completion_percentage: Math.round((currentStep / totalSteps) * 100),
         user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
       });
@@ -326,9 +320,7 @@ function RealEstateSellPageContent() {
     setFormData(updatedFormData);
     
     // Track option selection
-    trackWithUtm('questionnaire_option_select', {
-      step: currentStep,
-      step_name: getStepName(currentStep),
+    trackStep(currentStep, getStepName(currentStep), 'option_select', {
       field: field,
       value: field === 'sellingIntent' ? (value === 'I am just curious about market conditions' ? 'curious' : 'selling') : value,
       completion_percentage: Math.round((currentStep / totalSteps) * 100)
@@ -375,9 +367,7 @@ function RealEstateSellPageContent() {
       const nextStep = currentStep - 1;
       
       // Track backward navigation
-      trackWithUtm('questionnaire_step_back', {
-        from_step: previousStep,
-        from_step_name: getStepName(previousStep),
+      trackStep(previousStep, getStepName(previousStep), 'back', {
         to_step: nextStep,
         to_step_name: getStepName(nextStep),
         completion_percentage: Math.round((nextStep / totalSteps) * 100)
@@ -395,7 +385,7 @@ function RealEstateSellPageContent() {
     setIsSubmitting(true);
     
     // Track form completion
-    trackWithUtm('questionnaire_complete', {
+    trackFormComplete({
       user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling',
       property_location: formData.propertyAddress.split(',').slice(-2).join(',').trim(),
       total_steps: totalSteps,
@@ -523,9 +513,7 @@ function RealEstateSellPageContent() {
     setFormData({ ...formData, email });
     if (email.trim() && !validateEmail(email)) {
       setEmailError('Please enter a valid email address');
-      trackWithUtm('questionnaire_validation_error', {
-        step: currentStep,
-        step_name: getStepName(currentStep),
+      trackStep(currentStep, getStepName(currentStep), 'validation_error', {
         field: 'email',
         error: 'invalid_format'
       });
@@ -659,9 +647,7 @@ function RealEstateSellPageContent() {
     setFormData({ ...formData, privacyPolicyConsent: consent });
     
     // Track privacy policy consent
-    trackWithUtm('questionnaire_privacy_consent', {
-      step: currentStep,
-      step_name: getStepName(currentStep),
+    trackStep(currentStep, getStepName(currentStep), 'privacy_consent', {
       consent: consent,
       completion_percentage: Math.round((currentStep / totalSteps) * 100)
     });
