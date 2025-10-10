@@ -68,20 +68,29 @@ export function useUtmCapture() {
 // Hook to track page views with UTM context on route changes
 export function usePageTracking(pathname: string) {
   useEffect(() => {
-    // Always send page view with stored UTM context (if any)
-    const storedUtms = getStoredUtmParams();
+    // Add a small delay to avoid rate limiting
+    const timer = setTimeout(() => {
+      const storedUtms = getStoredUtmParams();
+      
+      // Use a different event name to avoid conflicts with Vercel's built-in page tracking
+      const eventName = Object.keys(storedUtms).length > 0 ? 'utm_page_view' : 'page_navigation';
+      
+      const eventData = {
+        page_path: pathname,
+        timestamp: Date.now(),
+        ...storedUtms
+      };
+      
+      track(eventName, eventData);
+      
+      if (Object.keys(storedUtms).length > 0) {
+        console.log('📊 UTM Page view tracked:', { event: eventName, ...eventData });
+      } else {
+        console.log('📊 Page navigation tracked:', { event: eventName, page: pathname });
+      }
+    }, 100); // Small delay to avoid rate limiting
     
-    track('page_view', {
-      page: pathname,
-      timestamp: Date.now(),
-      ...storedUtms
-    });
-    
-    if (Object.keys(storedUtms).length > 0) {
-      console.log('📊 Page view with UTM context:', { page: pathname, ...storedUtms });
-    } else {
-      console.log('📊 Page view (no UTM context):', { page: pathname });
-    }
+    return () => clearTimeout(timer);
   }, [pathname]);
 }
 
