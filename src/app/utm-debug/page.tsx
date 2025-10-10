@@ -23,10 +23,21 @@ export default function UtmDebugPage() {
   const sendTestEvent = (eventName: string, includeUtms: boolean = true) => {
     const eventData = includeUtms ? {
       test_type: 'manual',
-      timestamp: Date.now(),
-      ...utmParams
+      utm_source: utmParams.utm_source || 'test',
+      utm_medium: utmParams.utm_medium || 'debug',
+      utm_campaign: utmParams.utm_campaign || 'manual_test',
+      utm_term: utmParams.utm_term || '',
+      utm_content: utmParams.utm_content || '',
+      has_utm_context: true,
+      timestamp: Date.now()
     } : {
       test_type: 'manual',
+      utm_source: '',
+      utm_medium: '',
+      utm_campaign: '',
+      utm_term: '',
+      utm_content: '',
+      has_utm_context: false,
       timestamp: Date.now()
     };
 

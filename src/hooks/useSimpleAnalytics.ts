@@ -72,23 +72,34 @@ export function usePageTracking(pathname: string) {
     const timer = setTimeout(() => {
       const storedUtms = getStoredUtmParams();
       
-      // Use a different event name to avoid conflicts with Vercel's built-in page tracking
-      const eventName = Object.keys(storedUtms).length > 0 ? 'utm_page_view' : 'page_navigation';
-      
-      const eventData = {
-        page_path: pathname,
-        timestamp: Date.now(),
-        ...storedUtms
-      };
-      
-      track(eventName, eventData);
-      
       if (Object.keys(storedUtms).length > 0) {
-        console.log('📊 UTM Page view tracked:', { event: eventName, ...eventData });
+        // Send a specific UTM-tracked page view
+        track('utm_page_view', {
+          page_path: pathname,
+          utm_source: storedUtms.utm_source || 'unknown',
+          utm_medium: storedUtms.utm_medium || 'unknown', 
+          utm_campaign: storedUtms.utm_campaign || 'unknown',
+          utm_term: storedUtms.utm_term || '',
+          utm_content: storedUtms.utm_content || '',
+          timestamp: Date.now()
+        });
+        
+        console.log('📊 UTM Page view tracked:', { 
+          page: pathname, 
+          utm_campaign: storedUtms.utm_campaign,
+          utm_source: storedUtms.utm_source,
+          utm_medium: storedUtms.utm_medium
+        });
       } else {
-        console.log('📊 Page navigation tracked:', { event: eventName, page: pathname });
+        // Regular page view without UTM context
+        track('page_navigation', {
+          page_path: pathname,
+          timestamp: Date.now()
+        });
+        
+        console.log('📊 Page navigation tracked (no UTMs):', pathname);
       }
-    }, 100); // Small delay to avoid rate limiting
+    }, 100);
     
     return () => clearTimeout(timer);
   }, [pathname]);
@@ -100,13 +111,28 @@ export function trackEvent(eventName: string, properties: Record<string, any> = 
   
   const eventData = {
     ...properties,
-    ...utmParams, // Include UTM params in every event
+    // Explicitly set UTM parameters as individual properties
+    utm_source: utmParams.utm_source || '',
+    utm_medium: utmParams.utm_medium || '',
+    utm_campaign: utmParams.utm_campaign || '',
+    utm_term: utmParams.utm_term || '',
+    utm_content: utmParams.utm_content || '',
+    has_utm_context: Object.keys(utmParams).length > 0,
     timestamp: Date.now()
   };
   
   track(eventName, eventData);
   
-  console.log(`📊 Event tracked: ${eventName}`, eventData);
+  if (Object.keys(utmParams).length > 0) {
+    console.log(`📊 Event tracked with UTMs: ${eventName}`, { 
+      event: eventName,
+      utm_campaign: utmParams.utm_campaign,
+      utm_source: utmParams.utm_source,
+      ...properties 
+    });
+  } else {
+    console.log(`📊 Event tracked (no UTMs): ${eventName}`, properties);
+  }
 }
 
 // Hook for questionnaire step tracking
