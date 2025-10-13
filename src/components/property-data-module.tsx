@@ -189,20 +189,41 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
         // Valuation analysis (AI-generated insights)
         valuation: structuredValuation ? {
-          // Base and enhanced property values from component state
+          // Base property value from component state
           basePropertyValue: subjectPropertyData?.zestimate || subjectPropertyData?.price || 0,
-          enhancedPropertyValue: getEnhancedPropertyValue(),
-          improvementAddedValue: questionnaireData?.improvementDetails && questionnaireData.improvementDetails.length > 0 
-            ? getImprovementValue().totalDepreciatedValue 
-            : 0,
-          improvementBreakdown: questionnaireData?.improvementDetails && questionnaireData.improvementDetails.length > 0 
-            ? getImprovementValue().improvementValuations.map(improvement => ({
-                improvement: improvement.improvement,
-                yearsAgo: improvement.yearsAgo,
-                originalCost: improvement.originalCost,
-                depreciatedValue: improvement.depreciatedValue
-              }))
-            : [],
+          
+          // Calculate improvement values if available
+          ...(questionnaireData?.improvementDetails && questionnaireData.improvementDetails.length > 0 ? (() => {
+            // Calculate depreciated values for improvements
+            const improvementCalculations = questionnaireData.improvementDetails
+              .filter(detail => detail.cost && detail.yearsAgo !== undefined)
+              .map(detail => {
+                const depreciationRate = 0.05; // 5% per year
+                const yearsAgo = detail.yearsAgo || 0;
+                const depreciationFactor = Math.max(0.2, 1 - (depreciationRate * yearsAgo)); // Minimum 20% of original value
+                const depreciatedValue = (detail.cost || 0) * depreciationFactor;
+                
+                return {
+                  improvement: detail.improvement,
+                  yearsAgo: yearsAgo,
+                  originalCost: detail.cost || 0,
+                  depreciatedValue: Math.round(depreciatedValue)
+                };
+              });
+            
+            const totalDepreciatedValue = improvementCalculations.reduce((sum, calc) => sum + calc.depreciatedValue, 0);
+            const baseValue = subjectPropertyData?.zestimate || subjectPropertyData?.price || 0;
+            
+            return {
+              enhancedPropertyValue: baseValue + totalDepreciatedValue,
+              improvementAddedValue: totalDepreciatedValue,
+              improvementBreakdown: improvementCalculations
+            };
+          })() : {
+            enhancedPropertyValue: subjectPropertyData?.zestimate || subjectPropertyData?.price || 0,
+            improvementAddedValue: 0,
+            improvementBreakdown: []
+          }),
           
           // AI-generated analysis
           summary: structuredValuation.summary,
@@ -313,7 +334,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     } catch (error) {
       console.error('❌ Error sending comprehensive webhook:', error);
     }
-  }, [webhookSent, questionnaireData, subjectPropertyData, structuredValuation, structuredSummary, marketData, comps, avmData, valueData, summaryState, valuationState, dataLoadingComplete, getEnhancedPropertyValue, getImprovementValue]);
+  }, [webhookSent, questionnaireData, subjectPropertyData, structuredValuation, structuredSummary, marketData, comps, avmData, valueData, summaryState, valuationState, dataLoadingComplete]);
 
   // Handler for when a map marker is clicked
   const handleMarkerClick = (propertyData: any) => {
