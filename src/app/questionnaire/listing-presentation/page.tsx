@@ -5,7 +5,8 @@ import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
 import Image from 'next/image';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, StarIcon, XMarkIcon } from '@heroicons/react/16/solid';
-// Clean start - using GTM dataLayer for Plausible
+import { useQuestionnaireTracking } from '@/hooks/usePlausibleAnalytics';
+import { PlausibleDebugger } from '@/components/PlausibleDebugger';
 import {
   Table,
   TableBody,
@@ -127,7 +128,7 @@ function RealEstateSellPageContent() {
   // Analytics tracking
   const [analytics] = useState(() => createFormAnalytics());
   const [hasTrackedFormStart, setHasTrackedFormStart] = useState(false);
-  // Clean start - removed Plausible tracking hooks
+  const { trackStep, trackFormComplete, trackButtonClick, trackQuestionnaireStart } = useQuestionnaireTracking();
   const [formData, setFormData] = useState<FormData>({
     propertyAddress: '',
     sellingIntent: '',
@@ -199,12 +200,11 @@ function RealEstateSellPageContent() {
   useEffect(() => {
     if (!hasTrackedFormStart) {
       analytics.trackFormStart();
-      // trackStep removed - clean start with GTM
-      // Track with Plausible
-      plausibleQuestionnaire.trackFormStart('listing_presentation');
+      trackStep(1, 'property_address', 'start', formData);
+      trackQuestionnaireStart(formData);
       setHasTrackedFormStart(true);
     }
-  }, [analytics, hasTrackedFormStart]);
+  }, [analytics, hasTrackedFormStart, trackStep, trackQuestionnaireStart, formData]);
 
   // Track page visibility changes to detect abandonment
   useEffect(() => {
@@ -212,22 +212,14 @@ function RealEstateSellPageContent() {
       if (document.visibilityState === 'hidden' && currentStep < totalSteps) {
         // User is leaving the page before completion
         analytics.trackFormAbandon(currentStep, formData);
-        // trackStep removed - clean start with GTM
-        // Track with Plausible
-        plausibleQuestionnaire.trackFormAbandon(currentStep, getStepName(currentStep), 'listing_presentation', {
-          user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
-        });
+        trackStep(currentStep, getStepName(currentStep), 'abandon', formData);
       }
     };
 
     const handleBeforeUnload = () => {
       if (currentStep < totalSteps) {
         analytics.trackFormAbandon(currentStep, formData);
-        // trackStep removed - clean start with GTM
-        // Track with Plausible
-        plausibleQuestionnaire.trackFormAbandon(currentStep, getStepName(currentStep), 'listing_presentation', {
-          user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
-        });
+        trackStep(currentStep, getStepName(currentStep), 'abandon', formData);
       }
     };
 
@@ -248,11 +240,7 @@ function RealEstateSellPageContent() {
       
       // Track step completion before advancing
       analytics.trackStepComplete(currentStep, formData);
-      // trackStep removed - clean start with GTM
-      // Track with Plausible
-      plausibleQuestionnaire.trackStepComplete(currentStep, getStepName(currentStep), 'listing_presentation', {
-        user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
-      });
+      trackStep(currentStep, getStepName(currentStep), 'complete', formData);
       
       // If we're on step 1 (address entry), prefetch property data and validate
       if (currentStep === 1 && formData.propertyAddress.trim()) {
@@ -1373,7 +1361,7 @@ function RealEstateSellPageContent() {
           </div>
         </DialogContent>
       </Dialog>
-      {/* Clean start - GTM dataLayer approach */}
+      <PlausibleDebugger />
     </div>
   );
 }

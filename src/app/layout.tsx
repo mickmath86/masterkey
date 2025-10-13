@@ -4,7 +4,7 @@ import { GoogleTagManager } from '@next/third-parties/google'
 import { PropertyDataProvider } from '@/contexts/PropertyDataContext'
 import { Analytics } from '@vercel/analytics/react'
 import { AnalyticsProvider } from '@/components/AnalyticsProvider'
-// Clean start - no Plausible provider needed
+import { PlausibleProvider } from '@/components/PlausibleProvider'
 
 export const metadata: Metadata = {
   title: {
@@ -44,9 +44,11 @@ export default function RootLayout({
           />
         </noscript>
         <PropertyDataProvider>
-          <AnalyticsProvider>
-            {children}
-          </AnalyticsProvider>
+          <PlausibleProvider>
+            <AnalyticsProvider>
+              {children}
+            </AnalyticsProvider>
+          </PlausibleProvider>
         </PropertyDataProvider>
         <Analytics />
       </body>
