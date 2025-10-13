@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback } from 'react'
-import { track } from '@plausible-analytics/tracker'
 
 export interface PlausibleEventProps {
   // Form tracking properties
@@ -30,7 +29,7 @@ export interface PlausibleEventProps {
 }
 
 export function usePlausibleAnalytics() {
-  const trackEvent = useCallback((eventName: string, props?: PlausibleEventProps) => {
+  const trackEvent = useCallback(async (eventName: string, props?: PlausibleEventProps) => {
     // Only track on client side
     if (typeof window === 'undefined') {
       return
@@ -53,7 +52,8 @@ export function usePlausibleAnalytics() {
       
       console.log(`📊 Plausible Event: ${eventName}`, eventProps)
       
-      // Use the official Plausible tracker
+      // Use the official Plausible tracker with dynamic import
+      const { track } = await import('@plausible-analytics/tracker')
       track(eventName, {
         props: eventProps
       })

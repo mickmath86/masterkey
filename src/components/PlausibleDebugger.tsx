@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { usePlausibleAnalytics } from '@/hooks/usePlausibleAnalytics'
-import { track } from '@plausible-analytics/tracker'
+// Dynamic import for Plausible tracker
 
 export function PlausibleDebugger() {
   const [plausibleStatus, setPlausibleStatus] = useState<string>('checking...')
@@ -17,16 +17,20 @@ export function PlausibleDebugger() {
         setGtmStatus(hasGTM ? '✅ GTM Loaded' : '❌ GTM Not Found')
         
         // Check if Plausible tracker is available
-        try {
-          // Don't actually send a debug event, just check if function exists
-          if (typeof track === 'function') {
-            setPlausibleStatus('✅ Plausible Tracker Ready')
-          } else {
-            setPlausibleStatus('❌ Plausible Tracker Not Found')
+        const checkPlausible = async () => {
+          try {
+            const { track } = await import('@plausible-analytics/tracker')
+            if (typeof track === 'function') {
+              setPlausibleStatus('✅ Plausible Tracker Ready')
+            } else {
+              setPlausibleStatus('❌ Plausible Tracker Not Found')
+            }
+          } catch (error) {
+            setPlausibleStatus('❌ Plausible Tracker Error')
           }
-        } catch (error) {
-          setPlausibleStatus('❌ Plausible Tracker Error')
         }
+        
+        checkPlausible()
         
         console.log('🔍 Analytics Debug:', {
           gtm: hasGTM,
@@ -45,9 +49,9 @@ export function PlausibleDebugger() {
     return () => clearTimeout(timer)
   }, [])
 
-  const testPlausibleEvent = () => {
+  const testPlausibleEvent = async () => {
     console.log('🧪 Testing Plausible event...')
-    trackEvent('Debug Test Event', {
+    await trackEvent('Debug Test Event', {
       value: 'debug_value'
     })
   }
