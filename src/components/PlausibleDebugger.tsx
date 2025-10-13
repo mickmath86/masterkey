@@ -18,8 +18,12 @@ export function PlausibleDebugger() {
         
         // Check if Plausible tracker is available
         try {
-          track('Debug Check', { props: { test: 'true' } })
-          setPlausibleStatus('✅ Plausible Tracker Ready')
+          // Don't actually send a debug event, just check if function exists
+          if (typeof track === 'function') {
+            setPlausibleStatus('✅ Plausible Tracker Ready')
+          } else {
+            setPlausibleStatus('❌ Plausible Tracker Not Found')
+          }
         } catch (error) {
           setPlausibleStatus('❌ Plausible Tracker Error')
         }

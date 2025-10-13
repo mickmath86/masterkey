@@ -31,6 +31,11 @@ export interface PlausibleEventProps {
 
 export function usePlausibleAnalytics() {
   const trackEvent = useCallback((eventName: string, props?: PlausibleEventProps) => {
+    // Only track on client side
+    if (typeof window === 'undefined') {
+      return
+    }
+    
     try {
       // Convert all values to strings for Plausible
       const eventProps: Record<string, string> = {}
