@@ -35,9 +35,6 @@ importers:
       '@next/third-parties':
         specifier: ^15.5.3
         version: 15.5.4(next@15.4.4(@opentelemetry/api@1.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
-      '@plausible-analytics/tracker':
-        specifier: ^0.4.3
-        version: 0.4.3
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.15
         version: 1.1.15(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -714,9 +711,6 @@ packages:
   '@opentelemetry/api@1.9.0':
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
-
-  '@plausible-analytics/tracker@0.4.3':
-    resolution: {integrity: sha512-RKTgH5xu7Pa77VS4OEnS4woPhDxRgWLJlt9f6JhwgBC9ilknCfJIVEN2A1D8OR7hzgxMQF/hPyls9iN9ReAm3Q==}
 
   '@radix-ui/number@1.1.1':
     resolution: {integrity: sha512-MkKCwxlXTgz6CFoJx3pCwn07GKp36+aZyu/u2Ln2VrA5DcdyCZkASEDBTd8x5whTQQL5CiYf4prXKLcgQdv29g==}
@@ -5240,8 +5234,6 @@ snapshots:
   '@nolyfill/is-core-module@1.0.39': {}
 
   '@opentelemetry/api@1.9.0': {}
-
-  '@plausible-analytics/tracker@0.4.3': {}
 
   '@radix-ui/number@1.1.1': {}
 
