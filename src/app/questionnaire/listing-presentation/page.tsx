@@ -6,6 +6,7 @@ import { Gradient } from '@/components/gradient';
 import Image from 'next/image';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, StarIcon, XMarkIcon } from '@heroicons/react/16/solid';
 import { useQuestionnaireTracking } from '@/hooks/usePlausibleAnalytics';
+import { PlausibleDebugger } from '@/components/PlausibleDebugger';
 import {
   Table,
   TableBody,
@@ -1398,6 +1399,7 @@ function RealEstateSellPageContent() {
           </div>
         </DialogContent>
       </Dialog>
+      <PlausibleDebugger />
     </div>
   );
 }
