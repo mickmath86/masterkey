@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from 'react';
-import Plausible from '@plausible-analytics/tracker';
 import { getStoredUtmParams } from './useSimpleAnalytics';
 
 // Custom hook for Plausible Analytics with UTM context
@@ -9,6 +8,8 @@ export function usePlausibleTracking() {
   
   // Track page views with UTM context
   const trackPageView = (url?: string, options?: any) => {
+    if (typeof window === 'undefined' || !window.plausible) return;
+    
     const utmParams = getStoredUtmParams();
     
     const eventProps = {
@@ -17,11 +18,12 @@ export function usePlausibleTracking() {
       timestamp: Date.now()
     };
 
-    // Track page view
-    Plausible.trackPageview({
-      url,
-      props: Object.keys(eventProps).length > 0 ? eventProps : undefined
-    });
+    // Track page view using window.plausible
+    if (Object.keys(eventProps).length > 0) {
+      window.plausible('pageview', { props: eventProps });
+    } else {
+      window.plausible('pageview');
+    }
 
     if (Object.keys(utmParams).length > 0) {
       console.log('📊 Plausible page view tracked with UTM context:', { url, utmParams });
@@ -32,6 +34,8 @@ export function usePlausibleTracking() {
 
   // Track custom events with UTM context
   const trackEvent = (eventName: string, options?: any) => {
+    if (typeof window === 'undefined' || !window.plausible) return;
+    
     const utmParams = getStoredUtmParams();
     
     const eventProps = {
@@ -40,9 +44,7 @@ export function usePlausibleTracking() {
       timestamp: Date.now()
     };
 
-    Plausible.trackEvent(eventName, {
-      props: eventProps
-    });
+    window.plausible(eventName, { props: eventProps });
 
     if (Object.keys(utmParams).length > 0) {
       console.log(`📊 Plausible event tracked with UTMs: ${eventName}`, eventProps);
@@ -53,6 +55,8 @@ export function usePlausibleTracking() {
 
   // Track outbound links
   const trackOutboundLink = (url: string, options?: any) => {
+    if (typeof window === 'undefined' || !window.plausible) return;
+    
     const utmParams = getStoredUtmParams();
     
     const eventProps = {
@@ -61,15 +65,15 @@ export function usePlausibleTracking() {
       ...utmParams
     };
 
-    Plausible.trackEvent('Outbound Link: Click', {
-      props: eventProps
-    });
+    window.plausible('Outbound Link: Click', { props: eventProps });
 
     console.log('📊 Plausible outbound link tracked:', url);
   };
 
   // Track file downloads
   const trackDownload = (fileName: string, fileType?: string, options?: any) => {
+    if (typeof window === 'undefined' || !window.plausible) return;
+    
     const utmParams = getStoredUtmParams();
     
     const eventProps = {
@@ -79,9 +83,7 @@ export function usePlausibleTracking() {
       ...utmParams
     };
 
-    Plausible.trackEvent('File Download', {
-      props: eventProps
-    });
+    window.plausible('File Download', { props: eventProps });
 
     console.log('📊 Plausible download tracked:', fileName);
   };

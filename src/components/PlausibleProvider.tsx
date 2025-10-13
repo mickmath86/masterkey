@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from 'react';
-import Plausible from '@plausible-analytics/tracker';
 
 interface PlausibleProviderProps {
   children: React.ReactNode;
@@ -18,15 +17,43 @@ export function PlausibleProvider({
 }: PlausibleProviderProps) {
   
   useEffect(() => {
-    // Initialize Plausible
-    Plausible.init({
-      domain,
-      trackLocalhost,
-      apiHost
-    });
+    // Initialize Plausible using the standard script approach
+    if (typeof window !== 'undefined') {
+      // Set up plausible function
+      window.plausible = window.plausible || function() { 
+        (window.plausible.q = window.plausible.q || []).push(arguments) 
+      };
 
-    console.log('📊 Plausible Analytics initialized for domain:', domain);
+      // Load the Plausible script
+      const script = document.createElement('script');
+      script.defer = true;
+      script.src = `${apiHost}/js/script.js`;
+      script.setAttribute('data-domain', domain);
+      
+      if (trackLocalhost) {
+        script.setAttribute('data-include-localhost', 'true');
+      }
+
+      document.head.appendChild(script);
+
+      console.log('📊 Plausible Analytics initialized for domain:', domain);
+
+      // Cleanup function
+      return () => {
+        const existingScript = document.querySelector(`script[src="${apiHost}/js/script.js"]`);
+        if (existingScript) {
+          existingScript.remove();
+        }
+      };
+    }
   }, [domain, trackLocalhost, apiHost]);
 
   return <>{children}</>;
+}
+
+// Extend window type for TypeScript
+declare global {
+  interface Window {
+    plausible: any;
+  }
 }
