@@ -4,7 +4,6 @@ import { GoogleTagManager } from '@next/third-parties/google'
 import { PropertyDataProvider } from '@/contexts/PropertyDataContext'
 import { Analytics } from '@vercel/analytics/react'
 import { AnalyticsProvider } from '@/components/AnalyticsProvider'
-import { PlausibleProvider } from '@/components/PlausibleProvider'
 
 export const metadata: Metadata = {
   title: {
@@ -30,6 +29,8 @@ export default function RootLayout({
           `
         }} />
         <GoogleTagManager gtmId="GTM-WTJD5VKJ" />
+        {/* Plausible Analytics */}
+        <script defer data-domain="usemasterkey.com" src="https://plausible.io/js/script.js"></script>
         <link
           rel="stylesheet"
           href="https://api.fontshare.com/css?f%5B%5D=switzer@400,500,600,700&amp;display=swap"
@@ -41,11 +42,9 @@ export default function RootLayout({
       height="0" width="0" style={{ display: "none", visibility: "hidden" }}></iframe></noscript>
 
         <PropertyDataProvider>
-          <PlausibleProvider domain="usemasterkey.com" trackLocalhost={true}>
-            <AnalyticsProvider>
-              {children}
-            </AnalyticsProvider>
-          </PlausibleProvider>
+          <AnalyticsProvider>
+            {children}
+          </AnalyticsProvider>
         </PropertyDataProvider>
         <Analytics />
       </body>

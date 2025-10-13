@@ -28,6 +28,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Spinner } from '@/components/ui/spinner';
 import { createFormAnalytics } from '@/lib/analytics';
 import { track } from '@vercel/analytics';
+import { plausibleQuestionnaire } from '@/lib/plausible';
 
 interface ImprovementDetail {
   improvement: string;
@@ -201,6 +202,8 @@ function RealEstateSellPageContent() {
       trackStep(1, 'property_address', 'start', {
         form_name: 'listing_presentation'
       });
+      // Track with Plausible
+      plausibleQuestionnaire.trackFormStart('listing_presentation');
       setHasTrackedFormStart(true);
     }
   }, [analytics, hasTrackedFormStart, trackStep]);
@@ -215,6 +218,10 @@ function RealEstateSellPageContent() {
           completion_percentage: Math.round((currentStep / totalSteps) * 100),
           user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
         });
+        // Track with Plausible
+        plausibleQuestionnaire.trackFormAbandon(currentStep, getStepName(currentStep), 'listing_presentation', {
+          user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
+        });
       }
     };
 
@@ -223,6 +230,10 @@ function RealEstateSellPageContent() {
         analytics.trackFormAbandon(currentStep, formData);
         trackStep(currentStep, getStepName(currentStep), 'abandon', {
           completion_percentage: Math.round((currentStep / totalSteps) * 100),
+          user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
+        });
+        // Track with Plausible
+        plausibleQuestionnaire.trackFormAbandon(currentStep, getStepName(currentStep), 'listing_presentation', {
           user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
         });
       }
@@ -248,6 +259,10 @@ function RealEstateSellPageContent() {
       analytics.trackStepComplete(currentStep, formData);
       trackStep(currentStep, getStepName(currentStep), 'complete', {
         completion_percentage: Math.round((currentStep / totalSteps) * 100),
+        user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
+      });
+      // Track with Plausible
+      plausibleQuestionnaire.trackStepComplete(currentStep, getStepName(currentStep), 'listing_presentation', {
         user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
       });
       
@@ -325,6 +340,16 @@ function RealEstateSellPageContent() {
       value: field === 'sellingIntent' ? (value === 'I am just curious about market conditions' ? 'curious' : 'selling') : value,
       completion_percentage: Math.round((currentStep / totalSteps) * 100)
     });
+    // Track with Plausible
+    plausibleQuestionnaire.trackOptionSelect(
+      currentStep, 
+      getStepName(currentStep), 
+      field, 
+      field === 'sellingIntent' ? (value === 'I am just curious about market conditions' ? 'curious' : 'selling') : value,
+      {
+        form_type: 'listing_presentation'
+      }
+    );
     
     // Auto-advance to next step with fade animation (except for the last step)
     if (currentStep < totalSteps) {
@@ -372,6 +397,8 @@ function RealEstateSellPageContent() {
         to_step_name: getStepName(nextStep),
         completion_percentage: Math.round((nextStep / totalSteps) * 100)
       });
+      // Track with Plausible
+      plausibleQuestionnaire.trackNavigation(previousStep, nextStep, 'back', 'listing_presentation');
       
       setIsTransitioning(true);
       setTimeout(() => {
@@ -393,6 +420,17 @@ function RealEstateSellPageContent() {
       has_improvements: formData.propertyImprovements.length > 0,
       improvement_count: formData.propertyImprovements.length
     });
+    // Track with Plausible
+    plausibleQuestionnaire.trackFormComplete(
+      'listing_presentation',
+      formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling',
+      {
+        property_location: formData.propertyAddress.split(',').slice(-2).join(',').trim(),
+        total_steps: totalSteps,
+        has_improvements: formData.propertyImprovements.length > 0,
+        improvement_count: formData.propertyImprovements.length
+      }
+    );
     
     try {
       // Prepare form data for submission
@@ -517,6 +555,8 @@ function RealEstateSellPageContent() {
         field: 'email',
         error: 'invalid_format'
       });
+      // Track with Plausible
+      plausibleQuestionnaire.trackValidationError(currentStep, 'email', 'invalid_format', 'listing_presentation');
     } else {
       setEmailError('');
     }
