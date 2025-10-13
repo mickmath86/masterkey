@@ -20,8 +20,8 @@ export function PlausibleProvider({
     // Initialize Plausible using the standard script approach
     if (typeof window !== 'undefined') {
       // Set up plausible function
-      window.plausible = window.plausible || function() { 
-        (window.plausible.q = window.plausible.q || []).push(arguments) 
+      window.plausible = window.plausible || function(...args: any[]) { 
+        (window.plausible.q = window.plausible.q || []).push(args) 
       };
 
       // Load the Plausible script
