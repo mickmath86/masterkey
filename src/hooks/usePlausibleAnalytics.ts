@@ -1,15 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
-
-// Plausible analytics function type
-declare global {
-  interface Window {
-    plausible?: (eventName: string, options?: {
-      props?: Record<string, any>
-    }) => void
-  }
-}
+import { track } from '@plausible-analytics/tracker'
 
 export interface PlausibleEventProps {
   // Form tracking properties
@@ -39,20 +31,30 @@ export interface PlausibleEventProps {
 
 export function usePlausibleAnalytics() {
   const trackEvent = useCallback((eventName: string, props?: PlausibleEventProps) => {
-    if (typeof window !== 'undefined' && window.plausible) {
-      // Add timestamp to all events
-      const eventProps = {
-        ...props,
-        timestamp: new Date().toISOString()
+    try {
+      // Convert all values to strings for Plausible
+      const eventProps: Record<string, string> = {}
+      
+      if (props) {
+        Object.entries(props).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            eventProps[key] = String(value)
+          }
+        })
       }
+      
+      // Add timestamp
+      eventProps.timestamp = new Date().toISOString()
       
       console.log(`📊 Plausible Event: ${eventName}`, eventProps)
       
-      window.plausible(eventName, {
+      // Use the official Plausible tracker
+      track(eventName, {
         props: eventProps
       })
-    } else {
-      console.log(`📊 Plausible not loaded - would track: ${eventName}`, props)
+    } catch (error) {
+      console.error('📊 Plausible tracking error:', error)
+      console.log(`📊 Would track: ${eventName}`, props)
     }
   }, [])
 

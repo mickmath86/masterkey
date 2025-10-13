@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { usePlausibleAnalytics } from '@/hooks/usePlausibleAnalytics'
+import { track } from '@plausible-analytics/tracker'
 
 export function PlausibleDebugger() {
   const [plausibleStatus, setPlausibleStatus] = useState<string>('checking...')
@@ -15,14 +16,17 @@ export function PlausibleDebugger() {
         const hasGTM = !!(window as any).google_tag_manager || !!(window as any).gtag
         setGtmStatus(hasGTM ? '✅ GTM Loaded' : '❌ GTM Not Found')
         
-        // Check if Plausible is loaded
-        const hasPlausible = !!(window as any).plausible
-        setPlausibleStatus(hasPlausible ? '✅ Plausible Loaded' : '❌ Plausible Not Found')
+        // Check if Plausible tracker is available
+        try {
+          track('Debug Check', { props: { test: 'true' } })
+          setPlausibleStatus('✅ Plausible Tracker Ready')
+        } catch (error) {
+          setPlausibleStatus('❌ Plausible Tracker Error')
+        }
         
         console.log('🔍 Analytics Debug:', {
           gtm: hasGTM,
-          plausible: hasPlausible,
-          window_plausible: (window as any).plausible,
+          plausible_tracker: 'npm package loaded',
           window_gtm: (window as any).google_tag_manager
         })
       }
