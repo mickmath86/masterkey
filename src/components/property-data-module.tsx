@@ -189,6 +189,22 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
         // Valuation analysis (AI-generated insights)
         valuation: structuredValuation ? {
+          // Base and enhanced property values from component state
+          basePropertyValue: subjectPropertyData?.zestimate || subjectPropertyData?.price || 0,
+          enhancedPropertyValue: getEnhancedPropertyValue(),
+          improvementAddedValue: questionnaireData?.improvementDetails && questionnaireData.improvementDetails.length > 0 
+            ? getImprovementValue().totalDepreciatedValue 
+            : 0,
+          improvementBreakdown: questionnaireData?.improvementDetails && questionnaireData.improvementDetails.length > 0 
+            ? getImprovementValue().improvementValuations.map(improvement => ({
+                improvement: improvement.improvement,
+                yearsAgo: improvement.yearsAgo,
+                originalCost: improvement.originalCost,
+                depreciatedValue: improvement.depreciatedValue
+              }))
+            : [],
+          
+          // AI-generated analysis
           summary: structuredValuation.summary,
           marketTrend: {
             direction: structuredValuation.marketTrend?.direction,
@@ -297,7 +313,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     } catch (error) {
       console.error('❌ Error sending comprehensive webhook:', error);
     }
-  }, [webhookSent, questionnaireData, subjectPropertyData, structuredValuation, structuredSummary, marketData, comps, avmData, valueData, summaryState, valuationState, dataLoadingComplete]);
+  }, [webhookSent, questionnaireData, subjectPropertyData, structuredValuation, structuredSummary, marketData, comps, avmData, valueData, summaryState, valuationState, dataLoadingComplete, getEnhancedPropertyValue, getImprovementValue]);
 
   // Handler for when a map marker is clicked
   const handleMarkerClick = (propertyData: any) => {
