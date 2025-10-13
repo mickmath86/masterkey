@@ -189,22 +189,23 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
         // Valuation analysis (AI-generated insights)
         valuation: structuredValuation ? {
-          baseValuation: structuredValuation.baseValuation,
-          adjustedValuation: structuredValuation.adjustedValuation,
-          twelveMonthPerformance: structuredValuation.keyMetrics?.valueChange12Month,
+          summary: structuredValuation.summary,
           marketTrend: {
             direction: structuredValuation.marketTrend?.direction,
             strength: structuredValuation.marketTrend?.strength,
             description: structuredValuation.marketTrend?.description
           },
-          keyInsights: structuredValuation.insights || [],
-          recommendationToSeller: structuredValuation.recommendation ? {
+          keyMetrics: {
+            valueChange12Month: structuredValuation.keyMetrics?.valueChange12Month,
+            pricePerSqFt: structuredValuation.keyMetrics?.pricePerSqFt,
+            volatility: structuredValuation.keyMetrics?.volatility
+          },
+          insights: structuredValuation.insights || [],
+          recommendation: structuredValuation.recommendation ? {
             action: structuredValuation.recommendation.action,
             reasoning: structuredValuation.recommendation.reasoning,
             timeframe: structuredValuation.recommendation.timeframe
-          } : null,
-          marketRadar: structuredValuation.marketRadar,
-          summary: structuredValuation.summary
+          } : null
         } : null,
 
         // Market data
