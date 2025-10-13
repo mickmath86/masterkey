@@ -19,17 +19,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      
       <head>
         <script dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
           `
         }} />
         <GoogleTagManager gtmId="GTM-WTJD5VKJ" />
-        {/* Plausible Analytics */}
+        <link rel="icon" href="/favicon.ico" />
         <script defer data-domain="usemasterkey.com" src="https://plausible.io/js/script.js"></script>
         <link
           rel="stylesheet"
@@ -37,10 +35,14 @@ export default function RootLayout({
         />
       </head>
       <body className="text-gray-950 antialiased">
-      {/* <!-- Google Tag Manager (noscript) --> */}
-      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WTJD5VKJ"
-      height="0" width="0" style={{ display: "none", visibility: "hidden" }}></iframe></noscript>
-
+        <noscript>
+          <iframe 
+            src="https://www.googletagmanager.com/ns.html?id=GTM-WTJD5VKJ"
+            height="0" 
+            width="0" 
+            style={{display: 'none', visibility: 'hidden'}}
+          />
+        </noscript>
         <PropertyDataProvider>
           <AnalyticsProvider>
             {children}
