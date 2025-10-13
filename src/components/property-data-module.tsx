@@ -304,6 +304,18 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
           valuationComplete: valuationState === 'complete',
           dataLoadingComplete: dataLoadingComplete,
           allDataAvailable: !!(subjectPropertyData && structuredValuation && structuredSummary)
+        },
+
+        // Raw output data for debugging/processing
+        rawData: {
+          subjectPropertyData: subjectPropertyData,
+          structuredValuation: structuredValuation,
+          structuredSummary: structuredSummary,
+          marketData: marketData,
+          comps: comps,
+          avmData: avmData,
+          valueData: valueData,
+          questionnaireData: questionnaireData
         }
       };
 

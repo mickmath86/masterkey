@@ -248,8 +248,7 @@ function RealEstateSellPageContent() {
     };
   }, [currentStep, totalSteps, formData, analytics]);
   
-  // LeadConnector webhook URL
-  const WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/0972671d-e4b7-46c5-ad30-53d734b97e8c';
+  // Note: Simple webhook removed - using comprehensive webhook in property-data-module instead
 
   const handleNext = async () => {
     if (currentStep < totalSteps) {
@@ -455,26 +454,8 @@ function RealEstateSellPageContent() {
         phone: submissionData.phone
       });
 
-      // Send form data to LeadConnector webhook
-      try {
-        const response = await fetch(WEBHOOK_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(submissionData),
-        });
-
-        if (response.ok) {
-          console.log('Form submitted successfully to LeadConnector:', submissionData);
-        } else {
-          console.error('Webhook submission failed:', response.status, response.statusText);
-          // Continue with redirect even if webhook fails
-        }
-      } catch (webhookError) {
-        console.error('Webhook submission error:', webhookError);
-        // Continue with redirect even if webhook fails
-      }
+      // Note: Simple webhook removed - comprehensive webhook will be sent from property-data-module
+      console.log('Form submitted - comprehensive webhook will be triggered after property analysis completes');
       
       // Prefetch images and value data before redirecting for faster loading
       try {
