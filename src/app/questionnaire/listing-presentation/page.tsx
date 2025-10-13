@@ -29,7 +29,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Spinner } from '@/components/ui/spinner';
 import { createFormAnalytics } from '@/lib/analytics';
 import { track } from '@vercel/analytics';
-import { plausibleQuestionnaire } from '@/lib/plausible';
 
 interface ImprovementDetail {
   improvement: string;
@@ -310,18 +309,14 @@ function RealEstateSellPageContent() {
     const updatedFormData = { ...formData, [field]: value };
     setFormData(updatedFormData);
     
-    // Track option selection
-    // trackStep removed - clean start with GTM
-    // Track with Plausible
-    plausibleQuestionnaire.trackOptionSelect(
-      currentStep, 
-      getStepName(currentStep), 
-      field, 
-      field === 'sellingIntent' ? (value === 'I am just curious about market conditions' ? 'curious' : 'selling') : value,
-      {
-        form_type: 'listing_presentation'
-      }
-    );
+    // Track option selection with UTM support
+    trackButtonClick(`${field}_${value}`, {
+      step_number: currentStep,
+      step_name: getStepName(currentStep),
+      field: field,
+      form_type: 'listing_presentation',
+      user_flow: field === 'sellingIntent' ? (value === 'I am just curious about market conditions' ? 'curious' : 'selling') : undefined
+    });
     
     // Auto-advance to next step with fade animation (except for the last step)
     if (currentStep < totalSteps) {
@@ -363,10 +358,13 @@ function RealEstateSellPageContent() {
       const previousStep = currentStep;
       const nextStep = currentStep - 1;
       
-      // Track backward navigation
-      // trackStep removed - clean start with GTM
-      // Track with Plausible
-      plausibleQuestionnaire.trackNavigation(previousStep, nextStep, 'back', 'listing_presentation');
+      // Track backward navigation with UTM support
+      trackButtonClick('previous_step', {
+        step_number: previousStep,
+        step_name: getStepName(previousStep),
+        form_type: 'listing_presentation',
+        user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
+      });
       
       setIsTransitioning(true);
       setTimeout(() => {
@@ -484,9 +482,14 @@ function RealEstateSellPageContent() {
     setFormData({ ...formData, email });
     if (email.trim() && !validateEmail(email)) {
       setEmailError('Please enter a valid email address');
-      // trackStep removed - clean start with GTM
-      // Track with Plausible
-      plausibleQuestionnaire.trackValidationError(currentStep, 'email', 'invalid_format', 'listing_presentation');
+      // Track validation error with UTM support
+      trackButtonClick('email_validation_error', {
+        step_number: currentStep,
+        step_name: getStepName(currentStep),
+        field: 'email',
+        error_type: 'invalid_format',
+        form_type: 'listing_presentation'
+      });
     } else {
       setEmailError('');
     }

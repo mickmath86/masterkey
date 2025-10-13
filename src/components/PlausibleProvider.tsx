@@ -8,13 +8,17 @@ interface PlausibleProviderProps {
 }
 
 export function PlausibleProvider({ children }: PlausibleProviderProps) {
-  const { trackPageview } = usePlausibleAnalytics()
+  const { trackPageview, getUtmParameters } = usePlausibleAnalytics()
 
-  // Track initial pageview with UTM parameters
+  // Capture UTM parameters and track initial pageview
   useEffect(() => {
-    // Track the initial page load
+    // Force UTM parameter capture on initial load
+    const utmParams = getUtmParameters()
+    console.log('📊 PlausibleProvider initialized with UTM params:', utmParams)
+    
+    // Track the initial page load with UTM parameters
     trackPageview()
-  }, [trackPageview])
+  }, [trackPageview, getUtmParameters])
 
   return <>{children}</>
 }

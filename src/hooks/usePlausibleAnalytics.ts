@@ -78,6 +78,7 @@ export function usePlausibleAnalytics() {
     // If found in URL, store in sessionStorage for persistence
     if (Object.keys(utmParams).length > 0) {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams))
+      console.log('📊 UTM parameters captured and stored:', utmParams)
       return utmParams
     }
 
@@ -85,12 +86,15 @@ export function usePlausibleAnalytics() {
     try {
       const stored = sessionStorage.getItem('utm_params')
       if (stored) {
-        return JSON.parse(stored)
+        const parsedParams = JSON.parse(stored)
+        console.log('📊 UTM parameters retrieved from storage:', parsedParams)
+        return parsedParams
       }
     } catch (error) {
       console.warn('Failed to parse stored UTM parameters:', error)
     }
 
+    console.log('📊 No UTM parameters found')
     return {}
   }, [])
 
