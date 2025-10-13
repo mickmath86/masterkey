@@ -28,7 +28,6 @@ export default function RootLayout({
         }} />
         <GoogleTagManager gtmId="GTM-WTJD5VKJ" />
         <link rel="icon" href="/favicon.ico" />
-        <script defer data-domain="usemasterkey.com" src="https://plausible.io/js/script.js"></script>
         <link
           rel="stylesheet"
           href="https://api.fontshare.com/css?f%5B%5D=switzer@400,500,600,700&amp;display=swap"

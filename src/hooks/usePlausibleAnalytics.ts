@@ -30,6 +30,8 @@ export interface PlausibleEventProps {
   has_improvements?: boolean
   improvement_count?: number
   property_location?: string
+  property_type?: string
+  has_questionnaire_data?: boolean
   
   // General
   timestamp?: string
@@ -69,8 +71,15 @@ export function usePlausibleAnalytics() {
 
   // Step tracking
   const trackStepCompleted = useCallback((stepNumber: number, stepName: string, additionalProps?: PlausibleEventProps) => {
+    // Track generic step completed
     trackEvent('Step Completed', {
       step_number: stepNumber,
+      step_name: stepName,
+      ...additionalProps
+    })
+    
+    // Track specific step goals for Plausible dashboard
+    trackEvent(`Step ${stepNumber} Completed`, {
       step_name: stepName,
       ...additionalProps
     })
