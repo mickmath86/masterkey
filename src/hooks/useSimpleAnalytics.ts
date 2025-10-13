@@ -34,7 +34,7 @@ function storeUtmParams(params: Record<string, string>) {
 }
 
 // Get stored UTM params
-function getStoredUtmParams(): Record<string, string> {
+export function getStoredUtmParams(): Record<string, string> {
   if (typeof window === 'undefined') return {};
   
   try {

@@ -133,7 +133,170 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   const [dataLoadingComplete, setDataLoadingComplete] = useState(false)
   const [summaryTriggered, setSummaryTriggered] = useState(false)
   const [valuationTriggered, setValuationTriggered] = useState(false)
+  const [webhookSent, setWebhookSent] = useState(false)
 
+  // LeadConnector webhook URL
+  const WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/0972671d-e4b7-46c5-ad30-53d734b97e8c';
+
+  // Function to send comprehensive data to webhook
+  const sendComprehensiveWebhook = async () => {
+    if (webhookSent) {
+      console.log('📤 Webhook already sent, skipping duplicate');
+      return;
+    }
+
+    try {
+      console.log('📤 Preparing comprehensive webhook data...');
+      
+      // Combine all available data
+      const webhookData = {
+        // Timestamp and metadata
+        timestamp: new Date().toISOString(),
+        source: 'property_analysis_complete',
+        
+        // Questionnaire data from the form
+        questionnaire: questionnaireData ? {
+          propertyAddress: questionnaireData.propertyAddress,
+          sellingIntent: questionnaireData.sellingIntent,
+          sellingTimeline: questionnaireData.sellingTimeline,
+          sellingMotivation: (questionnaireData as any).sellingMotivation,
+          propertyCondition: questionnaireData.propertyCondition,
+          propertyImprovements: questionnaireData.propertyImprovements,
+          priceExpectations: (questionnaireData as any).priceExpectations,
+          contactInfo: {
+            name: questionnaireData.name,
+            email: questionnaireData.email,
+            phone: questionnaireData.phone
+          },
+          privacyPolicyConsent: (questionnaireData as any).privacyPolicyConsent,
+          completionTime: (questionnaireData as any).completionTime
+        } : null,
+
+        // Property basic data
+        property: subjectPropertyData ? {
+          address: subjectPropertyData.address,
+          zpid: subjectPropertyData.zpid,
+          price: subjectPropertyData.price,
+          zestimate: subjectPropertyData.zestimate,
+          bedrooms: subjectPropertyData.bedrooms,
+          bathrooms: subjectPropertyData.bathrooms,
+          livingArea: subjectPropertyData.livingArea,
+          lotSize: subjectPropertyData.lotSize,
+          yearBuilt: subjectPropertyData.yearBuilt,
+          propertyType: subjectPropertyData.propertyType,
+          homeStatus: subjectPropertyData.homeStatus
+        } : null,
+
+        // Valuation analysis (AI-generated insights)
+        valuation: structuredValuation ? {
+          baseValuation: structuredValuation.baseValuation,
+          adjustedValuation: structuredValuation.adjustedValuation,
+          twelveMonthPerformance: structuredValuation.keyMetrics?.valueChange12Month,
+          marketTrend: {
+            direction: structuredValuation.marketTrend?.direction,
+            strength: structuredValuation.marketTrend?.strength,
+            description: structuredValuation.marketTrend?.description
+          },
+          keyInsights: structuredValuation.insights || [],
+          recommendationToSeller: structuredValuation.recommendation ? {
+            action: structuredValuation.recommendation.action,
+            reasoning: structuredValuation.recommendation.reasoning,
+            timeframe: structuredValuation.recommendation.timeframe
+          } : null,
+          marketRadar: structuredValuation.marketRadar,
+          summary: structuredValuation.summary
+        } : null,
+
+        // Market data
+        market: marketData ? {
+          averageDaysOnMarket: marketData.averageDaysOnMarket,
+          totalListings: marketData.totalListings,
+          medianSalePrice: marketData.medianSalePrice,
+          priceChange: marketData.priceChange,
+          inventoryLevel: marketData.inventoryLevel,
+          marketType: marketData.marketType
+        } : null,
+
+        // Property summary (AI-generated)
+        summary: structuredSummary ? {
+          overview: structuredSummary.overview,
+          keyFeatures: structuredSummary.keyFeatures || [],
+          marketPosition: structuredSummary.marketPosition,
+          investmentHighlights: structuredSummary.investmentHighlights || [],
+          propertyStats: structuredSummary.propertyStats
+        } : null,
+
+        // Comparable sales
+        comparables: comps ? {
+          totalCount: comps.length,
+          salesComps: comps.map((comp: any) => ({
+            address: comp.address,
+            price: comp.price,
+            bedrooms: comp.bedrooms,
+            bathrooms: comp.bathrooms,
+            livingArea: comp.livingArea,
+            lotSize: comp.lotSize,
+            yearBuilt: comp.yearBuilt,
+            daysOnMarket: comp.daysOnMarket,
+            pricePerSqFt: comp.pricePerSqFt,
+            distance: comp.distance
+          }))
+        } : null,
+
+        // AVM data
+        avm: avmData ? {
+          estimate: avmData.estimate,
+          confidence: avmData.confidence,
+          valuationRange: avmData.valuationRange
+        } : null,
+
+        // Value history data
+        valueHistory: valueData ? {
+          totalDataPoints: Array.isArray(valueData) ? valueData.length : 0,
+          latestValue: Array.isArray(valueData) && valueData.length > 0 ? valueData[0] : null,
+          valueRange: Array.isArray(valueData) && valueData.length > 0 ? {
+            min: Math.min(...valueData.map((v: any) => v.price || 0)),
+            max: Math.max(...valueData.map((v: any) => v.price || 0))
+          } : null
+        } : null,
+
+        // Analysis status
+        analysisStatus: {
+          summaryComplete: summaryState === 'complete',
+          valuationComplete: valuationState === 'complete',
+          dataLoadingComplete: dataLoadingComplete,
+          allDataAvailable: !!(subjectPropertyData && structuredValuation && structuredSummary)
+        }
+      };
+
+      console.log('📤 Sending comprehensive webhook with data:', {
+        hasQuestionnaire: !!webhookData.questionnaire,
+        hasProperty: !!webhookData.property,
+        hasValuation: !!webhookData.valuation,
+        hasMarket: !!webhookData.market,
+        hasSummary: !!webhookData.summary,
+        hasComparables: !!webhookData.comparables,
+        totalDataSize: JSON.stringify(webhookData).length
+      });
+
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookData),
+      });
+
+      if (response.ok) {
+        console.log('✅ Comprehensive webhook sent successfully');
+        setWebhookSent(true);
+      } else {
+        console.error('❌ Webhook failed:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('❌ Error sending comprehensive webhook:', error);
+    }
+  };
 
   // Handler for when a map marker is clicked
   const handleMarkerClick = (propertyData: any) => {
@@ -687,6 +850,30 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       setCurrentImageIndex((prev) => (prev - 1 + propertyImages.images.length) % propertyImages.images.length)
     }
   }
+
+  // Trigger comprehensive webhook when all analysis is complete
+  useEffect(() => {
+    const shouldSendWebhook = 
+      questionnaireData && // User came from questionnaire
+      summaryState === 'complete' && // Property summary is complete
+      valuationState === 'complete' && // Valuation analysis is complete
+      subjectPropertyData && // We have property data
+      !webhookSent; // Haven't sent webhook yet
+
+    console.log('🔍 Webhook Trigger Check:', {
+      hasQuestionnaire: !!questionnaireData,
+      summaryComplete: summaryState === 'complete',
+      valuationComplete: valuationState === 'complete',
+      hasPropertyData: !!subjectPropertyData,
+      webhookSent: webhookSent,
+      shouldSend: shouldSendWebhook
+    });
+
+    if (shouldSendWebhook) {
+      console.log('✅ All analysis complete - triggering comprehensive webhook');
+      sendComprehensiveWebhook();
+    }
+  }, [questionnaireData, summaryState, valuationState, subjectPropertyData, webhookSent]);
 
   // Function to fetch AI-generated structured property summary
   const fetchPropertySummary = async (propertyAddress: string, propertyData?: any) => {
