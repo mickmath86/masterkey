@@ -5,8 +5,7 @@ import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
 import Image from 'next/image';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, StarIcon, XMarkIcon } from '@heroicons/react/16/solid';
-import { useQuestionnaireTracking } from '@/hooks/usePlausibleAnalytics';
-import { PlausibleDebugger } from '@/components/PlausibleDebugger';
+// Clean start - using GTM dataLayer for Plausible
 import {
   Table,
   TableBody,
@@ -128,7 +127,7 @@ function RealEstateSellPageContent() {
   // Analytics tracking
   const [analytics] = useState(() => createFormAnalytics());
   const [hasTrackedFormStart, setHasTrackedFormStart] = useState(false);
-  const { trackStep, trackFormComplete, trackButtonClick } = useQuestionnaireTracking();
+  // Clean start - removed Plausible tracking hooks
   const [formData, setFormData] = useState<FormData>({
     propertyAddress: '',
     sellingIntent: '',
@@ -200,14 +199,12 @@ function RealEstateSellPageContent() {
   useEffect(() => {
     if (!hasTrackedFormStart) {
       analytics.trackFormStart();
-      trackStep(1, 'property_address', 'start', {
-        form_name: 'listing_presentation'
-      });
+      // trackStep removed - clean start with GTM
       // Track with Plausible
       plausibleQuestionnaire.trackFormStart('listing_presentation');
       setHasTrackedFormStart(true);
     }
-  }, [analytics, hasTrackedFormStart, trackStep]);
+  }, [analytics, hasTrackedFormStart]);
 
   // Track page visibility changes to detect abandonment
   useEffect(() => {
@@ -215,7 +212,7 @@ function RealEstateSellPageContent() {
       if (document.visibilityState === 'hidden' && currentStep < totalSteps) {
         // User is leaving the page before completion
         analytics.trackFormAbandon(currentStep, formData);
-        trackStep(currentStep, getStepName(currentStep), 'abandon', {
+        // trackStep(currentStep, getStepName(currentStep), 'abandon', {
           completion_percentage: Math.round((currentStep / totalSteps) * 100),
           user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
         });
@@ -229,7 +226,7 @@ function RealEstateSellPageContent() {
     const handleBeforeUnload = () => {
       if (currentStep < totalSteps) {
         analytics.trackFormAbandon(currentStep, formData);
-        trackStep(currentStep, getStepName(currentStep), 'abandon', {
+        // trackStep(currentStep, getStepName(currentStep), 'abandon', {
           completion_percentage: Math.round((currentStep / totalSteps) * 100),
           user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
         });
@@ -257,7 +254,7 @@ function RealEstateSellPageContent() {
       
       // Track step completion before advancing
       analytics.trackStepComplete(currentStep, formData);
-      trackStep(currentStep, getStepName(currentStep), 'complete', {
+      // trackStep(currentStep, getStepName(currentStep), 'complete', {
         completion_percentage: Math.round((currentStep / totalSteps) * 100),
         user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
       });
@@ -335,7 +332,7 @@ function RealEstateSellPageContent() {
     setFormData(updatedFormData);
     
     // Track option selection
-    trackStep(currentStep, getStepName(currentStep), 'option_select', {
+    // trackStep(currentStep, getStepName(currentStep), 'option_select', {
       field: field,
       value: field === 'sellingIntent' ? (value === 'I am just curious about market conditions' ? 'curious' : 'selling') : value,
       completion_percentage: Math.round((currentStep / totalSteps) * 100)
@@ -392,7 +389,7 @@ function RealEstateSellPageContent() {
       const nextStep = currentStep - 1;
       
       // Track backward navigation
-      trackStep(previousStep, getStepName(previousStep), 'back', {
+      // trackStep(previousStep, getStepName(previousStep), 'back', {
         to_step: nextStep,
         to_step_name: getStepName(nextStep),
         completion_percentage: Math.round((nextStep / totalSteps) * 100)
@@ -413,7 +410,7 @@ function RealEstateSellPageContent() {
     
     // Track form completion
     const completionTime = Date.now() - (analytics as any).startTime;
-    trackFormComplete(formData, completionTime);
+    // trackFormComplete(formData, completionTime);
     
     try {
       // Prepare form data for submission
@@ -516,7 +513,7 @@ function RealEstateSellPageContent() {
     setFormData({ ...formData, email });
     if (email.trim() && !validateEmail(email)) {
       setEmailError('Please enter a valid email address');
-      trackStep(currentStep, getStepName(currentStep), 'validation_error', {
+      // trackStep(currentStep, getStepName(currentStep), 'validation_error', {
         field: 'email',
         error: 'invalid_format'
       });
@@ -652,7 +649,7 @@ function RealEstateSellPageContent() {
     setFormData({ ...formData, privacyPolicyConsent: consent });
     
     // Track privacy policy consent
-    trackStep(currentStep, getStepName(currentStep), 'privacy_consent', {
+    // trackStep(currentStep, getStepName(currentStep), 'privacy_consent', {
       consent: consent,
       completion_percentage: Math.round((currentStep / totalSteps) * 100)
     });
@@ -1399,7 +1396,7 @@ function RealEstateSellPageContent() {
           </div>
         </DialogContent>
       </Dialog>
-      <PlausibleDebugger />
+      {/* Clean start - GTM dataLayer approach */}
     </div>
   );
 }
