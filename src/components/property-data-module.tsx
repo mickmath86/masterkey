@@ -750,20 +750,49 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       subjectPropertyData && // We have property data
       !webhookSent; // Haven't sent webhook yet
 
+    // Also check for fallback conditions (in case analysis doesn't complete but we have data)
+    const shouldSendFallbackWebhook = 
+      questionnaireData && // User came from questionnaire
+      subjectPropertyData && // We have property data
+      (structuredSummary || structuredValuation) && // We have at least some analysis
+      !webhookSent; // Haven't sent webhook yet
+
     console.log('🔍 Webhook Trigger Check:', {
       hasQuestionnaire: !!questionnaireData,
       summaryComplete: summaryState === 'complete',
       valuationComplete: valuationState === 'complete',
       hasPropertyData: !!subjectPropertyData,
+      hasStructuredSummary: !!structuredSummary,
+      hasStructuredValuation: !!structuredValuation,
       webhookSent: webhookSent,
-      shouldSend: shouldSendWebhook
+      shouldSend: shouldSendWebhook,
+      shouldSendFallback: shouldSendFallbackWebhook,
+      summaryState: summaryState,
+      valuationState: valuationState
     });
 
     if (shouldSendWebhook) {
       console.log('✅ All analysis complete - triggering comprehensive webhook');
       sendComprehensiveWebhook();
+    } else if (shouldSendFallbackWebhook) {
+      console.log('⚠️ Fallback webhook trigger - sending with available data');
+      sendComprehensiveWebhook();
     }
-  }, [questionnaireData, summaryState, valuationState, subjectPropertyData, webhookSent, sendComprehensiveWebhook]);
+  }, [questionnaireData, summaryState, valuationState, subjectPropertyData, structuredSummary, structuredValuation, webhookSent, sendComprehensiveWebhook]);
+
+  // Fallback webhook trigger after 30 seconds if user came from questionnaire but webhook hasn't fired
+  useEffect(() => {
+    if (questionnaireData && !webhookSent) {
+      const fallbackTimer = setTimeout(() => {
+        if (!webhookSent && subjectPropertyData) {
+          console.log('⏰ Fallback timer triggered - sending webhook with available data after 30s delay');
+          sendComprehensiveWebhook();
+        }
+      }, 30000); // 30 seconds
+
+      return () => clearTimeout(fallbackTimer);
+    }
+  }, [questionnaireData, webhookSent, subjectPropertyData, sendComprehensiveWebhook]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
