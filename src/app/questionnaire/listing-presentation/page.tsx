@@ -411,25 +411,8 @@ function RealEstateSellPageContent() {
     setIsSubmitting(true);
     
     // Track form completion
-    trackFormComplete({
-      user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling',
-      property_location: formData.propertyAddress.split(',').slice(-2).join(',').trim(),
-      total_steps: totalSteps,
-      completion_time: Date.now() - (analytics as any).startTime,
-      has_improvements: formData.propertyImprovements.length > 0,
-      improvement_count: formData.propertyImprovements.length
-    });
-    // Track with Plausible
-    plausibleQuestionnaire.trackFormComplete(
-      'listing_presentation',
-      formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling',
-      {
-        property_location: formData.propertyAddress.split(',').slice(-2).join(',').trim(),
-        total_steps: totalSteps,
-        has_improvements: formData.propertyImprovements.length > 0,
-        improvement_count: formData.propertyImprovements.length
-      }
-    );
+    const completionTime = Date.now() - (analytics as any).startTime;
+    trackFormComplete(formData, completionTime);
     
     try {
       // Prepare form data for submission
