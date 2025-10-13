@@ -212,10 +212,7 @@ function RealEstateSellPageContent() {
       if (document.visibilityState === 'hidden' && currentStep < totalSteps) {
         // User is leaving the page before completion
         analytics.trackFormAbandon(currentStep, formData);
-        // trackStep(currentStep, getStepName(currentStep), 'abandon', {
-          completion_percentage: Math.round((currentStep / totalSteps) * 100),
-          user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
-        });
+        // trackStep removed - clean start with GTM
         // Track with Plausible
         plausibleQuestionnaire.trackFormAbandon(currentStep, getStepName(currentStep), 'listing_presentation', {
           user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
@@ -226,10 +223,7 @@ function RealEstateSellPageContent() {
     const handleBeforeUnload = () => {
       if (currentStep < totalSteps) {
         analytics.trackFormAbandon(currentStep, formData);
-        // trackStep(currentStep, getStepName(currentStep), 'abandon', {
-          completion_percentage: Math.round((currentStep / totalSteps) * 100),
-          user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
-        });
+        // trackStep removed - clean start with GTM
         // Track with Plausible
         plausibleQuestionnaire.trackFormAbandon(currentStep, getStepName(currentStep), 'listing_presentation', {
           user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
@@ -254,10 +248,7 @@ function RealEstateSellPageContent() {
       
       // Track step completion before advancing
       analytics.trackStepComplete(currentStep, formData);
-      // trackStep(currentStep, getStepName(currentStep), 'complete', {
-        completion_percentage: Math.round((currentStep / totalSteps) * 100),
-        user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
-      });
+      // trackStep removed - clean start with GTM
       // Track with Plausible
       plausibleQuestionnaire.trackStepComplete(currentStep, getStepName(currentStep), 'listing_presentation', {
         user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
@@ -332,11 +323,7 @@ function RealEstateSellPageContent() {
     setFormData(updatedFormData);
     
     // Track option selection
-    // trackStep(currentStep, getStepName(currentStep), 'option_select', {
-      field: field,
-      value: field === 'sellingIntent' ? (value === 'I am just curious about market conditions' ? 'curious' : 'selling') : value,
-      completion_percentage: Math.round((currentStep / totalSteps) * 100)
-    });
+    // trackStep removed - clean start with GTM
     // Track with Plausible
     plausibleQuestionnaire.trackOptionSelect(
       currentStep, 
@@ -389,11 +376,7 @@ function RealEstateSellPageContent() {
       const nextStep = currentStep - 1;
       
       // Track backward navigation
-      // trackStep(previousStep, getStepName(previousStep), 'back', {
-        to_step: nextStep,
-        to_step_name: getStepName(nextStep),
-        completion_percentage: Math.round((nextStep / totalSteps) * 100)
-      });
+      // trackStep removed - clean start with GTM
       // Track with Plausible
       plausibleQuestionnaire.trackNavigation(previousStep, nextStep, 'back', 'listing_presentation');
       
@@ -410,7 +393,7 @@ function RealEstateSellPageContent() {
     
     // Track form completion
     const completionTime = Date.now() - (analytics as any).startTime;
-    // trackFormComplete(formData, completionTime);
+    // trackFormComplete removed - clean start with GTMformData, completionTime);
     
     try {
       // Prepare form data for submission
@@ -513,10 +496,7 @@ function RealEstateSellPageContent() {
     setFormData({ ...formData, email });
     if (email.trim() && !validateEmail(email)) {
       setEmailError('Please enter a valid email address');
-      // trackStep(currentStep, getStepName(currentStep), 'validation_error', {
-        field: 'email',
-        error: 'invalid_format'
-      });
+      // trackStep removed - clean start with GTM
       // Track with Plausible
       plausibleQuestionnaire.trackValidationError(currentStep, 'email', 'invalid_format', 'listing_presentation');
     } else {
@@ -649,10 +629,7 @@ function RealEstateSellPageContent() {
     setFormData({ ...formData, privacyPolicyConsent: consent });
     
     // Track privacy policy consent
-    // trackStep(currentStep, getStepName(currentStep), 'privacy_consent', {
-      consent: consent,
-      completion_percentage: Math.round((currentStep / totalSteps) * 100)
-    });
+    // trackStep removed - clean start with GTM
   };
   return (
     <div className="h-screen flex">
