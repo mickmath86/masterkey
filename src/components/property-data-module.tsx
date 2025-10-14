@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { usePlausibleAnalytics } from '@/hooks/usePlausibleAnalytics';
 import { usePropertyData } from "@/contexts/PropertyDataContext"
 
 import { Toaster } from "@/components/ui/sonner"
@@ -96,7 +95,7 @@ interface PropertyDataModuleProps {
 export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps) {
   const router = useRouter()
   const { propertyData: prefetchedPropertyData, questionnaireData, calculateImprovementValue } = usePropertyData()
-  const { trackEvent } = usePlausibleAnalytics()
+  // Plausible tracking removed
   
   // need to kill this
   const [propertyData, setPropertyData] = useState<any>(null) 
@@ -846,18 +845,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     }
   }, [])
 
-  // Track property profile loaded when component mounts with data
-  useEffect(() => {
-    if (subjectPropertyData && address) {
-      console.log('📊 Property Profile Loaded - tracking Plausible event')
-      trackEvent('Property Profile Loaded', {
-        property_location: address,
-        has_questionnaire_data: !!questionnaireData,
-        user_flow: questionnaireData?.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling',
-        property_type: subjectPropertyData.propertyType || 'unknown'
-      })
-    }
-  }, [subjectPropertyData, address, questionnaireData, trackEvent])
+  // Plausible tracking removed
 
   // Prefill contact subject when modal opens
   useEffect(() => {

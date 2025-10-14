@@ -5,8 +5,6 @@ import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
 import Image from 'next/image';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, StarIcon, XMarkIcon } from '@heroicons/react/16/solid';
-import { useQuestionnaireTracking } from '@/hooks/usePlausibleAnalytics';
-import { PlausibleDebugger } from '@/components/PlausibleDebugger';
 import {
   Table,
   TableBody,
@@ -127,7 +125,7 @@ function RealEstateSellPageContent() {
   // Analytics tracking
   const [analytics] = useState(() => createFormAnalytics());
   const [hasTrackedFormStart, setHasTrackedFormStart] = useState(false);
-  const { trackStep, trackFormComplete, trackButtonClick, trackQuestionnaireStart } = useQuestionnaireTracking();
+  // Plausible tracking removed
   const [formData, setFormData] = useState<FormData>({
     propertyAddress: '',
     sellingIntent: '',
@@ -199,11 +197,10 @@ function RealEstateSellPageContent() {
   useEffect(() => {
     if (!hasTrackedFormStart) {
       analytics.trackFormStart();
-      trackStep(1, 'property_address', 'start', formData);
-      trackQuestionnaireStart(formData);
+      // Plausible tracking removed
       setHasTrackedFormStart(true);
     }
-  }, [analytics, hasTrackedFormStart, trackStep, trackQuestionnaireStart, formData]);
+  }, [analytics, hasTrackedFormStart]);
 
   // Track page visibility changes to detect abandonment
   useEffect(() => {
@@ -211,14 +208,14 @@ function RealEstateSellPageContent() {
       if (document.visibilityState === 'hidden' && currentStep < totalSteps) {
         // User is leaving the page before completion
         analytics.trackFormAbandon(currentStep, formData);
-        trackStep(currentStep, getStepName(currentStep), 'abandon', formData);
+        
       }
     };
 
     const handleBeforeUnload = () => {
       if (currentStep < totalSteps) {
         analytics.trackFormAbandon(currentStep, formData);
-        trackStep(currentStep, getStepName(currentStep), 'abandon', formData);
+        
       }
     };
 
@@ -239,7 +236,7 @@ function RealEstateSellPageContent() {
       
       // Track step completion before advancing
       analytics.trackStepComplete(currentStep, formData);
-      trackStep(currentStep, getStepName(currentStep), 'complete', formData);
+      // Plausible tracking removed
       
       // If we're on step 1 (address entry), prefetch property data and validate
       if (currentStep === 1 && formData.propertyAddress.trim()) {
@@ -309,14 +306,7 @@ function RealEstateSellPageContent() {
     const updatedFormData = { ...formData, [field]: value };
     setFormData(updatedFormData);
     
-    // Track option selection with UTM support
-    trackButtonClick(`${field}_${value}`, {
-      step_number: currentStep,
-      step_name: getStepName(currentStep),
-      field: field,
-      form_type: 'listing_presentation',
-      user_flow: field === 'sellingIntent' ? (value === 'I am just curious about market conditions' ? 'curious' : 'selling') : undefined
-    });
+    // Plausible tracking removed
     
     // Auto-advance to next step with fade animation (except for the last step)
     if (currentStep < totalSteps) {
@@ -358,13 +348,7 @@ function RealEstateSellPageContent() {
       const previousStep = currentStep;
       const nextStep = currentStep - 1;
       
-      // Track backward navigation with UTM support
-      trackButtonClick('previous_step', {
-        step_number: previousStep,
-        step_name: getStepName(previousStep),
-        form_type: 'listing_presentation',
-        user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
-      });
+      // Plausible tracking removed
       
       setIsTransitioning(true);
       setTimeout(() => {
@@ -482,14 +466,7 @@ function RealEstateSellPageContent() {
     setFormData({ ...formData, email });
     if (email.trim() && !validateEmail(email)) {
       setEmailError('Please enter a valid email address');
-      // Track validation error with UTM support
-      trackButtonClick('email_validation_error', {
-        step_number: currentStep,
-        step_name: getStepName(currentStep),
-        field: 'email',
-        error_type: 'invalid_format',
-        form_type: 'listing_presentation'
-      });
+      // Plausible tracking removed
     } else {
       setEmailError('');
     }
@@ -1364,7 +1341,7 @@ function RealEstateSellPageContent() {
           </div>
         </DialogContent>
       </Dialog>
-      <PlausibleDebugger />
+      
     </div>
   );
 }
