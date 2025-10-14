@@ -4,6 +4,7 @@ import { GoogleTagManager } from '@next/third-parties/google'
 import { PropertyDataProvider } from '@/contexts/PropertyDataContext'
 import { Analytics } from '@vercel/analytics/react'
 import { AnalyticsProvider } from '@/components/AnalyticsProvider'
+import { PostHogProvider } from '@/components/PostHogProvider'
 
 export const metadata: Metadata = {
   title: {
@@ -43,9 +44,11 @@ export default function RootLayout({
           />
         </noscript>
         <PropertyDataProvider>
-          <AnalyticsProvider>
-            {children}
-          </AnalyticsProvider>
+          <PostHogProvider>
+            <AnalyticsProvider>
+              {children}
+            </AnalyticsProvider>
+          </PostHogProvider>
         </PropertyDataProvider>
         <Analytics />
       </body>

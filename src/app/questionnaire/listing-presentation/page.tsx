@@ -5,6 +5,7 @@ import { Button } from '@/components/button';
 import { Gradient } from '@/components/gradient';
 import Image from 'next/image';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, StarIcon, XMarkIcon } from '@heroicons/react/16/solid';
+import { useQuestionnaireTracking } from '@/hooks/usePostHog';
 import {
   Table,
   TableBody,
@@ -125,7 +126,7 @@ function RealEstateSellPageContent() {
   // Analytics tracking
   const [analytics] = useState(() => createFormAnalytics());
   const [hasTrackedFormStart, setHasTrackedFormStart] = useState(false);
-  // Plausible tracking removed
+  const { trackQuestionnaireStart, trackStepComplete, trackFormComplete, trackFormAbandon, trackButtonClick } = useQuestionnaireTracking();
   const [formData, setFormData] = useState<FormData>({
     propertyAddress: '',
     sellingIntent: '',
@@ -197,10 +198,10 @@ function RealEstateSellPageContent() {
   useEffect(() => {
     if (!hasTrackedFormStart) {
       analytics.trackFormStart();
-      // Plausible tracking removed
+      trackQuestionnaireStart(formData);
       setHasTrackedFormStart(true);
     }
-  }, [analytics, hasTrackedFormStart]);
+  }, [analytics, hasTrackedFormStart, trackQuestionnaireStart, formData]);
 
   // Track page visibility changes to detect abandonment
   useEffect(() => {
@@ -208,14 +209,14 @@ function RealEstateSellPageContent() {
       if (document.visibilityState === 'hidden' && currentStep < totalSteps) {
         // User is leaving the page before completion
         analytics.trackFormAbandon(currentStep, formData);
-        
+        trackFormAbandon(currentStep, getStepName(currentStep), formData);
       }
     };
 
     const handleBeforeUnload = () => {
       if (currentStep < totalSteps) {
         analytics.trackFormAbandon(currentStep, formData);
-        
+        trackFormAbandon(currentStep, getStepName(currentStep), formData);
       }
     };
 
@@ -236,7 +237,7 @@ function RealEstateSellPageContent() {
       
       // Track step completion before advancing
       analytics.trackStepComplete(currentStep, formData);
-      // Plausible tracking removed
+      trackStepComplete(currentStep, getStepName(currentStep), formData);
       
       // If we're on step 1 (address entry), prefetch property data and validate
       if (currentStep === 1 && formData.propertyAddress.trim()) {
@@ -306,7 +307,14 @@ function RealEstateSellPageContent() {
     const updatedFormData = { ...formData, [field]: value };
     setFormData(updatedFormData);
     
-    // Plausible tracking removed
+    // Track option selection
+    trackButtonClick(`${field}_${value}`, {
+      step_number: currentStep,
+      step_name: getStepName(currentStep),
+      field: field,
+      form_type: 'listing_presentation',
+      user_flow: field === 'sellingIntent' ? (value === 'I am just curious about market conditions' ? 'curious' : 'selling') : undefined
+    });
     
     // Auto-advance to next step with fade animation (except for the last step)
     if (currentStep < totalSteps) {
@@ -348,7 +356,13 @@ function RealEstateSellPageContent() {
       const previousStep = currentStep;
       const nextStep = currentStep - 1;
       
-      // Plausible tracking removed
+      // Track backward navigation
+      trackButtonClick('previous_step', {
+        step_number: previousStep,
+        step_name: getStepName(previousStep),
+        form_type: 'listing_presentation',
+        user_flow: formData.sellingIntent === 'I am just curious about market conditions' ? 'curious' : 'selling'
+      });
       
       setIsTransitioning(true);
       setTimeout(() => {
@@ -363,7 +377,8 @@ function RealEstateSellPageContent() {
     
     // Track form completion
     const completionTime = Date.now() - (analytics as any).startTime;
-    // trackFormComplete removed - clean start with GTMformData, completionTime);
+    analytics.trackFormComplete(formData);
+    trackFormComplete(formData, completionTime);
     
     try {
       // Prepare form data for submission
@@ -466,7 +481,14 @@ function RealEstateSellPageContent() {
     setFormData({ ...formData, email });
     if (email.trim() && !validateEmail(email)) {
       setEmailError('Please enter a valid email address');
-      // Plausible tracking removed
+      // Track validation error
+      trackButtonClick('email_validation_error', {
+        step_number: currentStep,
+        step_name: getStepName(currentStep),
+        field: 'email',
+        error_type: 'invalid_format',
+        form_type: 'listing_presentation'
+      });
     } else {
       setEmailError('');
     }
