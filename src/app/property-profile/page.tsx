@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { PropertyDataModule } from '@/components/property-data-module'
 import { PropertyLoadingSequence } from '@/components/property-loading-sequence'
@@ -12,6 +12,17 @@ function PropertyProfileContent() {
     const searchParams = useSearchParams()
     const address = searchParams.get('address')
     const [showLoading, setShowLoading] = useState(true)
+
+    // Track Facebook Meta Pixel Lead event when property profile loads successfully
+    useEffect(() => {
+        if (!showLoading && address) {
+            // Fire Facebook Meta Pixel Lead event
+            if (typeof window !== 'undefined' && (window as any).fbq) {
+                (window as any).fbq('track', 'Lead');
+                console.log('📊 Facebook Meta Pixel Lead event fired for property profile:', address);
+            }
+        }
+    }, [showLoading, address])
 
     if (!address) {
         return (
