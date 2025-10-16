@@ -380,6 +380,12 @@ function RealEstateSellPageContent() {
     analytics.trackFormComplete(formData);
     trackFormComplete(formData, completionTime);
     
+    // Fire Facebook Meta Pixel Lead event
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'Lead');
+      console.log('📊 Facebook Meta Pixel Lead event fired for questionnaire submission:', formData.propertyAddress);
+    }
+    
     try {
       // Prepare form data for submission
       const submissionData = {
@@ -735,7 +741,7 @@ function RealEstateSellPageContent() {
                   <button
                     key={intent}
                     onClick={() => handleOptionSelect('sellingIntent', intent)}
-                    className={`p-4 text-left border rounded-lg transition-all duration-200 ${
+                    className={`step-2-button p-4 text-left border rounded-lg transition-all duration-200 ${
                       formData.sellingIntent === intent
                         ? 'border-blue-500 bg-blue-50 text-blue-900'
                         : 'border-gray-300 hover:border-gray-400 text-gray-900'
@@ -771,7 +777,7 @@ function RealEstateSellPageContent() {
                   <button
                     key={timeline}
                     onClick={() => handleOptionSelect('sellingTimeline', timeline)}
-                    className={`p-4 text-left border rounded-lg transition-all duration-200 ${
+                    className={`step-3-button p-4 text-left border rounded-lg transition-all duration-200 ${
                       formData.sellingTimeline === timeline
                         ? 'border-blue-500 bg-blue-50 text-blue-900'
                         : 'border-gray-300 hover:border-gray-400 text-gray-900'
@@ -807,7 +813,7 @@ function RealEstateSellPageContent() {
                   <button
                     key={motivation}
                     onClick={() => handleOptionSelect('sellingMotivation', motivation)}
-                    className={`p-4 text-left border rounded-lg transition-all duration-200 ${
+                    className={`step-4-button p-4 text-left border rounded-lg transition-all duration-200 ${
                       formData.sellingMotivation === motivation
                         ? 'border-blue-500 bg-blue-50 text-blue-900'
                         : 'border-gray-300 hover:border-gray-400 text-gray-900'
@@ -843,7 +849,7 @@ function RealEstateSellPageContent() {
                   <button
                     key={condition.text}
                     onClick={() => handleOptionSelect('propertyCondition', condition.text)}
-                    className={`p-4 text-left border rounded-lg transition-all duration-200 ${
+                    className={`step-5-button p-4 text-left border rounded-lg transition-all duration-200 ${
                       formData.propertyCondition === condition.text
                         ? 'border-blue-500 bg-blue-50 text-blue-900'
                         : 'border-gray-300 hover:border-gray-400 text-gray-900'
@@ -902,7 +908,7 @@ function RealEstateSellPageContent() {
                           <span>{improvement}</span>
                           <button
                             onClick={() => handleImprovementRemove(improvement)}
-                            className="text-blue-600 hover:text-blue-800"
+                            className="step-6-button text-blue-600 hover:text-blue-800"
                           >
                             <XMarkIcon className="w-4 h-4" />
                           </button>
@@ -1077,7 +1083,7 @@ function RealEstateSellPageContent() {
                   <button
                     key={expectation}
                     onClick={() => handleOptionSelect('priceExpectation', expectation)}
-                    className={`p-4 text-left border rounded-lg transition-all duration-200 ${
+                    className={`step-8-button p-4 text-left border rounded-lg transition-all duration-200 ${
                       formData.priceExpectation === expectation
                         ? 'border-blue-500 bg-blue-50 text-blue-900'
                         : 'border-gray-300 hover:border-gray-400 text-gray-900'
