@@ -36,8 +36,33 @@ interface WebhookResponse {
   error?: string;
 }
 
+// Simplified Step 9 webhook data structure
+interface SimplifiedWebhookData {
+  // Contact Information (simplified - only email OR phone)
+  contactMethod: 'email' | 'phone';
+  email?: string;
+  phone?: string;
+  priceUpdates: boolean;
+  
+  // All questionnaire data from previous steps
+  propertyAddress: string;
+  sellingIntent: string;
+  sellingTimeline: string;
+  sellingMotivation: string;
+  propertyCondition: string;
+  propertyImprovements: string[];
+  improvementDetails: Array<{improvement: string; cost?: number}>;
+  priceExpectation: string;
+  
+  // Metadata
+  submittedAt: string;
+  source: string;
+  formVersion: 'simplified';
+}
+
 class WebhookService {
   private webhookUrl = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/30bbf863-a084-4302-8069-8200c0b9ea0b';
+  private simplifiedWebhookUrl = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/602fd6b7-653d-4692-8538-21203b1075fd'; // You'll replace this with your actual URL
 
   async submitLead(data: WebhookSubmissionData): Promise<WebhookResponse> {
     try {
@@ -100,7 +125,62 @@ class WebhookService {
       };
     }
   }
+
+  async submitSimplifiedLead(data: SimplifiedWebhookData): Promise<WebhookResponse> {
+    try {
+      const response = await fetch(this.simplifiedWebhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Contact information (simplified)
+          contact: {
+            contactMethod: data.contactMethod,
+            email: data.email || null,
+            phone: data.phone || null,
+            priceUpdates: data.priceUpdates,
+          },
+          // All questionnaire responses
+          questionnaire: {
+            propertyAddress: data.propertyAddress,
+            sellingIntent: data.sellingIntent,
+            sellingTimeline: data.sellingTimeline,
+            sellingMotivation: data.sellingMotivation,
+            propertyCondition: data.propertyCondition,
+            propertyImprovements: data.propertyImprovements,
+            improvementDetails: data.improvementDetails,
+            priceExpectation: data.priceExpectation,
+          },
+          // Metadata
+          metadata: {
+            leadSource: 'MasterKey Simplified Step 9',
+            formVersion: data.formVersion,
+            submittedAt: data.submittedAt,
+            source: data.source,
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Simplified webhook submission failed: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      return {
+        success: true,
+        message: 'Simplified lead submitted successfully'
+      };
+    } catch (error) {
+      console.error('Simplified webhook submission error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
 }
 
 export const webhookService = new WebhookService();
-export type { WebhookSubmissionData, WebhookResponse };
+export type { WebhookSubmissionData, WebhookResponse, SimplifiedWebhookData };

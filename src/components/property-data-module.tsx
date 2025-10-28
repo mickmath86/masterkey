@@ -136,8 +136,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   const [valuationTriggered, setValuationTriggered] = useState(false)
   const [webhookSent, setWebhookSent] = useState(false)
 
-  // LeadConnector comprehensive webhook URL
+  // LeadConnector webhook URLs
   const COMPREHENSIVE_WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/0972671d-e4b7-46c5-ad30-53d734b97e8c';
+  const SIMPLIFIED_WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/602fd6b7-653d-4692-8538-21203b1075fd';
 
   // Function to send comprehensive data to webhook
   const sendComprehensiveWebhook = useCallback(async () => {
@@ -146,14 +147,32 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       return;
     }
 
+    // Determine which webhook URL to use based on form version
+    const isSimplifiedStep9 = questionnaireData?.formVersion === 'simplified';
+    
     try {
       console.log('📤 Preparing comprehensive webhook data...');
+      
+      // Generate property profile URL path for simplified Step 9
+      const propertyProfilePath = isSimplifiedStep9 && questionnaireData ? (() => {
+        const queryParams = new URLSearchParams({
+          address: questionnaireData.propertyAddress || '',
+          first_name: '',
+          last_name: '',
+          email: questionnaireData.contactMethod === 'email' ? (questionnaireData.email || '') : '',
+          phone: questionnaireData.contactMethod === 'phone' ? (questionnaireData.phone || '') : ''
+        });
+        return `/property-profile?${queryParams.toString()}`;
+      })() : null;
       
       // Combine all available data
       const webhookData = {
         // Timestamp and metadata
         timestamp: new Date().toISOString(),
         source: 'property_analysis_complete',
+        
+        // Property profile URL (for simplified Step 9)
+        ...(propertyProfilePath && { propertyProfileUrl: propertyProfilePath }),
         
         // Questionnaire data from the form
         questionnaire: questionnaireData ? {
@@ -164,7 +183,14 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
           propertyCondition: questionnaireData.propertyCondition,
           propertyImprovements: questionnaireData.propertyImprovements,
           priceExpectations: (questionnaireData as any).priceExpectations,
-          contactInfo: {
+          contactInfo: questionnaireData.formVersion === 'simplified' ? {
+            // Simplified Step 9 contact format
+            contactMethod: questionnaireData.contactMethod,
+            email: questionnaireData.contactMethod === 'email' ? questionnaireData.email : null,
+            phone: questionnaireData.contactMethod === 'phone' ? questionnaireData.phone : null,
+            priceUpdates: questionnaireData.priceUpdates
+          } : {
+            // Original Step 9 contact format
             name: questionnaireData.name,
             email: questionnaireData.email,
             phone: questionnaireData.phone
@@ -214,17 +240,23 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
             
             const totalDepreciatedValue = improvementCalculations.reduce((sum, calc) => sum + calc.depreciatedValue, 0);
             const baseValue = subjectPropertyData?.zestimate || subjectPropertyData?.price || 0;
+            const totalValuation = baseValue + totalDepreciatedValue;
             
             return {
-              enhancedPropertyValue: baseValue + totalDepreciatedValue,
+              enhancedPropertyValue: totalValuation,
               improvementAddedValue: totalDepreciatedValue,
+              totalValuation: totalValuation, // Combined base + improvements
               improvementBreakdown: improvementCalculations
             };
-          })() : {
-            enhancedPropertyValue: subjectPropertyData?.zestimate || subjectPropertyData?.price || 0,
-            improvementAddedValue: 0,
-            improvementBreakdown: []
-          }),
+          })() : (() => {
+            const baseValue = subjectPropertyData?.zestimate || subjectPropertyData?.price || 0;
+            return {
+              enhancedPropertyValue: baseValue,
+              improvementAddedValue: 0,
+              totalValuation: baseValue, // Just base value when no improvements
+              improvementBreakdown: []
+            };
+          })()),
           
           // AI-generated analysis
           summary: structuredValuation.summary,
@@ -320,7 +352,11 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         }
       };
 
-      console.log('📤 Sending comprehensive webhook with data:', {
+      const webhookUrl = isSimplifiedStep9 ? SIMPLIFIED_WEBHOOK_URL : COMPREHENSIVE_WEBHOOK_URL;
+      
+      console.log(`📤 Sending ${isSimplifiedStep9 ? 'simplified' : 'comprehensive'} webhook with data:`, {
+        formVersion: questionnaireData?.formVersion,
+        webhookUrl: isSimplifiedStep9 ? 'SIMPLIFIED_WEBHOOK_URL' : 'COMPREHENSIVE_WEBHOOK_URL',
         hasQuestionnaire: !!webhookData.questionnaire,
         hasProperty: !!webhookData.property,
         hasValuation: !!webhookData.valuation,
@@ -330,7 +366,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         totalDataSize: JSON.stringify(webhookData).length
       });
 
-      const response = await fetch(COMPREHENSIVE_WEBHOOK_URL, {
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -339,13 +375,13 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       });
 
       if (response.ok) {
-        console.log('✅ Comprehensive webhook sent successfully');
+        console.log(`✅ ${isSimplifiedStep9 ? 'Simplified' : 'Comprehensive'} webhook sent successfully`);
         setWebhookSent(true);
       } else {
-        console.error('❌ Webhook failed:', response.status, response.statusText);
+        console.error(`❌ ${isSimplifiedStep9 ? 'Simplified' : 'Comprehensive'} webhook failed:`, response.status, response.statusText);
       }
     } catch (error) {
-      console.error('❌ Error sending comprehensive webhook:', error);
+      console.error(`❌ Error sending ${isSimplifiedStep9 ? 'simplified' : 'comprehensive'} webhook:`, error);
     }
   }, [webhookSent, questionnaireData, subjectPropertyData, structuredValuation, structuredSummary, marketData, comps, avmData, valueData, summaryState, valuationState, dataLoadingComplete]);
 

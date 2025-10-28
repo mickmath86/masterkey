@@ -1,6 +1,7 @@
 import { generateText, streamText, generateObject } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
+import { createHash } from "crypto";
 
 const rapidApiHost = 'zillow-com1.p.rapidapi.com';
 const rapidApiKey = process.env.RAPIDAPI_KEY!;
@@ -196,9 +197,22 @@ export async function POST(request: Request) {
     });
 
     // Generate structured AI valuation analysis
-    console.log('🤖 Starting valuation AI generation...');
+    console.log(' Starting AI valuation generation...');
+    
+    // Create deterministic seed from property characteristics
+    // This ensures the same property always gets the same recommendation
+    const seedData = `${zpid}-${address}-${finalPropertyData?.zestimate || 0}-${finalPropertyData?.livingArea || 0}-${finalPropertyData?.yearBuilt || 0}`;
+    const deterministicSeed = parseInt(createHash('md5').update(seedData).digest('hex').substring(0, 8), 16);
+    
+    console.log(' Generated deterministic seed:', {
+      seedData: seedData.substring(0, 50) + '...',
+      seed: deterministicSeed,
+      zpid: zpid
+    });
+    
     const result = await generateObject({
       model: openai("gpt-4o-mini"), // Using gpt-4o-mini for better structured output
+      seed: deterministicSeed, // This ensures consistent results for the same property
       system: `You are a professional real estate valuation analyst. Generate a structured valuation analysis that's informative yet accessible to home sellers. Instead of saying Zestimate anywhere make sure to call our valuation. `,
       schema: z.object({
         summary: z.string().describe("Brief 2-3 sentence overview of the property's valuation. Remind reader this is based of the base valuation and does not include any improvements or depreciation. "),
@@ -225,8 +239,8 @@ export async function POST(request: Request) {
           description: z.string().describe("Detailed explanation")
         })).describe("Key insights about the property"),
         recommendation: z.object({
-          action: z.enum(["holding", "selling_soon", "selling_now"]).describe("Recommended action. Make sure there is established critera for this so that we dont recommend two different suggestions if they run through the process again. "),
-          reasoning: z.string().describe("Explanation for the recommendation. Make sure to take into consideration the seller's motivations and pending their desire to sell. Make sure this is all written in the context of someone who needs maximum value now. People who may be recommended to hold can still sell if needed."),
+          action: z.enum(["holding", "selling_soon", "selling_now"]).describe("Recommended action based on market conditions and property characteristics. This will be consistent for the same property."),
+          reasoning: z.string().describe("Explanation for the recommendation considering market trends, property position, and value optimization. Written for sellers seeking maximum value."),
           timeframe: z.string().describe("Suggested timeframe for action")
         })
       }),
@@ -251,6 +265,11 @@ export async function POST(request: Request) {
         - Analysis based on current property characteristics and market conditions
         - Current Value: $${newestValue?.toLocaleString()}`}
 
+        IMPORTANT: Your analysis must be deterministic and consistent. The same property data should always yield the same recommendation. Base your recommendation on:
+        1. Market trend strength (strong increasing = selling_now, moderate = selling_soon, weak/decreasing = holding)
+        2. Property value position (above market average = selling_soon/now, below = holding)
+        3. Historical performance (strong growth = selling_now, stable = selling_soon, declining = holding)
+        
         ${hasHistoricalData ? 
           'Provide actionable, data-driven insights for a home seller based on historical trends.' : 
           'Provide actionable insights for a home seller based on property characteristics and general market conditions.'}`

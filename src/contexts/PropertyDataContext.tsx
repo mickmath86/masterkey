@@ -49,6 +49,10 @@ interface QuestionnaireData {
   name?: string
   email?: string
   phone?: string
+  // Simplified Step 9 fields
+  contactMethod?: string
+  priceUpdates?: boolean
+  formVersion?: string
 }
 
 interface PropertyDataContextType {

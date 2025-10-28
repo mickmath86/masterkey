@@ -2,10 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/button';
-import { Gradient } from '@/components/gradient';
 import Image from 'next/image';
 import { ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, StarIcon, XMarkIcon } from '@heroicons/react/16/solid';
-import { useQuestionnaireTracking } from '@/hooks/usePostHog';
 import {
   Table,
   TableBody,
@@ -17,6 +15,8 @@ import {
 import { GooglePlacesInput } from '@/components/ui/google-places-input';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePropertyData } from '@/contexts/PropertyDataContext';
+import { useQuestionnaireTracking } from '@/hooks/usePostHog';
+import { createFormAnalytics } from '@/lib/analytics';
 import {
   Stepper,
   StepperIndicator,
@@ -26,8 +26,8 @@ import {
 } from "@/components/ui/stepper";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
-import { createFormAnalytics } from '@/lib/analytics';
 import { track } from '@vercel/analytics';
+import { webhookService, type SimplifiedWebhookData } from '@/lib/webhook-api';
 
 interface ImprovementDetail {
   improvement: string;
@@ -49,6 +49,9 @@ interface FormData {
   email: string;
   phone: string;
   privacyPolicyConsent: boolean;
+  // New fields for simplified Step 9
+  contactMethod: string; // 'email' or 'phone'
+  priceUpdates: boolean;
 }
 
 const sellingIntentOptions = [
@@ -113,6 +116,20 @@ const improvementOptions = [
   'Smart home features'
 ];
 
+// Traffic switching function for A/B testing Step 9 versions
+const useSimplifiedStep9 = () => {
+  // You can modify this logic to control traffic distribution
+  // Options:
+  // 1. Always use simplified: return true
+  // 2. Always use original: return false
+  // 3. Random 50/50: return Math.random() < 0.5
+  // 4. URL parameter: return searchParams.get('simple') === 'true'
+  // 5. User ID based: return userId % 2 === 0
+  
+  // Always use simplified Step 9 (100% of traffic)
+  return true;
+};
+
 function RealEstateSellPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -122,6 +139,9 @@ function RealEstateSellPageContent() {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [isTransitioning, setIsTransitioning] = useState(false);
+  
+  // A/B test flag for Step 9 version
+  const isSimplifiedStep9 = useSimplifiedStep9();
   
   // Analytics tracking
   const [analytics] = useState(() => createFormAnalytics());
@@ -140,7 +160,10 @@ function RealEstateSellPageContent() {
     lastName: '',
     email: '',
     phone: '',
-    privacyPolicyConsent: false
+    privacyPolicyConsent: false,
+    // New fields for simplified Step 9
+    contactMethod: '',
+    priceUpdates: false
   });
   const [improvementSearch, setImprovementSearch] = useState('');
   const [showImprovementDropdown, setShowImprovementDropdown] = useState(false);
@@ -395,6 +418,9 @@ function RealEstateSellPageContent() {
         source: 'questionnaire'
       };
 
+      // Note: Webhook will be sent from property-data-module after analysis completes
+      // This includes comprehensive property data for both original and simplified Step 9
+
       // Store questionnaire data in context for use by presentation API
       setQuestionnaireData({
         propertyAddress: submissionData.propertyAddress,
@@ -404,13 +430,16 @@ function RealEstateSellPageContent() {
         propertyCondition: submissionData.propertyCondition,
         propertyImprovements: submissionData.propertyImprovements,
         improvementDetails: submissionData.improvementDetails,
-        name: `${submissionData.firstName} ${submissionData.lastName}`.trim(),
+        name: isSimplifiedStep9 ? '' : `${submissionData.firstName} ${submissionData.lastName}`.trim(), // No names in simplified version
+        // Add simplified Step 9 specific data to context
+        contactMethod: isSimplifiedStep9 ? formData.contactMethod : undefined,
+        priceUpdates: isSimplifiedStep9 ? formData.priceUpdates : undefined,
+        formVersion: isSimplifiedStep9 ? 'simplified' : 'original',
         email: submissionData.email,
-        phone: submissionData.phone
+        phone: isSimplifiedStep9 && formData.contactMethod === 'phone' ? formatPhoneWithCountryCode(submissionData.phone) : submissionData.phone
       });
 
-      // Note: Simple webhook removed - comprehensive webhook will be sent from property-data-module
-      console.log('Form submitted - comprehensive webhook will be triggered after property analysis completes');
+      console.log(`Form submitted with ${isSimplifiedStep9 ? 'simplified' : 'original'} Step 9 - comprehensive webhook will be triggered after property analysis completes`);
       
       // Prefetch images and value data before redirecting for faster loading
       try {
@@ -452,7 +481,7 @@ function RealEstateSellPageContent() {
         first_name: `${submissionData.firstName}`.trim(),
         last_name: `${submissionData.lastName}`.trim(),
         email: submissionData.email,
-        phone: submissionData.phone
+        phone: isSimplifiedStep9 && formData.contactMethod === 'phone' ? formatPhoneWithCountryCode(submissionData.phone) : submissionData.phone
       });
       
       router.push(`/property-profile?${queryParams.toString()}`);
@@ -481,6 +510,18 @@ function RealEstateSellPageContent() {
       return `${digits.slice(0, 3)}-${digits.slice(3)}`;
     }
     return digits;
+  };
+
+  // Function to format phone with +1 country code for submission
+  const formatPhoneWithCountryCode = (phone: string): string => {
+    const digits = phone.replace(/\D/g, '');
+    // Only add +1 if it doesn't already start with 1 and has 10+ digits
+    if (digits.length >= 10 && !digits.startsWith('1')) {
+      return `+1${digits}`;
+    } else if (digits.length >= 11 && digits.startsWith('1')) {
+      return `+${digits}`;
+    }
+    return `+1${digits}`;
   };
 
   const handleEmailChange = (email: string) => {
@@ -613,9 +654,20 @@ function RealEstateSellPageContent() {
       case 8:
         return formData.priceExpectation !== '';
       case 9:
-        return formData.firstName.trim() !== '' && formData.lastName.trim() !== '' && 
-               formData.email.trim() !== '' && validateEmail(formData.email) && formData.phone.trim() !== '' &&
-               formData.privacyPolicyConsent;
+        if (isSimplifiedStep9) {
+          // Simplified Step 9: Only require contact method and corresponding field
+          if (formData.contactMethod === 'email') {
+            return formData.email.trim() !== '' && validateEmail(formData.email);
+          } else if (formData.contactMethod === 'phone') {
+            return formData.phone.trim() !== '' && formData.phone.length >= 10;
+          }
+          return false;
+        } else {
+          // Original Step 9: Require all fields
+          return formData.firstName.trim() !== '' && formData.lastName.trim() !== '' && 
+                 formData.email.trim() !== '' && validateEmail(formData.email) && formData.phone.trim() !== '' &&
+                 formData.privacyPolicyConsent;
+        }
       default:
         return false;
     }
@@ -638,8 +690,8 @@ function RealEstateSellPageContent() {
             backgroundImage: 'url(https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80)'
           }}
         />
-        {/* Gradient overlay */}
-        <Gradient className="absolute inset-0 opacity-90" />
+        {/* Black overlay with 80% opacity */}
+        <div className="absolute inset-0 bg-black opacity-80" />
         {/* Back Button */}
         <div className="absolute top-6 left-6 z-20">
           <Button
@@ -1105,102 +1157,238 @@ function RealEstateSellPageContent() {
 
           {currentStep === 9 && (
             <div className="space-y-6">
-              <div>
-                <h3 className="text-3xl font-semibold text-gray-900 mb-2">
-                  Let's get your contact information
-                </h3>
-                <p className="text-gray-600 mb-8">
-                  We'll use this information to provide you with a customized market analysis and selling strategy.
-                </p>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              {isSimplifiedStep9 ? (
+                // Simplified Step 9 Version
+                <>
                   <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                      First Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      value={formData.firstName}
-                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                      placeholder="John"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
+                    <h3 className="text-3xl font-semibold text-gray-900 mb-2">
+                      Where would you like us to send your report?
+                    </h3>
+                    <p className="text-gray-600 mb-2">
+                      We'll send you a comprehensive market analysis and selling strategy for your property.
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      We respect your privacy and will NOT spam you. You'll only receive the report you requested.
+                    </p>
                   </div>
+                  
+                  <div className="space-y-4">
+                    {/* Contact Method Selection */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        onClick={() => setFormData({ ...formData, contactMethod: 'email', phone: '' })}
+                        className={`p-4 text-left border rounded-lg transition-all duration-200 ${
+                          formData.contactMethod === 'email'
+                            ? 'border-blue-500 bg-blue-50 text-blue-900'
+                            : 'border-gray-300 hover:border-gray-400 text-gray-900'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">📧 Email</div>
+                            <div className="text-sm text-gray-500">Send via email</div>
+                          </div>
+                          {formData.contactMethod === 'email' && (
+                            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                              <div className="w-2 h-2 bg-white rounded-full" />
+                            </div>
+                          )}
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => setFormData({ ...formData, contactMethod: 'phone', email: '' })}
+                        className={`p-4 text-left border rounded-lg transition-all duration-200 ${
+                          formData.contactMethod === 'phone'
+                            ? 'border-blue-500 bg-blue-50 text-blue-900'
+                            : 'border-gray-300 hover:border-gray-400 text-gray-900'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">📱 Text Message</div>
+                            <div className="text-sm text-gray-500">Send via SMS</div>
+                          </div>
+                          {formData.contactMethod === 'phone' && (
+                            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                              <div className="w-2 h-2 bg-white rounded-full" />
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Email Input */}
+                    {formData.contactMethod === 'email' && (
+                      <div className="animate-in slide-in-from-top-2 duration-300">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Address *
+                        </label>
+                        <input
+                          type="email"
+                          id="email"
+                          value={formData.email}
+                          onChange={(e) => handleEmailChange(e.target.value)}
+                          placeholder="john.doe@example.com"
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                            emailError ? 'border-red-300' : 'border-gray-300'
+                          }`}
+                        />
+                        {emailError && (
+                          <p className="text-red-600 text-sm mt-1">{emailError}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Phone Input */}
+                    {formData.contactMethod === 'phone' && (
+                      <div className="animate-in slide-in-from-top-2 duration-300">
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                          Phone Number *
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <span className="text-lg mr-2">🇺🇸</span>
+                            <span className="text-gray-500 text-sm">+1</span>
+                          </div>
+                          <input
+                            type="tel"
+                            id="phone"
+                            value={formData.phone}
+                            onChange={(e) => handlePhoneChange(e.target.value)}
+                            placeholder="555-123-4567"
+                            className="w-full pl-16 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                        <p className="text-sm text-gray-500 mt-1">
+                          We'll send you a text message with a link to your report
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Optional Price Updates Checkbox */}
+                    {(formData.contactMethod === 'email' || formData.contactMethod === 'phone') && (
+                      <div className="animate-in slide-in-from-top-2 duration-300 delay-150">
+                        <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg border">
+                          <input
+                            type="checkbox"
+                            id="priceUpdates"
+                            checked={formData.priceUpdates}
+                            onChange={(e) => setFormData({ ...formData, priceUpdates: e.target.checked })}
+                            className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <label htmlFor="priceUpdates" className="text-sm text-gray-700">
+                            <span className="font-medium">📈 Yes, I'd like to receive updates on price movements for my home</span>
+                            <br />
+                            <span className="text-gray-500">
+                              <span className="underline">We promise never to spam you.</span> Get notified when your home's estimated value changes (optional)
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                // Original Step 9 Version
+                <>
                   <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                      Last Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="lastName"
-                      value={formData.lastName}
-                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                      placeholder="Doe"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
+                    <h3 className="text-3xl font-semibold text-gray-900 mb-2">
+                      Let's get your contact information
+                    </h3>
+                    <p className="text-gray-600 mb-8">
+                      We'll use this information to provide you with a customized market analysis and selling strategy.
+                    </p>
                   </div>
-                </div>
-                
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={formData.email}
-                    onChange={(e) => handleEmailChange(e.target.value)}
-                    placeholder="john.doe@example.com"
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      emailError ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                  />
-                  {emailError && (
-                    <p className="text-red-600 text-sm mt-1">{emailError}</p>
-                  )}
-                </div>
-                
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handlePhoneChange(e.target.value)}
-                    placeholder="555-123-4567"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                
-                {/* Privacy Policy Consent */}
-                <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
-                  <input
-                    type="checkbox"
-                    id="privacyConsent"
-                    checked={formData.privacyPolicyConsent}
-                    onChange={(e) => handlePrivacyPolicyConsentChange(e.target.checked)}
-                    className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="privacyConsent" className="text-sm text-gray-700">
-                    I agree to the{' '}
-                    <a 
-                      href="/privacy-policy" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 underline"
-                    >
-                      Privacy Policy
-                    </a>{' '}
-                    and consent to the collection and use of my personal information as described therein. *
-                  </label>
-                </div>
-                
-              </div>
+                  
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                          First Name *
+                        </label>
+                        <input
+                          type="text"
+                          id="firstName"
+                          value={formData.firstName}
+                          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                          placeholder="John"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                          Last Name *
+                        </label>
+                        <input
+                          type="text"
+                          id="lastName"
+                          value={formData.lastName}
+                          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                          placeholder="Doe"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        value={formData.email}
+                        onChange={(e) => handleEmailChange(e.target.value)}
+                        placeholder="john.doe@example.com"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          emailError ? 'border-red-300' : 'border-gray-300'
+                        }`}
+                      />
+                      {emailError && (
+                        <p className="text-red-600 text-sm mt-1">{emailError}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number *
+                      </label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        value={formData.phone}
+                        onChange={(e) => handlePhoneChange(e.target.value)}
+                        placeholder="555-123-4567"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    
+                    {/* Privacy Policy Consent */}
+                    <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
+                      <input
+                        type="checkbox"
+                        id="privacyConsent"
+                        checked={formData.privacyPolicyConsent}
+                        onChange={(e) => handlePrivacyPolicyConsentChange(e.target.checked)}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="privacyConsent" className="text-sm text-gray-700">
+                        I agree to the{' '}
+                        <a 
+                          href="/privacy-policy" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline"
+                        >
+                          Privacy Policy
+                        </a>{' '}
+                        and consent to the collection and use of my personal information as described therein. *
+                      </label>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -1248,7 +1436,7 @@ function RealEstateSellPageContent() {
                     Submitting...
                   </>
                 ) : (
-                  'Submit'
+                  'Get my Report'
                 )}
               </Button>
             )}
