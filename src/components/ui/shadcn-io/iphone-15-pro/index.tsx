@@ -1,4 +1,5 @@
 import type { SVGProps } from "react";
+import { useState, useEffect } from "react";
 
 export interface Iphone15ProProps extends SVGProps<SVGSVGElement> {
   width?: number;
@@ -7,6 +8,69 @@ export interface Iphone15ProProps extends SVGProps<SVGSVGElement> {
   videoSrc?: string;
 }
 
+// Questionnaire steps data
+const questionnaireSteps = [
+  {
+    step: 1,
+    title: "What's the address of the property?",
+    subtitle: "Enter the full address for accurate insights",
+    type: "input",
+    placeholder: "123 Main Street, San Francisco, CA",
+    value: "1234 Oak Avenue, Los Angeles, CA 90210"
+  },
+  {
+    step: 2,
+    title: "What brings you here today?",
+    subtitle: "Help us understand your situation",
+    type: "options",
+    options: [
+      "I am looking to sell my property",
+      "I am just curious about market conditions"
+    ],
+    selected: 0
+  },
+  {
+    step: 3,
+    title: "When are you looking to sell?",
+    subtitle: "Understanding your timeline helps us create the right strategy",
+    type: "options",
+    options: [
+      "ASAP (within 30 days)",
+      "Within 3 months",
+      "Within 6 months",
+      "Within a year",
+      "Just exploring my options"
+    ],
+    selected: 1
+  },
+  {
+    step: 4,
+    title: "What's motivating you to sell?",
+    subtitle: "This helps us tailor our approach to your needs",
+    type: "options",
+    options: [
+      "Relocating for work",
+      "Upgrading to a larger home",
+      "Downsizing",
+      "Financial reasons",
+      "Life changes (divorce, retirement, etc.)"
+    ],
+    selected: 1
+  },
+  {
+    step: 5,
+    title: "What's the condition of your home?",
+    subtitle: "This helps us advise on improvements",
+    type: "rating",
+    options: [
+      { text: "Excellent - Move-in ready", stars: 5 },
+      { text: "Good - Minor updates needed", stars: 4 },
+      { text: "Fair - Some renovations required", stars: 3 }
+    ],
+    selected: 1
+  }
+];
+
 export default function Iphone15Pro({
   width = 433,
   height = 882,
@@ -14,6 +78,30 @@ export default function Iphone15Pro({
   videoSrc,
   ...props
 }: Iphone15ProProps) {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showTyping, setShowTyping] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsAnimating(true);
+      
+      setTimeout(() => {
+        setCurrentStep((prev) => (prev + 1) % questionnaireSteps.length);
+        setIsAnimating(false);
+        
+        // Show typing animation for input step
+        if (questionnaireSteps[(currentStep + 1) % questionnaireSteps.length].type === 'input') {
+          setTimeout(() => setShowTyping(true), 500);
+          setTimeout(() => setShowTyping(false), 2000);
+        }
+      }, 300);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [currentStep]);
+
+  const currentStepData = questionnaireSteps[currentStep];
   return (
     <svg
       width={width}
@@ -57,18 +145,139 @@ export default function Iphone15Pro({
         className="fill-[#E5E5E5] stroke-[#E5E5E5] stroke-[0.5] dark:fill-[#404040] dark:stroke-[#404040]"
       />
 
-      {/* Default background when no image/video */}
+      {/* Questionnaire UI Animation */}
       {!src && !videoSrc && (
-        <rect
+        <foreignObject
           x="21.25"
           y="19.25"
           width="389.5"
           height="843.5"
-          rx="55.75"
-          ry="55.75"
-          fill="#000000"
-          className="dark:fill-[#000000]"
-        />
+          clipPath="url(#roundedCorners)"
+        >
+          <div className={`w-full h-full bg-gray-50 flex flex-col transition-opacity duration-300 ${isAnimating ? 'opacity-0' : 'opacity-100'}`}>
+            {/* Header */}
+            <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+              <div className="text-xs font-medium text-gray-900">MasterKey</div>
+              <div className="text-xs text-gray-500">Step {currentStepData.step} of 5</div>
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="bg-white px-4 py-2 border-b border-gray-100">
+              <div className="w-full bg-gray-200 rounded-full h-1">
+                <div 
+                  className="bg-blue-500 h-1 rounded-full transition-all duration-500"
+                  style={{ width: `${(currentStepData.step / 5) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 px-4 py-6 flex flex-col">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight">
+                  {currentStepData.title}
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {currentStepData.subtitle}
+                </p>
+              </div>
+
+              {/* Input Field */}
+              {currentStepData.type === 'input' && (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder={currentStepData.placeholder}
+                      value={showTyping ? currentStepData.value : ''}
+                      className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      readOnly
+                    />
+                    {showTyping && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="w-1 h-4 bg-blue-500 animate-pulse" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Options */}
+              {currentStepData.type === 'options' && (
+                <div className="space-y-3">
+                  {currentStepData.options?.slice(0, 3).map((option, index) => (
+                    <button
+                      key={index}
+                      className={`w-full p-3 text-left border rounded-lg text-sm transition-all duration-200 ${
+                        index === currentStepData.selected
+                          ? 'border-blue-500 bg-blue-50 text-blue-900'
+                          : 'border-gray-300 bg-white text-gray-900'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{typeof option === 'string' ? option : option.text}</span>
+                        {index === currentStepData.selected && (
+                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                  {currentStepData.options && currentStepData.options.length > 3 && (
+                    <div className="text-xs text-gray-500 text-center">
+                      +{currentStepData.options.length - 3} more options
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Rating Options */}
+              {currentStepData.type === 'rating' && (
+                <div className="space-y-3">
+                  {currentStepData.options?.map((option: any, index: number) => (
+                    <button
+                      key={index}
+                      className={`w-full p-3 text-left border rounded-lg text-sm transition-all duration-200 ${
+                        index === currentStepData.selected
+                          ? 'border-blue-500 bg-blue-50 text-blue-900'
+                          : 'border-gray-300 bg-white text-gray-900'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-xs">{option.text}</span>
+                          <div className="flex items-center mt-1">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <div
+                                key={i}
+                                className={`w-2 h-2 mr-0.5 ${
+                                  i < option.stars ? 'bg-yellow-400' : 'bg-gray-300'
+                                } rounded-full`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {index === currentStepData.selected && (
+                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Button */}
+            <div className="p-4 bg-white border-t border-gray-200">
+              <button className="w-full bg-blue-500 text-white py-3 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors">
+                {currentStepData.step === 5 ? 'Complete' : 'Next'}
+              </button>
+            </div>
+          </div>
+        </foreignObject>
       )}
 
       {src && (

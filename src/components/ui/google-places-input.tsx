@@ -6,6 +6,7 @@ import { Loader } from '@googlemaps/js-api-loader';
 interface GooglePlacesInputProps {
   value: string;
   onChange: (value: string, placeDetails?: google.maps.places.PlaceResult) => void;
+  onValidationChange?: (isValid: boolean) => void;
   placeholder?: string;
   className?: string;
   id?: string;
@@ -26,6 +27,7 @@ interface PlaceDetails {
 export function GooglePlacesInput({
   value,
   onChange,
+  onValidationChange,
   placeholder = "Enter property address",
   className = "",
   id = "places-input"
@@ -79,15 +81,18 @@ export function GooglePlacesInput({
               if (!hasStreetNumber) {
                 setError('Please enter a complete street address including house number');
                 setIsValidated(false);
+                onValidationChange?.(false);
                 return;
               }
 
               setError('');
               setIsValidated(true);
+              onValidationChange?.(true);
               onChange(place.formatted_address, place);
             } else {
               setError('Please select a valid address from the suggestions');
               setIsValidated(false);
+              onValidationChange?.(false);
             }
           });
 
@@ -119,6 +124,7 @@ export function GooglePlacesInput({
       setError('');
     }
     setIsValidated(false);
+    onValidationChange?.(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

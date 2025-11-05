@@ -22,11 +22,15 @@ import { Gradient } from "@/components/gradient";
 import { PlusGrid } from "@/components/plus-grid";
 import { MasterKeyLogoInlineBlack } from '@/components/logo'
 import { Spinner } from "@/components/ui/spinner";
+import posthog from "posthog-js";
+import LandingPageV2 from "@/components/landing-pages/landing-page-v2";
 
 function AddressTest() {
   const [address, setAddress] = useState('');
+  const [isAddressValid, setIsAddressValid] = useState(false);
   const router = useRouter();
   const { prefetchPropertyData, isLoading, propertyTypeError, setPropertyTypeError, setIsLoading } = usePropertyData();
+
 
   // Reset loading state when component unmounts
   useEffect(() => {
@@ -78,7 +82,9 @@ function AddressTest() {
                 
                     {/* <Sparkles className="h-24 w-24 not-dark:hidden"/> */}
                   <h1 className="text-center md:text-left mt-10 text-5xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-7xl dark:text-white">
-                  <Sparkles className="h-4 w-4 dark:hidden top-2 md:h-10 md:w-10 inline-block left-24 text-sky-500"/> Discover Your Home's <span className="text-sky-500">True Worth</span>
+                    {}
+                  <Sparkles className="h-4 w-4 dark:hidden top-2 md:h-10 md:w-10 inline-block left-24 text-sky-500"/>
+                   Discover Your Home's <span className="text-sky-500">True Worth</span>
                   </h1>
                 </div>
                
@@ -90,14 +96,22 @@ function AddressTest() {
                       <GooglePlacesInput
                         value={address}
                         onChange={setAddress}
+                        onValidationChange={setIsAddressValid}
                         placeholder="Enter your property address..."
                         className="w-full px-4  bg-white py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-base"
                       />
                       <p className="text-sm mt-2 text-gray-500 dark:text-gray-400 flex flex-col"><span className="font-semibold">MasterKey Real Estate</span> DRE# 02250486</p>
                   </div>
                   <Button
-                    onClick={handleGetStarted}
-                    disabled={isLoading}
+                    onClick={() => {
+                      posthog.capture('get_started_button_clicked', {
+                        address: address,
+                        step: 'listing_presentation',
+                      });
+                      handleGetStarted();
+                    }}
+                    // onClick={handleGetStarted}
+                    disabled={isLoading || !isAddressValid}
                     className="px-8 py-3 bg-sky-500 hover:bg-sky-600 disabled:bg-sky-300 text-white font-medium rounded-sm transition-colors duration-200"
                     >
                     {isLoading ? <div className="flex flex-row items-center gap-2"><p>Loading... </p><Spinner /></div> : 'Get Started'}
@@ -544,8 +558,11 @@ function Footer() {
   )
 }
 
-export default function SellV1Page() {
-  return (
+export default function ListingPresentation() {
+  posthog.featureFlags.overrideFeatureFlags({ flags: {'landing-page-conversion': 'test'} })
+
+  if (posthog.getFeatureFlag('landing-page-conversion') === 'control') {
+   return (
     <div className="bg-gray-50" >
       <AddressTest/>
       <LandingHero/>
@@ -555,6 +572,12 @@ export default function SellV1Page() {
     <Footer/>
     </div>
   )
+} else {
+  return (
+    <LandingPageV2/>
+  )
+}
+
 }
 
 

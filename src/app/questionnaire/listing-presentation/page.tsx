@@ -501,15 +501,18 @@ function RealEstateSellPageContent() {
     // Remove all non-digits
     const digits = phone.replace(/\D/g, '');
     
+    // Limit to 10 digits max
+    const limitedDigits = digits.slice(0, 10);
+    
     // Format as XXX-XXX-XXXX
-    if (digits.length >= 10) {
-      return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
-    } else if (digits.length >= 6) {
-      return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
-    } else if (digits.length >= 3) {
-      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    if (limitedDigits.length >= 10) {
+      return `${limitedDigits.slice(0, 3)}-${limitedDigits.slice(3, 6)}-${limitedDigits.slice(6, 10)}`;
+    } else if (limitedDigits.length >= 6) {
+      return `${limitedDigits.slice(0, 3)}-${limitedDigits.slice(3, 6)}-${limitedDigits.slice(6)}`;
+    } else if (limitedDigits.length >= 3) {
+      return `${limitedDigits.slice(0, 3)}-${limitedDigits.slice(3)}`;
     }
-    return digits;
+    return limitedDigits;
   };
 
   // Function to format phone with +1 country code for submission
@@ -542,6 +545,12 @@ function RealEstateSellPageContent() {
   };
 
   const handlePhoneChange = (phone: string) => {
+    // Allow empty string for complete deletion
+    if (phone === '') {
+      setFormData({ ...formData, phone: '' });
+      return;
+    }
+    
     const formattedPhone = formatPhoneNumber(phone);
     setFormData({ ...formData, phone: formattedPhone });
   };
