@@ -149,3 +149,6 @@ export function MasterKeyLogoInlineBlack({ className }: { className?: string }) 
       />
   )
 }
+
+// Export LogoIcon as an alias for Mark component
+export { Mark as LogoIcon }

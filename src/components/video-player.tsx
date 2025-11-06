@@ -1,17 +1,7 @@
 'use client'
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'wistia-player': {
-        'media-id': string
-        aspect: string
-        className?: string
-      }
-    }
-  }
-}
+// TypeScript declaration removed since we're using dangerouslySetInnerHTML
 
 export default function VideoPlayer() {
   useEffect(() => {
@@ -50,10 +40,10 @@ export default function VideoPlayer() {
 
   return (
     <div className="relative w-full rounded-xl overflow-hidden">
-      <wistia-player 
-        media-id="docfron0i3" 
-        aspect="1.7777777777777777"
-        className="w-full h-auto rounded-xl"
+      <div 
+        dangerouslySetInnerHTML={{
+          __html: `<wistia-player media-id="docfron0i3" aspect="1.7777777777777777" class="w-full h-auto rounded-xl"></wistia-player>`
+        }}
       />
     </div>
   )
