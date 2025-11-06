@@ -10,6 +10,8 @@ interface GooglePlacesInputProps {
   placeholder?: string;
   className?: string;
   id?: string;
+  types?: string[]; // Add types prop for customization
+  showValidation?: boolean; // Add prop to control validation display
 }
 
 interface PlaceDetails {
@@ -30,7 +32,9 @@ export function GooglePlacesInput({
   onValidationChange,
   placeholder = "Enter property address",
   className = "",
-  id = "places-input"
+  id = "places-input",
+  types = ['address'], // Default to address, but allow override
+  showValidation = true // Default to showing validation
 }: GooglePlacesInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
@@ -56,7 +60,7 @@ export function GooglePlacesInput({
           autocompleteRef.current = new google.maps.places.Autocomplete(
             inputRef.current,
             {
-              types: ['address'], // Restrict to addresses only
+              types: types, // Use configurable types
               componentRestrictions: { country: 'us' }, // Restrict to US addresses
               fields: [
                 'formatted_address',
@@ -73,16 +77,18 @@ export function GooglePlacesInput({
             const place = autocompleteRef.current?.getPlace();
             
             if (place && place.formatted_address) {
-              // Validate that this is a valid property address
-              const hasStreetNumber = place.address_components?.some(
-                component => component.types.includes('street_number')
-              );
-              
-              if (!hasStreetNumber) {
-                setError('Please enter a complete street address including house number');
-                setIsValidated(false);
-                onValidationChange?.(false);
-                return;
+              // Only validate street number for address types
+              if (types.includes('address')) {
+                const hasStreetNumber = place.address_components?.some(
+                  component => component.types.includes('street_number')
+                );
+                
+                if (!hasStreetNumber) {
+                  setError('Please enter a complete street address including house number');
+                  setIsValidated(false);
+                  onValidationChange?.(false);
+                  return;
+                }
               }
 
               setError('');
@@ -90,7 +96,7 @@ export function GooglePlacesInput({
               onValidationChange?.(true);
               onChange(place.formatted_address, place);
             } else {
-              setError('Please select a valid address from the suggestions');
+              setError('Please select a valid location from the suggestions');
               setIsValidated(false);
               onValidationChange?.(false);
             }
@@ -150,7 +156,7 @@ export function GooglePlacesInput({
         disabled={!isLoaded}
       />
       
-      {error && (
+      {showValidation && error && (
         <div className="mt-1 text-sm text-red-600 flex items-center">
           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -159,7 +165,7 @@ export function GooglePlacesInput({
         </div>
       )}
       
-      {isLoaded && !error && isValidated && (
+      {showValidation && isLoaded && !error && isValidated && (
         <div className="mt-1 text-sm text-green-600 flex items-center">
           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />

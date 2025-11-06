@@ -57,7 +57,7 @@
     "framer-motion": "^12.23.12",
     "googleapis": "^160.0.0",
     "lucide-react": "^0.542.0",
-    "mapbox-gl": "^3.15.0",
+    "mapbox-gl": "^3.16.0",
     "motion": "^12.23.12",
     "nanoid": "^5.1.6",
     "next": "15.4.4",

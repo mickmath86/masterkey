@@ -366,7 +366,8 @@ export default function RealEstateBuyPage() {
                 <GooglePlacesInput
                   value={formData.location}
                   onChange={(address) => setFormData({ ...formData, location: address })}
-                  placeholder="e.g., San Francisco, CA or 94102"
+                  placeholder="e.g., San Francisco, CA or Los Angeles County"
+                  types={['(cities)']} // Cities and counties only
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
                 />
               </div>
