@@ -466,7 +466,7 @@ function CTA() {
   }, [isInView]);
 
   return (
-    <div ref={ctaRef} className="relative h-[75vh] w-full flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat overflow-hidden" style={{ backgroundImage: 'url(/images/map.png)' }}>
+    <div ref={ctaRef} className="relative h-[90vh] w-full flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat overflow-hidden" style={{ backgroundImage: 'url(/images/map.png)' }}>
       {/* Overlay for better text readability */}
       <div className="absolute inset-0 bg-black/60" />
       

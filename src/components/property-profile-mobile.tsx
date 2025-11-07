@@ -36,12 +36,12 @@ export default function PropertyProfileMobile() {
   }, []);
 
   return (
-    <div className="relative h-[640px] w-full bg-gray-50 text-gray-900 overflow-hidden">
+    <div className="relative h-[640px] rounded-lg  w-full bg-none lg:bg-gray-50 text-gray-900 overflow-hidden">
       {/* device frame */}
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         animate={phone}
-        className="absolute left-1/2 top-16 -translate-x-1/2 w-[360px] h-[740px] rounded-[42px] border-2 border-gray-800 bg-gradient-to-b from-black to-gray-800 shadow-2xl"
+        className="absolute  left-1/2 top-16 -translate-x-1/2 w-[300px] h-[615px] lg:w-[360px] lg:h-[740px] rounded-[42px] border-2 border-gray-800 bg-gradient-to-b from-black to-gray-800 shadow-2xl"
       >
         <div className="absolute inset-3 rounded-[36px] bg-white overflow-hidden">
           {/* Scrollable content */}
