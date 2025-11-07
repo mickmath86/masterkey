@@ -547,7 +547,7 @@ function CallToAction() {
 function Footer() {
   return (
     <footer>
-      <Gradient className="relative">
+      <Gradient className="relative p-0">
         <div className="absolute inset-2 rounded-4xl bg-white/80" />
         <Container>
           <CallToAction />
