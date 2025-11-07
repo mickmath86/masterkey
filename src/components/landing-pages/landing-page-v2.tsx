@@ -127,7 +127,7 @@ function HouseBackground() {
       <div className="absolute inset-0 bg-black/20" />
       
       {/* Input Animation - Positioned absolutely */}
-      <div className="absolute bottom-6 left-6 right-6 z-10">
+      <div className="absolute top-40 left-6 md:bottom-6 md:left-6 right-6 z-10">
         <div className="max-w-sm mx-auto p-6 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-white/20">
           <div className="space-y-4">
             <div>
@@ -203,14 +203,14 @@ function CardstackWithHouse() {
 const steps = [
     {
         title: "Step 1",
-        description: "Answer a few simple questions about your property",
+        description: "Enter your address",
         visual: (
             <HouseBackground />
         )
     },
     {
         title: "Step 2",
-        description: "Answer questions about your property and preferences",
+        description: "Answer a few questions about your property",
         visual: <ProductHero />
     },
     {
@@ -365,18 +365,18 @@ const steps = [
         </div>
 
       {steps.map((step, key)=>(
-        <FadeIn key={key} className="relative mt-16 h-auto md:h-192 w-full bg-gray-100 rounded-lg">
+        <FadeIn key={key} className="relative mt-16 h-288 md:h-192 w-full bg-gray-100 rounded-lg">
             <div className="absolute -inset-2 rounded-[calc(var(--radius-xl)+calc(var(--spacing)*2))] shadow-xs ring-1 ring-black/5 dark:bg-white/2.5 dark:ring-white/10" />
 
                 {/* content */}
-                <div className="flex flex-col md:flex-row h-full w-full items-center justify-center gap-6 py-10">
-                    <div className="flex flex-col h-full w-full gap-2 text-left p-10 justify-between">
+                <div className="flex flex-col md:flex-row h-full md:h-full w-full items-center justify-center gap-6 py-10">
+                    <div className="flex flex-col h-auto md:h-full w-full gap-2 text-left p-10 md:justify-between">
                         <h1 className="text-4xl font-semibold tracking-tight text-pretty text-gray-900  sm:text-balance dark:text-white">{step.title}</h1> 
                         <p className="max-w-md text-3xl text-gray-900 dark:text-gray-400 leading-relaxed">
                             {step.description}
                         </p>
                     </div>
-                    <div className="flex flex-col h-full w-full items-center justify-center p-10 overflow-y-hidden">   
+                    <div className="flex flex-col min-h-192 md:h-full w-full items-center justify-center p-10 overflow-y-hidden">   
                         {step.visual}
                     </div>
                 </div>
