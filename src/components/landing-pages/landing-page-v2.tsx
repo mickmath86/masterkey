@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
@@ -228,6 +228,8 @@ const steps = [
   const router = useRouter();
   const { prefetchPropertyData, isLoading, propertyTypeError, setPropertyTypeError, setIsLoading } = usePropertyData();
 
+  // Memoize VideoPlayer to prevent re-rendering on address changes
+  const memoizedVideoPlayer = useMemo(() => <VideoPlayer />, []);
 
   // Reset loading state when component unmounts
   useEffect(() => {
@@ -329,7 +331,7 @@ const steps = [
               </FadeIn>
             </div>
             <FadeIn className="mt-16 flow-root sm:mt-24">
-              <VideoPlayer/>
+              {memoizedVideoPlayer}
             </FadeIn>
           </div>
         </div>
