@@ -405,7 +405,6 @@ function RealEstateSellPageContent() {
       return;
     }
 
-    const isSimplifiedStep9 = useSimplifiedStep9();
     const webhookUrl = isSimplifiedStep9 
       ? 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/602fd6b7-653d-4692-8538-21203b1075fd'
       : 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/0972671d-e4b7-46c5-ad30-53d734b97e8c';
