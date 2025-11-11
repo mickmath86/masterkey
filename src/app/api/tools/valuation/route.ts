@@ -226,18 +226,18 @@ export async function POST(request: Request) {
             amount: z.number().describe("Dollar amount change over 12 months"),
             percentage: z.number().describe("Percentage change over 12 months"),
             isPositive: z.boolean().describe("Whether the change is positive")
-          }),
+          }).optional(),
           pricePerSqFt: z.object({
             current: z.number().optional().describe("Current price per square foot"),
             marketPosition: z.enum(["above", "at", "below"]).describe("Position relative to market average")
-          }),
-          volatility: z.enum(["low", "moderate", "high"]).describe("Price volatility assessment")
-        }),
+          }).optional(),
+          volatility: z.enum(["low", "moderate", "high"]).describe("Price volatility assessment").optional()
+        }).optional(),
         insights: z.array(z.object({
           type: z.enum(["positive", "neutral", "negative"]).describe("Type of insight"),
           title: z.string().describe("Short insight title"),
           description: z.string().describe("Detailed explanation")
-        })).describe("Key insights about the property"),
+        })).optional().describe("Key insights about the property"),
         recommendation: z.object({
           action: z.enum(["holding", "selling_soon", "selling_now"]).describe("Recommended action based on market conditions and property characteristics. This will be consistent for the same property."),
           reasoning: z.string().describe("Explanation for the recommendation considering market trends, property position, and value optimization. Written for sellers seeking maximum value."),

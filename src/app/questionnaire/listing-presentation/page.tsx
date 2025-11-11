@@ -28,6 +28,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Spinner } from '@/components/ui/spinner';
 import { track } from '@vercel/analytics';
 import { webhookService, type SimplifiedWebhookData } from '@/lib/webhook-api';
+import posthog from "posthog-js";
 
 interface ImprovementDetail {
   improvement: string;
@@ -146,6 +147,7 @@ function RealEstateSellPageContent() {
   // Analytics tracking
   const [analytics] = useState(() => createFormAnalytics());
   const [hasTrackedFormStart, setHasTrackedFormStart] = useState(false);
+  const [webhookSent, setWebhookSent] = useState(false);
   const { trackQuestionnaireStart, trackStepComplete, trackFormComplete, trackFormAbandon, trackButtonClick } = useQuestionnaireTracking();
   const [formData, setFormData] = useState<FormData>({
     propertyAddress: '',
@@ -395,13 +397,137 @@ function RealEstateSellPageContent() {
     }
   };
 
-  const handleSubmit = async () => {
+  // Simple webhook function that fires immediately on form submission
+  const sendImmediateWebhook = async () => {
+    // Prevent duplicate webhook calls
+    if (webhookSent) {
+      console.log('📤 Webhook already sent, skipping duplicate call');
+      return;
+    }
+
+    const isSimplifiedStep9 = useSimplifiedStep9();
+    const webhookUrl = isSimplifiedStep9 
+      ? 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/602fd6b7-653d-4692-8538-21203b1075fd'
+      : 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/0972671d-e4b7-46c5-ad30-53d734b97e8c';
+
+    // Mark webhook as being sent to prevent duplicates
+    setWebhookSent(true);
+
+    try {
+      const webhookData = {
+        timestamp: new Date().toISOString(),
+        source: 'questionnaire_completed',
+        formVersion: isSimplifiedStep9 ? 'simplified' : 'original',
+        questionnaire: {
+          propertyAddress: formData.propertyAddress,
+          sellingIntent: formData.sellingIntent,
+          sellingTimeline: formData.sellingTimeline,
+          propertyCondition: formData.propertyCondition,
+          propertyImprovements: formData.propertyImprovements,
+          improvementDetails: formData.improvementDetails,
+          priceExpectation: formData.priceExpectation,
+          contactInfo: isSimplifiedStep9 ? {
+            contactMethod: formData.contactMethod,
+            email: formData.contactMethod === 'email' ? formData.email : null,
+            phone: formData.contactMethod === 'phone' ? formData.phone : null,
+            priceUpdates: formData.priceUpdates
+          } : {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone
+          }
+        }
+      };
+
+      console.log('📤 Sending immediate webhook on form submission:', webhookUrl);
+      
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookData),
+      });
+
+      if (response.ok) {
+        console.log('✅ Immediate webhook sent successfully');
+      } else {
+        console.error('❌ Immediate webhook failed:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('❌ Immediate webhook error:', error);
+    }
+  };
+
+  // New handler specifically for step 9 contact form submission
+  const handleStep9Submit = async () => {
     setIsSubmitting(true);
+    
+    // Track PostHog event for step 9 final submit
+    try {
+      posthog.capture('report_retrieved', {
+        address: formData.propertyAddress,
+        step: 'contact_form_submission',
+        user_flow: formData.sellingIntent,
+        form_type: 'real-estate-sell',
+        contact_method: formData.contactMethod,
+        email: formData.email,
+        phone: formData.phone
+      });
+    } catch (error) {
+      console.log('PostHog capture failed:', error);
+    }
+    
+    // Track step 9 specific conversion event
+    analytics.trackStepComplete(9, formData);
+    trackStepComplete(9, getStepName(9), formData);
+    
+    // Track specific conversion event for final submit button click
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'contact_form_submit', {
+        event_category: 'conversion',
+        event_label: 'step_9_final_submit',
+        value: 1
+      });
+      console.log('📊 Google Analytics conversion event fired for step 9 final submit');
+    }
+    
+    // Track Plausible Analytics conversion event
+    if (typeof window !== 'undefined' && (window as any).plausible) {
+      (window as any).plausible('Step 9 Final Submit', {
+        props: {
+          form_type: 'real-estate-sell',
+          step_name: 'contact_form',
+          step_number: 9,
+          user_flow: formData.sellingIntent || 'unknown',
+          conversion_type: 'final_submit'
+        }
+      });
+      console.log('📊 Plausible Analytics step 9 conversion event fired');
+    }
+    
+    // Track Facebook Pixel specific conversion for step 9
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'CompleteRegistration', {
+        content_name: 'Step 9 Contact Form',
+        status: 'completed'
+      });
+      console.log('📊 Facebook Pixel CompleteRegistration event fired for step 9');
+    }
     
     // Track form completion
     const completionTime = Date.now() - (analytics as any).startTime;
     analytics.trackFormComplete(formData);
     trackFormComplete(formData, completionTime);
+    
+    // Send webhook immediately when form is submitted
+    await sendImmediateWebhook();
+    
+    await handleFinalSubmission();
+  };
+
+  const handleFinalSubmission = async () => {
     
     // Fire Facebook Meta Pixel Lead event
     if (typeof window !== 'undefined' && (window as any).fbq) {
@@ -1415,7 +1541,7 @@ function RealEstateSellPageContent() {
               Previous
             </Button>
             
-            {currentStep < totalSteps ? (
+            {currentStep < 9 ? (
               <Button
                 onClick={handleNext}
                 disabled={!isStepValid() || (currentStep === 1 && isLoading)}
@@ -1435,9 +1561,10 @@ function RealEstateSellPageContent() {
               </Button>
             ) : (
               <Button
-                onClick={handleSubmit}
+                onClick={handleStep9Submit}
                 disabled={!isStepValid() || isSubmitting}
-                className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+                className="bg-green-600 hover:bg-green-700 flex items-center gap-2 font-semibold"
+                id="step-9-final-submit"
               >
                 {isSubmitting ? (
                   <>
@@ -1445,7 +1572,12 @@ function RealEstateSellPageContent() {
                     Submitting...
                   </>
                 ) : (
-                  'Get my Report'
+                  <>
+                    Get my Report
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </>
                 )}
               </Button>
             )}

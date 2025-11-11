@@ -298,7 +298,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
         } : null,
 
         // Comparable sales
-        comparables: comps ? {
+        comparables: comps && Array.isArray(comps) && comps.length > 0 ? {
           totalCount: comps.length,
           salesComps: comps.map((comp: any) => ({
             address: comp.address,
@@ -809,11 +809,11 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     });
 
     if (shouldSendWebhook) {
-      console.log('✅ All analysis complete - triggering comprehensive webhook');
-      sendComprehensiveWebhook();
+      console.log('✅ All analysis complete - but webhook disabled (now fires on form submission)');
+      // sendComprehensiveWebhook(); // DISABLED: Webhook now fires immediately on form submission
     } else if (shouldSendFallbackWebhook) {
-      console.log('⚠️ Fallback webhook trigger - sending with available data');
-      sendComprehensiveWebhook();
+      console.log('⚠️ Fallback webhook trigger - but webhook disabled (now fires on form submission)');
+      // sendComprehensiveWebhook(); // DISABLED: Webhook now fires immediately on form submission
     }
   }, [questionnaireData, summaryState, valuationState, subjectPropertyData, structuredSummary, structuredValuation, webhookSent, sendComprehensiveWebhook]);
 
@@ -822,8 +822,8 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     if (questionnaireData && !webhookSent) {
       const fallbackTimer = setTimeout(() => {
         if (!webhookSent && subjectPropertyData) {
-          console.log('⏰ Fallback timer triggered - sending webhook with available data after 30s delay');
-          sendComprehensiveWebhook();
+          console.log('⏰ Fallback timer triggered - but webhook disabled (now fires on form submission)');
+          // sendComprehensiveWebhook(); // DISABLED: Webhook now fires immediately on form submission
         }
       }, 30000); // 30 seconds
 

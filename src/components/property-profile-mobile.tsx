@@ -8,6 +8,9 @@ export default function PropertyProfileMobile() {
 
   useEffect(() => {
     const runAnimation = async () => {
+      // Small delay to ensure component is fully mounted
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Phase 1: Phone appears
       await phone.start({ y: 0, opacity: 1, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } });
       
@@ -25,10 +28,14 @@ export default function PropertyProfileMobile() {
       
       // Phase 5: Reset and loop
       setTimeout(() => {
-        phone.set({ y: 40, opacity: 0 });
-        scrollContent.set({ y: 0, opacity: 0 });
-        cursor.set({ opacity: 0 });
-        runAnimation();
+        try {
+          phone.set({ y: 40, opacity: 0 });
+          scrollContent.set({ y: 0, opacity: 0 });
+          cursor.set({ opacity: 0 });
+          runAnimation();
+        } catch (error) {
+          console.log('Animation reset error (component may be unmounted):', error);
+        }
       }, 1500);
     };
 

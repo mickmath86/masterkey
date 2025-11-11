@@ -16,6 +16,9 @@ export default function ProductHero() {
 
   useEffect(() => {
     const runAnimation = async () => {
+      // Small delay to ensure component is fully mounted
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Phase 1: Phone appears
       await phone.start({ y: 0, opacity: 1, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } });
       
@@ -90,17 +93,21 @@ export default function ProductHero() {
       
       // Phase 10: Wait longer to show completed loading screen, then reset and loop
       setTimeout(() => {
-        phone.set({ x: 0, y: 40, opacity: 0 });
-        screen1.set({ x: 0, y: 24, opacity: 0 });
-        screen2.set({ x: 400, y: 24, opacity: 0 });
-        screen3.set({ x: 400, y: 24, opacity: 0 });
-        screen4.set({ y: 24, opacity: 0 });
-        cursor.set({ x: 40, y: 60, opacity: 0, scale: 1 });
-        setCurrentScreen(1);
-        setCompletedSteps([]);
-        setTypedText('');
-        setSelectedCondition(null);
-        runAnimation();
+        try {
+          phone.set({ x: 0, y: 40, opacity: 0 });
+          screen1.set({ x: 0, y: 24, opacity: 0 });
+          screen2.set({ x: 400, y: 24, opacity: 0 });
+          screen3.set({ x: 400, y: 24, opacity: 0 });
+          screen4.set({ y: 24, opacity: 0 });
+          cursor.set({ x: 40, y: 60, opacity: 0, scale: 1 });
+          setCurrentScreen(1);
+          setCompletedSteps([]);
+          setTypedText('');
+          setSelectedCondition(null);
+          runAnimation();
+        } catch (error) {
+          console.log('Animation reset error (component may be unmounted):', error);
+        }
       }, 4000);
     };
 

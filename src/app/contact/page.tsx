@@ -181,9 +181,9 @@ function ContactForm() {
                       <Button 
                         variant="link" 
                         className="text-gray-900 dark:text-white p-0 h-auto font-normal" 
-                        onClick={() => handlePhoneClick('tel:+1 (805) 410-8748')}
+                        onClick={() => handlePhoneClick('tel:+1 (805) 262-9707')}
                       >
-                        +1 (805) 410-8748
+                        +1 (805) 262-9707 
                       </Button>
                       
                     </dd>

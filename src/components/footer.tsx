@@ -79,15 +79,7 @@ function Sitemap() {
           <SitemapLink href="/property-management#faqs">PM FAQs</SitemapLink>
         </SitemapLinks>
       </div>
-      <div>
-        <SitemapHeading>Resources</SitemapHeading>
-        <SitemapLinks>
-          <SitemapLink href="/guides/new-landlord-guide">New Landlord Guide</SitemapLink>
-          <SitemapLink href="/guides/rent-ready-checklist">Rent-Ready Checklist</SitemapLink>
-          <SitemapLink href="/company">Company</SitemapLink>
-          <SitemapLink href="/contact">Contact</SitemapLink>
-        </SitemapLinks>
-      </div>
+
     </>
   )
 }
