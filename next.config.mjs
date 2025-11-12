@@ -1,4 +1,5 @@
 import createMDX from '@next/mdx'
+import redirectsConfig from './redirects.config.js'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -28,6 +29,9 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+  },
+  async redirects() {
+    return redirectsConfig
   },
   async rewrites() {
     return [
