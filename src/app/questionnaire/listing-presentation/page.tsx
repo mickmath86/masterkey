@@ -30,6 +30,7 @@ import { track } from '@vercel/analytics';
 import { webhookService, type SimplifiedWebhookData } from '@/lib/webhook-api';
 import posthog from "posthog-js";
 
+
 interface ImprovementDetail {
   improvement: string;
   yearsAgo?: number;
@@ -415,8 +416,10 @@ function RealEstateSellPageContent() {
     try {
       const webhookData = {
         timestamp: new Date().toISOString(),
-        source: 'questionnaire_completed',
+        source: 'lead_capture', // Changed from 'questionnaire_completed' to indicate this is initial lead capture
         formVersion: isSimplifiedStep9 ? 'simplified' : 'original',
+        dataType: 'questionnaire_only', // Indicates this webhook contains only questionnaire data
+        note: 'Comprehensive property analysis data will follow in separate webhook after analysis completion',
         questionnaire: {
           propertyAddress: formData.propertyAddress,
           sellingIntent: formData.sellingIntent,
@@ -469,7 +472,7 @@ function RealEstateSellPageContent() {
         address: formData.propertyAddress,
         step: 'contact_form_submission',
         user_flow: formData.sellingIntent,
-        form_type: 'real-estate-sell',
+        form_type: 'valutaion-tool',
         contact_method: formData.contactMethod,
         email: formData.email,
         phone: formData.phone
@@ -1291,8 +1294,15 @@ function RealEstateSellPageContent() {
 
           {currentStep === 9 && (
             <div className="space-y-6">
-              {isSimplifiedStep9 ? (
+
+
+              {isSimplifiedStep9 ? 
+          
+
+              (
+       
                 // Simplified Step 9 Version
+ 
                 <>
                   <div>
                     <h3 className="text-3xl font-semibold text-gray-900 mb-2">
@@ -1423,6 +1433,8 @@ function RealEstateSellPageContent() {
                     )}
                   </div>
                 </>
+
+              
               ) : (
                 // Original Step 9 Version
                 <>
@@ -1560,7 +1572,14 @@ function RealEstateSellPageContent() {
               </Button>
             ) : (
               <Button
-                onClick={handleStep9Submit}
+                onClick={() => {
+                  posthog.capture('report-generate-button-click', {
+                    address: formData.propertyAddress,
+                    step: 'questionnaire_completion',
+                    form_type: 'valuation-tool'
+                  });
+                  handleStep9Submit();
+                }}
                 disabled={!isStepValid() || isSubmitting}
                 className="bg-green-600 hover:bg-green-700 flex items-center gap-2 font-semibold"
                 id="step-9-final-submit"

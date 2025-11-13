@@ -43,6 +43,7 @@ import {
 import { Footer } from '../footer'
 import { Navbar2 } from '../navbar2'
 import LandingNav from '../landing-nav'
+import YoutubePlayer from '../youtube-player'
 
 export interface Gallery4Item {
   id: string;
@@ -331,7 +332,8 @@ const steps = [
               </FadeIn>
             </div>
             <FadeIn className="mt-16 flow-root sm:mt-24">
-              {memoizedVideoPlayer}
+              {/* {memoizedVideoPlayer} */}
+              <YoutubePlayer videoId="fB3P-VxboKU" />     
             </FadeIn>
           </div>
         </div>

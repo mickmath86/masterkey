@@ -135,6 +135,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
   const [summaryTriggered, setSummaryTriggered] = useState(false)
   const [valuationTriggered, setValuationTriggered] = useState(false)
   const [webhookSent, setWebhookSent] = useState(false)
+  const [comprehensiveWebhookSent, setComprehensiveWebhookSent] = useState(false)
 
   // LeadConnector webhook URLs
   const COMPREHENSIVE_WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/0972671d-e4b7-46c5-ad30-53d734b97e8c';
@@ -142,8 +143,10 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
   // Function to send comprehensive data to webhook
   const sendComprehensiveWebhook = useCallback(async () => {
-    if (webhookSent) {
-      console.log('📤 Webhook already sent, skipping duplicate');
+    // Note: This webhook fires independently of the immediate lead capture webhook
+    // This sends comprehensive analysis data as a follow-up to the initial lead capture
+    if (comprehensiveWebhookSent) {
+      console.log('📤 Comprehensive webhook already sent, skipping duplicate');
       return;
     }
 
@@ -169,7 +172,9 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       const webhookData = {
         // Timestamp and metadata
         timestamp: new Date().toISOString(),
-        source: 'property_analysis_complete',
+        source: 'comprehensive_analysis_complete',
+        dataType: 'questionnaire_and_property_analysis', // Indicates this webhook contains both questionnaire and comprehensive property data
+        note: 'This webhook contains complete questionnaire responses plus comprehensive property analysis including AI insights, valuations, and market data',
         
         // Property profile URL (for simplified Step 9)
         ...(propertyProfilePath && { propertyProfileUrl: propertyProfilePath }),
@@ -375,15 +380,15 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       });
 
       if (response.ok) {
-        console.log(`✅ ${isSimplifiedStep9 ? 'Simplified' : 'Comprehensive'} webhook sent successfully`);
-        setWebhookSent(true);
+        console.log(`✅ Comprehensive webhook sent successfully to ${isSimplifiedStep9 ? 'simplified' : 'comprehensive'} endpoint`);
+        setComprehensiveWebhookSent(true);
       } else {
-        console.error(`❌ ${isSimplifiedStep9 ? 'Simplified' : 'Comprehensive'} webhook failed:`, response.status, response.statusText);
+        console.error(`❌ Comprehensive webhook failed:`, response.status, response.statusText);
       }
     } catch (error) {
       console.error(`❌ Error sending ${isSimplifiedStep9 ? 'simplified' : 'comprehensive'} webhook:`, error);
     }
-  }, [webhookSent, questionnaireData, subjectPropertyData, structuredValuation, structuredSummary, marketData, comps, avmData, valueData, summaryState, valuationState, dataLoadingComplete]);
+  }, [comprehensiveWebhookSent, questionnaireData, subjectPropertyData, structuredValuation, structuredSummary, marketData, comps, avmData, valueData, summaryState, valuationState, dataLoadingComplete]);
 
   // Handler for when a map marker is clicked
   const handleMarkerClick = (propertyData: any) => {
@@ -780,19 +785,20 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
 
   // Trigger comprehensive webhook when all analysis is complete
   useEffect(() => {
+    // Check if we should send comprehensive webhook
     const shouldSendWebhook = 
       questionnaireData && // User came from questionnaire
       summaryState === 'complete' && // Property summary is complete
       valuationState === 'complete' && // Valuation analysis is complete
       subjectPropertyData && // We have property data
-      !webhookSent; // Haven't sent webhook yet
+      !comprehensiveWebhookSent; // Haven't sent comprehensive webhook yet
 
     // Also check for fallback conditions (in case analysis doesn't complete but we have data)
     const shouldSendFallbackWebhook = 
       questionnaireData && // User came from questionnaire
       subjectPropertyData && // We have property data
       (structuredSummary || structuredValuation) && // We have at least some analysis
-      !webhookSent; // Haven't sent webhook yet
+      !comprehensiveWebhookSent; // Haven't sent comprehensive webhook yet
 
     console.log('🔍 Webhook Trigger Check:', {
       hasQuestionnaire: !!questionnaireData,
@@ -801,7 +807,7 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
       hasPropertyData: !!subjectPropertyData,
       hasStructuredSummary: !!structuredSummary,
       hasStructuredValuation: !!structuredValuation,
-      webhookSent: webhookSent,
+      comprehensiveWebhookSent: comprehensiveWebhookSent,
       shouldSend: shouldSendWebhook,
       shouldSendFallback: shouldSendFallbackWebhook,
       summaryState: summaryState,
@@ -809,27 +815,27 @@ export function PropertyDataModule({ address, zipcode }: PropertyDataModuleProps
     });
 
     if (shouldSendWebhook) {
-      console.log('✅ All analysis complete - but webhook disabled (now fires on form submission)');
-      // sendComprehensiveWebhook(); // DISABLED: Webhook now fires immediately on form submission
+      console.log('✅ All analysis complete - sending comprehensive webhook with full data');
+      sendComprehensiveWebhook(); // RE-ENABLED: Send comprehensive data after analysis complete
     } else if (shouldSendFallbackWebhook) {
-      console.log('⚠️ Fallback webhook trigger - but webhook disabled (now fires on form submission)');
-      // sendComprehensiveWebhook(); // DISABLED: Webhook now fires immediately on form submission
+      console.log('⚠️ Fallback webhook trigger - sending comprehensive webhook with available data');
+      sendComprehensiveWebhook(); // RE-ENABLED: Send comprehensive data as fallback
     }
-  }, [questionnaireData, summaryState, valuationState, subjectPropertyData, structuredSummary, structuredValuation, webhookSent, sendComprehensiveWebhook]);
+  }, [questionnaireData, summaryState, valuationState, subjectPropertyData, structuredSummary, structuredValuation, comprehensiveWebhookSent, sendComprehensiveWebhook]);
 
-  // Fallback webhook trigger after 30 seconds if user came from questionnaire but webhook hasn't fired
+  // Fallback webhook trigger after 30 seconds if user came from questionnaire but comprehensive webhook hasn't fired
   useEffect(() => {
-    if (questionnaireData && !webhookSent) {
+    if (questionnaireData && !comprehensiveWebhookSent) {
       const fallbackTimer = setTimeout(() => {
-        if (!webhookSent && subjectPropertyData) {
-          console.log('⏰ Fallback timer triggered - but webhook disabled (now fires on form submission)');
-          // sendComprehensiveWebhook(); // DISABLED: Webhook now fires immediately on form submission
+        if (!comprehensiveWebhookSent && subjectPropertyData) {
+          console.log('⏰ Fallback timer triggered - sending comprehensive webhook with available data');
+          sendComprehensiveWebhook(); // RE-ENABLED: Send comprehensive data as final fallback
         }
       }, 30000); // 30 seconds
 
       return () => clearTimeout(fallbackTimer);
     }
-  }, [questionnaireData, webhookSent, subjectPropertyData, sendComprehensiveWebhook]);
+  }, [questionnaireData, comprehensiveWebhookSent, subjectPropertyData, sendComprehensiveWebhook]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
