@@ -56,7 +56,7 @@ export default function ContactCapture({
 //   }, []);
 
 
-posthog.featureFlags.overrideFeatureFlags({ flags: {'form-field-test': 'control'} })
+// posthog.featureFlags.overrideFeatureFlags({ flags: {'form-field-test': 'control'} })
 
     if (posthog.getFeatureFlag('form-field-test') === 'test') {
            return (
