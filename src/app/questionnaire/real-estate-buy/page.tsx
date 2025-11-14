@@ -848,8 +848,8 @@ export default function RealEstateBuyPage() {
             <div className="space-y-2">
               <div className="flex items-center">
                 <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
-                <a href="tel:+1-555-123-4567" className="text-blue-600 hover:text-blue-800 text-sm">
-                  (555) 123-4567
+                <a href="tel:+1-805-262-9707" className="text-blue-600 hover:text-blue-800 text-sm">
+                  (805) 262-9707
                 </a>
               </div>
               <div className="flex items-center">
