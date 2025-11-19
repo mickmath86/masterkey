@@ -89,7 +89,7 @@ function AddressTest() {
                 </div>
                
                 <p className="text-center md:text-left mt-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
-                  Get instant <span className="text-sky-500">AI-powered</span> insights on your property value and local market conditions. Simply enter your address to unlock comprehensive analysis and data-driven recommendations.
+                  Get instant <span className="text-sky-500">AI-powered</span> insights on your property value and local market conditions. Simplies enter your address to unlock comprehensive analysis and data-driven recommendations.
                 </p>
                 <div className="mt-10 flex flex-col md:flex-row md:items-start mx-auto  gap-6">
                   <div className="flex-1 top-0">

@@ -31,6 +31,7 @@ import ProductHero from '../product-hero'
 import PropertyProfileMobile from '../property-profile-mobile'
 
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { PostHogFeature } from 'posthog-js/react'
 
 
 
@@ -44,6 +45,7 @@ import { Footer } from '../footer'
 import { Navbar2 } from '../navbar2'
 import LandingNav from '../landing-nav'
 import YoutubePlayer from '../youtube-player'
+import Feature1 from './components/feature1'
 
 export interface Gallery4Item {
   id: string;
@@ -265,10 +267,13 @@ const steps = [
     }
   };
 
+  // feature flags
+  posthog.featureFlags.overrideFeatureFlags({ flags: {'vsl-headline': 'control'} })
+posthog.featureFlags.overrideFeatureFlags({ flags: {'vsl-video-display': 'test'} })
+
+
   return (
     <div className="bg-white dark:bg-gray-900">
-
-
       <div className="relative isolate pt-14">
         <div
           aria-hidden="true"
@@ -285,18 +290,90 @@ const steps = [
         <div className="py-24 sm:py-32 lg:pb-40">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-                <FadeIn>
-              <h1 className="text-5xl font-semibold tracking-tight text-balance text-gray-900 sm:text-7xl dark:text-white">
-                Discover Your Home's <span className="text-sky-500">True Worth</span>
-              </h1>
-              </FadeIn>
-            
-               <FadeIn >
+
+              {/* post hog header test */}
+              {/* <PostHogFeature flag='vsl-headline' match='control'>
+                  <FadeIn>
+                    <h1 className="text-5xl font-semibold tracking-tight text-balance text-gray-900 sm:text-7xl dark:text-white">
+                        Discover Your Home's <span className="text-sky-500">True Worth</span>
+                    </h1>
+                  </FadeIn>
+                  <FadeIn >
                     <p className="my-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
                         Get instant <span className="text-sky-500">AI-powered</span> insights on your property value and local market conditions. Simply enter your address to unlock comprehensive analysis and data-driven recommendations.
                     </p>
+                </FadeIn>
+              </PostHogFeature> */}
+               <PostHogFeature flag='vsl-headline' match='control'>
+                <FadeIn>
+                  <h1 className="text-5xl font-semibold tracking-tight text-balance text-gray-900 sm:text-7xl dark:text-white">
+                      Should You Sell Your Home Now — <span className="text-sky-500">or Wait? </span>
+                  </h1>
+                </FadeIn>
+                <FadeIn >
+                  <p className="my-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
+                     Get a personalized Sell/Wait Strategy Report powered by real <span className="text-sky-500">Ventura & LA</span> market data and AI insight. See if selling today puts more money in your pocket — or if waiting could earn you more.
+                  </p>
                </FadeIn>
-           
+    
+              </PostHogFeature>
+
+              <PostHogFeature flag='vsl-headline' match='market-timing'>
+                <FadeIn>
+                  <h1 className="text-5xl font-semibold tracking-tight text-balance text-gray-900 sm:text-7xl dark:text-white">
+                      Is Now the Right Time to Sell Your Home?
+                  </h1>
+                </FadeIn>
+                <FadeIn >
+                  <p className="my-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
+                     Our AI-powered report analyzes your home's value, local demand, inventory, and price trends to reveal whether selling today or waiting is the smarter financial move.
+                  </p>
+               </FadeIn>
+    
+              </PostHogFeature>
+
+              <PostHogFeature flag='vsl-headline' match='financial-decision'>
+                <FadeIn>
+                  <h1 className="text-5xl font-semibold tracking-tight text-balance text-gray-900 sm:text-7xl dark:text-white">
+                     What’s the Smartest Move for Your Equity Right Now?
+                  </h1>
+                </FadeIn>
+                <FadeIn >
+                  <p className="my-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
+                     Get a seller-focused market analysis that compares your home’s current value, projected pricing, and buyer demand — so you know exactly what to do next.
+                  </p>
+               </FadeIn>
+    
+              </PostHogFeature>
+              
+              <PostHogFeature flag='vsl-headline' match='ai-version'>
+                <FadeIn>
+                  <h1 className="text-5xl font-semibold tracking-tight text-balance text-gray-900 sm:text-7xl dark:text-white">
+                    AI-Powered Clarity for the Most Important Home Decision You’ll Make
+                  </h1>
+                </FadeIn>
+                <FadeIn >
+                  <p className="my-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
+                      MasterKey analyzes your address, upgrades, market trends, and seller conditions to give you a clear, data-backed recommendation: sell now, or wait for a better market.
+                  </p>
+               </FadeIn>
+    
+              </PostHogFeature>
+
+                <PostHogFeature flag='vsl-headline' match='luxury'>
+                <FadeIn>
+                  <h1 className="text-5xl font-semibold tracking-tight text-balance text-gray-900 sm:text-7xl dark:text-white">
+                    A Smarter Way to Decide When to Sell Your Home
+                  </h1>
+                </FadeIn>
+                <FadeIn >
+                  <p className="my-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
+                     Your personalized Sell/Wait briefing blends AI valuation, market forecasts, and human expertise — giving you confidence in every step of your decision.
+                  </p>
+               </FadeIn>
+    
+              </PostHogFeature>
+   
               <FadeIn className="flex-1 top-0">
                       <GooglePlacesInput
                         value={address}
@@ -331,10 +408,13 @@ const steps = [
                   </Button>
               </FadeIn>
             </div>
-            <FadeIn className="mt-16 flow-root sm:mt-24">
-              {/* {memoizedVideoPlayer} */}
-              <YoutubePlayer videoId="fB3P-VxboKU" />     
-            </FadeIn>
+             <PostHogFeature flag='vsl-video-display' match='control'>
+                  <FadeIn className="mt-16 flow-root sm:mt-24">
+                    {/* {memoizedVideoPlayer} */}
+                    <YoutubePlayer videoId="fB3P-VxboKU" />     
+                  </FadeIn>
+            </PostHogFeature>
+          
           </div>
         </div>
         <div
@@ -814,6 +894,7 @@ export default function LandingPageV2() {
             {/* <Navbar3 />  */}
             <LandingNav />
             <HeroSection />
+            <Feature1 />
             <FeatureSection />
             <CTA />
             <Gallery4 items={data} />
