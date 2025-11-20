@@ -46,6 +46,12 @@ import { Navbar2 } from '../navbar2'
 import LandingNav from '../landing-nav'
 import YoutubePlayer from '../youtube-player'
 import Feature1 from './components/feature1'
+import ReportDemo from './components/report-demo'
+import ReportDemo2 from './components/report-demo2'
+import Feature2 from './components/feature2'
+import PhoneHeader from './components/header-mobilephone'
+import SampleReportCTA from './components/sample-report-cta'
+import Trust from './components/trust'
 
 export interface Gallery4Item {
   id: string;
@@ -894,9 +900,12 @@ export default function LandingPageV2() {
             {/* <Navbar3 />  */}
             <LandingNav />
             <HeroSection />
-            <Feature1 />
-            <FeatureSection />
-            <CTA />
+            <ReportDemo2 />
+             <Feature2 />  
+             <SampleReportCTA /> 
+             {/* <PhoneHeader /> */}
+            {/* <CTA /> */}
+            <Trust />   
             <Gallery4 items={data} />
             <LastCTA />
             <Footer />

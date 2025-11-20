@@ -47,13 +47,13 @@ export default function Feature1() {
     <div className="bg-white py-24 sm:py-32 dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl sm:text-center">
-          <h2 className="text-base/7 font-semibold text-indigo-600 dark:text-indigo-400">Everything you need</h2>
+          <h2 className="text-base/7 font-semibold text-sky-600 dark:text-sky-400">Everything you need</h2>
           <p className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl sm:text-balance dark:text-white">
             Timing is Everything
           </p>
           <p className="mt-6 text-lg/8 text-gray-600 dark:text-gray-300">
-            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores impedit perferendis suscipit eaque, iste
-            dolor cupiditate blanditiis.
+           The difference between selling now or waiting a few months can impact your bottom line.
+Here’s how quickly homes are selling across Ventura and Los Angeles — a key factor in determining whether now is the right time to make your move.
           </p>
         </div>
       </div>
@@ -61,7 +61,7 @@ export default function Feature1() {
        
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
              <FadeIn >
-                <div className="mb-8 bg-sky-50 dark:bg-sky-900/50 p-4 rounded-lg">
+                <div className="mb-8 ">
                     <ChartLineInteractive />
                 </div>
                    

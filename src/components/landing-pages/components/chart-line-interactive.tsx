@@ -27,15 +27,15 @@ const MARKET_COLORS = {
 }
 
 const chartData = [
-  { date: "2024-02-01", venturaCounty: 285, losAngelesCounty: 220 },
-  { date: "2024-03-01", venturaCounty: 320, losAngelesCounty: 180 },
-  { date: "2024-04-01", venturaCounty: 195, losAngelesCounty: 240 },
-  { date: "2024-05-01", venturaCounty: 410, losAngelesCounty: 350 },
-  { date: "2024-06-01", venturaCounty: 380, losAngelesCounty: 290 },
-  { date: "2024-07-01", venturaCounty: 450, losAngelesCounty: 420 },
-  { date: "2024-08-01", venturaCounty: 290, losAngelesCounty: 310 },
-  { date: "2024-09-01", venturaCounty: 520, losAngelesCounty: 480 },
-  { date: "2024-10-01", venturaCounty: 340, losAngelesCounty: 360 },
+  { date: "2024-02-01", venturaCounty: 65, losAngelesCounty: 58 },
+  { date: "2024-03-01", venturaCounty: 72, losAngelesCounty: 63 },
+  { date: "2024-04-01", venturaCounty: 50, losAngelesCounty: 52 },
+  { date: "2024-05-01", venturaCounty: 65, losAngelesCounty: 75 },
+  { date: "2024-06-01", venturaCounty: 70, losAngelesCounty: 61 },
+  { date: "2024-07-01", venturaCounty: 87, losAngelesCounty: 84 },
+  { date: "2024-08-01", venturaCounty: 72, losAngelesCounty: 59 },
+  { date: "2024-09-01", venturaCounty: 50, losAngelesCounty: 73 },
+  { date: "2024-10-01", venturaCounty: 58, losAngelesCounty: 68 },
 ]
 
 const chartConfig = {
@@ -193,7 +193,7 @@ export function ChartLineInteractive() {
             <ChartTooltipLanding
               content={
                 <ChartTooltipLandingContent
-                  className="w-[200px]"
+                  className="w-[200px] z-50"
                   labelFormatter={(value: any) => {
                     return new Date(value).toLocaleDateString("en-US", {
                       month: "short",
@@ -203,7 +203,7 @@ export function ChartLineInteractive() {
                   }}
                   formatter={(value: any, name: any, props: any) => {
                     return value ? [
-                      <div key="tooltip-content" className="flex justify-between items-center gap-2">
+                      <div key="tooltip-content" className="flex justify-between items-center gap-2 z-50">
                         <div className="bg-sky-500 w-3 h-3 rounded-full"></div>
                         <div className="text-sm">Days on Market:</div>
                         <span className="font-bold">{value} days</span>
@@ -222,7 +222,7 @@ export function ChartLineInteractive() {
               strokeOpacity={0.7}
             />
             
-            {/* Continuous solid line for full dataset */}
+            {/* Single solid line for full dataset */}
             <Line
               dataKey={activeChart}
               type="monotone"
@@ -230,22 +230,11 @@ export function ChartLineInteractive() {
               strokeWidth={2}
               dot={true}
             />
-            
-            {/* Dotted overlay for forecast portion only */}
-            <Line
-              dataKey={activeChart}
-              type="monotone"
-              stroke="#0ea5e9"
-              strokeWidth={2}
-              strokeDasharray="8 4"
-              dot={false}
-              data={forecastData}
-            />
           </LineChart>
         </ChartContainer>
         
         {/* Overlay Labels - Simple fixed positioning to match zone layout */}
-        <div className="absolute inset-0 pointer-events-none flex flex-col">
+        <div className="absolute inset-0 pointer-events-none flex flex-col z-10">
           {/* Seller's Advantage - Top 40% */}
           <div className="flex-[2] flex justify-center items-center">
             <span className="text-sm font-semibold text-green-600 opacity-70">
