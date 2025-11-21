@@ -6,16 +6,6 @@ import Navbar3 from '@/components/navbar3'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 
-// Declare gtag function for TypeScript
-declare global {
-  interface Window {
-    gtag: (
-      command: 'config' | 'event' | 'js' | 'set',
-      targetId: string | Date,
-      config?: Record<string, any>
-    ) => void;
-  }
-}
 
 function ContactForm() {
   const [formData, setFormData] = useState({
