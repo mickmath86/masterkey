@@ -28,6 +28,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Spinner } from '@/components/ui/spinner';
 import { track } from '@vercel/analytics';
 import { webhookService, type SimplifiedWebhookData } from '@/lib/webhook-api';
+import { trackListingPresentationCompleted } from '@/lib/gtm';
 import posthog from "posthog-js";
 import ContactCapture from '@/components/form-steps/contact-capture';
 
@@ -580,6 +581,28 @@ function RealEstateSellPageContent() {
       });
     } catch (error) {
       console.log('PostHog capture failed:', error);
+    }
+    
+    // Track GTM event for listing presentation completion
+    try {
+      trackListingPresentationCompleted({
+        address: formData.propertyAddress,
+        propertyCondition: formData.propertyCondition,
+        sellingIntent: formData.sellingIntent,
+        sellingTimeline: formData.sellingTimeline,
+        sellingMotivation: formData.sellingMotivation,
+        priceExpectation: formData.priceExpectation,
+        contactMethod: formData.contactMethod,
+        email: formData.email,
+        phone: formData.phone,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        propertyImprovements: formData.propertyImprovements?.join(', ') || '',
+        formCompletionTime: Date.now() - (analytics as any).startTime
+      });
+      console.log('📊 GTM listing_presentation_completed event fired for step 9 final submit');
+    } catch (error) {
+      console.log('GTM tracking failed:', error);
     }
     
     // Track step 9 specific conversion event

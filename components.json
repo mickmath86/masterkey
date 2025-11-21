@@ -20,6 +20,13 @@
   },
   "registries": {
     "@ai-elements": "https://registry.ai-sdk.dev/{name}.json",
-    "@aceternity": "https://ui.aceternity.com/registry/{name}.json"
+    "@aceternity": "https://ui.aceternity.com/registry/{name}.json",
+    "@tailark-pro": {
+      "url": "https://pro.tailark.com/registry/{name}",
+      "headers": {
+        "Authorization": "Bearer ${TAILARK_API_KEY}"
+      }
+    },
+    "@react-bits": "https://reactbits.dev/r/{name}.json"
   }
 }
