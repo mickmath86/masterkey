@@ -560,7 +560,7 @@ function Footer() {
 }
 
 export default function ListingPresentation() {
-  posthog.featureFlags.overrideFeatureFlags({ flags: {'landing-page-conversion': 'test'} })
+  posthog.featureFlags.overrideFeatureFlags({ flags: {'landing-page-conversion': 'control'} })
 
   if (posthog.getFeatureFlag('landing-page-conversion') === 'control') {
    return (
