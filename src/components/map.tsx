@@ -1,58 +1,70 @@
 'use client'
+import DottedMap from 'dotted-map'
 
-import { motion } from 'framer-motion'
+const pins = [
+    { lat: 40.73061, lng: -73.935242 },
+    { lat: 48.8534, lng: 2.3488 },
+    { lat: 51.5074, lng: -0.1278 },
+    { lat: 35.6895, lng: 139.6917 },
+    { lat: 34.0522, lng: -118.2437 },
+    { lat: 55.7558, lng: 37.6173 },
+    { lat: 39.9042, lng: 116.4074 },
+    { lat: 19.4326, lng: -99.1332 },
+    { lat: 37.7749, lng: -122.4194 },
+    { lat: -33.8688, lng: 151.2093 },
+    { lat: 28.6139, lng: 77.209 },
+    { lat: 52.52, lng: 13.405 },
+    { lat: 41.9028, lng: 12.4964 },
+    { lat: 43.65107, lng: -79.347015 },
+    { lat: -23.55052, lng: -46.633308 },
+    { lat: 31.2304, lng: 121.4737 },
+    { lat: 55.9533, lng: -3.1883 },
+    { lat: 35.6762, lng: 139.6503 },
+    { lat: 1.3521, lng: 103.8198 },
+    { lat: 37.5665, lng: 126.978 },
+    { lat: 53.3498, lng: -6.2603 },
+    { lat: 30.0444, lng: 31.2357 },
+    { lat: 50.4501, lng: 30.5234 },
+    { lat: -34.6037, lng: -58.3816 },
+    { lat: 59.9343, lng: 30.3351 },
+    { lat: 25.276987, lng: 55.296249 },
+    { lat: 45.4642, lng: 9.19 },
+    { lat: -22.9068, lng: -43.1729 },
+    { lat: 40.4168, lng: -3.7038 },
+    { lat: 41.3851, lng: 2.1734 },
+    { lat: 13.7563, lng: 100.5018 },
+    { lat: 52.3676, lng: 4.9041 },
+    { lat: -37.8136, lng: 144.9631 },
+    { lat: 60.1695, lng: 24.9354 }, 
+    { lat: 47.4979, lng: 19.0402 }, 
+    { lat: 59.3293, lng: 18.0686 }, 
+    { lat: 35.9078, lng: 127.7669 }, 
+    { lat: 40.4168, lng: -3.7038 }, 
+    { lat: 46.2044, lng: 6.1432 }, 
+    { lat: 33.8688, lng: 151.2093 },
+    { lat: 29.7604, lng: -95.3698 }, 
+    { lat: 39.7392, lng: -104.9903 }, 
+    { lat: -11.6647, lng: 27.4794 }, 
+    { lat: -10.7026, lng: 25.5122 }, 
+    { lat: -4.4419, lng: 15.2663 },
+]
 
-function Marker({
-  src,
-  top,
-  offset,
-  delay,
-}: {
-  src: string
-  top: number
-  offset: number
-  delay: number
-}) {
-  return (
-    <motion.div
-      variants={{
-        idle: { scale: 0, opacity: 0, rotateX: 0, rotate: 0, y: 0 },
-        active: { y: [-20, 0, 4, 0], scale: [0.75, 1], opacity: [0, 1] },
-      }}
-      transition={{ duration: 0.25, delay, ease: 'easeOut' }}
-      style={{ '--offset': `${offset}px`, top } as React.CSSProperties}
-      className="absolute left-[calc(50%+var(--offset))] size-[38px] drop-shadow-[0_3px_1px_rgba(0,0,0,.15)]"
-    >
-      <svg fill="none" viewBox="0 0 38 38" className="absolute size-full">
-        <path
-          d="M29.607 5.193c5.858 5.857 5.858 15.355 0 21.213l-9.9 9.9-.707.706-.708-.708-9.899-9.898c-5.857-5.858-5.857-15.356 0-21.213 5.858-5.858 15.356-5.858 21.214 0Z"
-          className="fill-black/5"
-        />
-        <path
-          d="m28.9 25.698-9.9 9.9-9.9-9.9C3.634 20.232 3.634 11.367 9.1 5.9 14.569.432 23.433.432 28.9 5.9c5.467 5.468 5.467 14.332 0 19.8Z"
-          className="fill-white"
-        />
-      </svg>
-      <img
-        alt=""
-        src={src}
-        className="absolute top-[4px] left-[7px] size-6 rounded-full"
-      />
-    </motion.div>
-  )
-}
+export const Map = () => {
+    const map = new DottedMap({ height: 55, grid: 'diagonal' })
 
-export function Map() {
-  return (
-    <div aria-hidden="true" className="relative size-full">
-      <div className="absolute inset-0 bg-[url(/map.png)] mask-[linear-gradient(to_bottom,black_50%,transparent)] bg-size-[530px_430px] bg-position-[center_-75px] bg-no-repeat" />
-      <div className="absolute inset-0">
-        <Marker src="/map/1.jpg" top={96} offset={-128} delay={0.15} />
-        <Marker src="/map/2.jpg" top={160} offset={-16} delay={0.4} />
-        <Marker src="/map/3.jpg" top={144} offset={96} delay={0.3} />
-        <Marker src="/map/4.jpg" top={192} offset={64} delay={0.6} />
-        <Marker src="/map/5.jpg" top={224} offset={-32} delay={0.8} />
-      </div>
-    </div>
-  )
+    pins.forEach((pin) => {
+        map.addPin({
+            ...pin,
+            svgOptions: { color: 'oklch(51.1% 0.262 276.966)', radius: 0.15 },
+        })
+    })
+
+    const svgMap = map.getSVG({
+        radius: 0.05,
+        color: 'oklch(37% 0.013 285.805)',
+        shape: 'circle',
+        backgroundColor: 'transparent',
+    })
+
+    return <img src={`data:image/svg+xml;utf8,${encodeURIComponent(svgMap)}`} />
 }

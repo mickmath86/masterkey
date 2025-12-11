@@ -1,0 +1,45 @@
+import { buttonVariants } from '@/components/ui/button'
+import { TrendingUp, Plus, ArrowUp, ArrowDown } from 'lucide-react'
+
+export const IntegrationsIllustration = () => (
+    <div
+        aria-hidden
+        className="bg-foreground/5 group rounded-2xl">
+        <div className="flex items-center gap-1.5 px-6 py-2.5 text-sm font-medium">
+            <TrendingUp className="size-3.5 opacity-50" />
+            Market Movement
+        </div>
+        <div className="relative">
+            <div className="absolute inset-0 scale-100 opacity-100 blur-lg transition-all duration-300">
+                <div className="bg-linear-to-r/increasing animate-hue-rotate absolute inset-x-6 bottom-0 top-12 -translate-y-3 from-pink-400 to-purple-400"></div>
+            </div>
+            <div className="bg-card ring-foreground/10 relative overflow-hidden rounded-2xl border border-transparent px-6 py-3 shadow-md shadow-black/5 ring-1">
+                <Integration
+                    icon={<ArrowUp className="text-green-600" />}
+                    name="Buyer Search Activity"
+                    description="Track online searches and buyer interest in your area."
+                />
+                <Integration
+                    icon={<ArrowDown className="text-red-600" />}
+                    name="New Listings"
+                    description="Monitor new properties entering the market daily."
+                />
+            </div>
+        </div>
+    </div>
+)
+
+const Integration = ({ icon, name, description }: { icon: React.ReactNode; name: string; description: string }) => {
+    return (
+        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-dashed py-3 last:border-b-0">
+            <div className="bg-muted border-foreground/5 flex size-12 items-center justify-center rounded-lg border">{icon}</div>
+            <div className="space-y-0.5">
+                <h3 className="text-sm font-medium">{name}</h3>
+                <p className="text-muted-foreground line-clamp-1 text-sm">{description}</p>
+            </div>
+            <div className={buttonVariants({ variant: 'outline', size: 'icon' })}>
+                <Plus className="size-4" />
+            </div>
+        </div>
+    )
+}

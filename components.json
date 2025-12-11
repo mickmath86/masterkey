@@ -27,6 +27,9 @@
         "Authorization": "Bearer ${TAILARK_API_KEY}"
       }
     },
-    "@react-bits": "https://reactbits.dev/r/{name}.json"
+    "@react-bits": "https://reactbits.dev/r/{name}.json",
+    "@svgl": "https://svgl.app/r/{name}.json",
+    "@prompt-kit": "https://prompt-kit.com/c/{name}.json",
+    "@motion-primitives": "https://motion-primitives.com/c/{name}.json"
   }
 }
