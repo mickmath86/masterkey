@@ -2,6 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { HeroIllustration } from "../components/hero-illustration"
+import { HouseHeroIllustration } from '../components/house-hero-illustration'
 
 export function SecondaryHero20() {
     return (
@@ -11,7 +12,7 @@ export function SecondaryHero20() {
                     <div className="grid items-center gap-12 md:grid-cols-2">
                         <div className="max-md:text-center">
                             {/* <span className="text-primary text-sm font-medium">Billing</span> */}
-                            <h1 className="mt-4 text-balance text-4xl font-semibold md:text-5xl lg:text-6xl">Timing is everything</h1>
+                            <h1 className="mt-4 text-balance text-4xl font-semibold md:text-5xl lg:text-6xl">No Risk Just Results</h1>
                             <p className="text-muted-foreground mb-6 mt-4 max-w-md text-balance text-lg max-md:mx-auto">Knowing <span className="italic">when</span> to sell can have a bigger impact on your profit than any upgrade you’ve made.
 We analyze real market signals — days on market, absorption rate, and buyer demand — to show whether now is the right moment or if waiting could earn you more.</p>
 
@@ -46,7 +47,7 @@ We analyze real market signals — days on market, absorption rate, and buyer de
                             </div>
                         </div>
 
-                        <HeroIllustration />
+                        <HouseHeroIllustration />
                     </div>
                 </div>
             </div>

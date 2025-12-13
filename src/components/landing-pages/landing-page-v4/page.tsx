@@ -1,4 +1,4 @@
-import { HeroSection } from "./components/hero-section";
+import { HeroSection } from "./sections/hero-section";
 
 import { SecondaryHero20 } from "./sections/secondary-hero-20";
 import { SecondaryHero4 } from "./sections/secondary-hero-4";
@@ -14,30 +14,29 @@ import { FeaturesSection4 } from "./sections/features-4";
 import { HeroSection as SecondaryHero11 } from "./sections/secondary-hero-11";
 import { HomeStats } from "./sections/stats-4";
 
-import { HouseHero } from "./components/house-hero";
+import { HouseHero } from "./sections/house-hero";
 import { HeroSection as Hero2 } from "./sections/hero2";
+import  Content6  from "./sections/content-6";
 
 export default function LandingPageV4() {
     return (
     <>
-  
-        <Hero2 />
-         <SecondaryHero20 />
-         <CallToAction /> 
-         <HowItWorksSection />
         <HeroSection />
-        {/* <SecondaryHero11 /> */}
-        <HomeStats />
+         <Content6 />
+        <SecondaryHero20 />
+        <CallToAction /> 
+       
+        <Testimonials /> 
+        <HowItWorksSection />
+    
         <HouseHero />
         <FeaturesSection4 />
     
-         <Process />
+        <Process />
        
-       
-        {/* <SecondaryHero4 />   */}
         <FeaturesSection />
         
-        <Testimonials /> 
+       
         <ContentSection2 />
         <StatsSection />
        

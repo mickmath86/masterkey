@@ -1,5 +1,6 @@
 import { LogoIcon } from './logo'
 import { MasterKeyMark } from '@/components/logo'
+
 import Image from 'next/image'
 import { ChartIllustration } from './chart-illustration'
 import { Separator } from '@/components/ui/separator'
@@ -16,16 +17,16 @@ export const HouseHeroIllustration = () => {
                         <div className="text-[24px] font-bold tracking-[0.3em] text-white">SOLD</div>
                     </div>
 
-                    <div className="mb-6 flex-col items-center justify-between">
+                    <div className="mb-6 flex-col items-center justify-between my-10">
                         <div className="flex flex-col items-center space-y-4">
                            
                             <MasterKeyMark className="h-24 w-auto" />
-                             <div className="text-center font-mono text-lg">3332 Mountain Trail Ave </div>
-                            <div className="text-center font-mono   text-sm text-muted-foreground">Newbury Park, CA 91320</div>
-                            {/* <Separator className="my-2" /> */}
-                            {/* <div className="mt-4 font-bold text-2xl bg-red-100 text-red-800 text-center px-2 py-1 rounded">SOLD</div> */}
-                            {/* <div className="mt-1 -translate-x-1 font-mono text-2xl font-semibold">$284,342.57</div>
-                            <div className="text-xs font-medium">Due in 15 days</div> */}
+                             {/* <div className="text-center font-mono text-lg">3332 Mountain Trail Ave </div> 
+                            <div className="text-center font-mono   text-sm text-muted-foreground">Newbury Park, CA 91320</div> 
+                         
+                            <div className="mt-4 font-bold text-2xl bg-red-100 text-red-800 text-center px-2 py-1 rounded">MASTERKEY</div> */}
+                            <div className="mt-1 -translate-x-1 font-mono text-2xl font-semibold">MASTERKEY</div> 
+                            {/* <div className="text-xs font-medium">Due in 15 days</div> */}
                         </div>
                     </div>
 
@@ -37,11 +38,11 @@ export const HouseHeroIllustration = () => {
             <div className="mask-radial-from-75% ml-auto w-4/5 px-4 py-8">
                 <div className="before:border-foreground/5 before:bg-primary/5 aspect-2/3 md:aspect-2/3 relative mt-auto h-fit overflow-hidden rounded-xl shadow-xl before:absolute before:inset-0 before:rounded-xl before:border sm:aspect-video">
                     <Image
-                        src="/images/mountaintrail.jpeg"
-                        alt="tailark hero section work 4"
+                        src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=2070&auto=format&fit=crop"
+                        alt="Modern residential home"
                         className="size-full object-cover"
-                        width={1000}
-                        height={1481}
+                        width={2070}
+                        height={1380}
                     />
                 </div>
             </div>

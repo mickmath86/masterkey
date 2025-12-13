@@ -160,7 +160,7 @@ export function Header() {
             role="banner"
             data-state={isMobileMenuOpen ? 'active' : 'inactive'}
             {...(isScrolled && { 'data-scrolled': true })}
-            className="has-data-[state=open]:h-screen has-data-[state=open]:backdrop-blur has-data-[state=open]:bg-background/50  inset-x-0 top-0 z-50">
+            className="has-data-[state=open]:h-screen has-data-[state=open]:backdrop-blur has-data-[state=open]:bg-background/50  fixed inset-x-0 top-0 z-50">
             <div
                 className={cn(
                     'h-18 absolute inset-x-0 top-0 z-50 border-transparent ring-1 ring-transparent transition-all duration-300',
@@ -198,17 +198,20 @@ export function Header() {
                             <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
                                 <Button
                                     asChild
-                                    variant="outline"
+                                   
                                     size="sm">
                                     <Link href="#">
-                                        <span>Login</span>
+                                        <span>Call Now</span>
                                     </Link>
                                 </Button>
                                 <Button
                                     asChild
-                                    size="sm">
+                                    size="sm"
+                                     variant="outline"
+                                     >
+                                       
                                     <Link href="#">
-                                        <span>Get Started</span>
+                                        <span>Chat with an Agent</span>
                                     </Link>
                                 </Button>
                             </div>
@@ -222,61 +225,9 @@ export function Header() {
 
 const MobileMenu = ({ closeMenu }: { closeMenu: () => void }) => {
     return (
-        <nav
-            role="navigation"
-            className="w-full [--color-border:--alpha(var(--color-foreground)/5%)] [--color-muted:--alpha(var(--color-foreground)/5%)]">
-            <Accordion
-                type="single"
-                collapsible
-                className="**:hover:no-underline -mx-4 mt-0.5 space-y-0.5">
-                {mobileLinks.map((link, index) => {
-                    if (link.groupName && link.links) {
-                        return (
-                            <AccordionItem
-                                key={index}
-                                value={link.groupName}
-                                className="before:border-border group relative border-b-0 before:pointer-events-none before:absolute before:inset-x-4 before:bottom-0 before:border-b">
-                                <AccordionTrigger className="**:!font-normal data-[state=open]:bg-muted flex items-center justify-between px-4 py-3 text-lg">{link.groupName}</AccordionTrigger>
-                                <AccordionContent className="pb-5">
-                                    <ul>
-                                        {link.links.map((feature, featureIndex) => (
-                                            <li key={featureIndex}>
-                                                <Link
-                                                    href={feature.href}
-                                                    onClick={closeMenu}
-                                                    className="grid grid-cols-[auto_1fr] items-center gap-2.5 px-4 py-2">
-                                                    <div
-                                                        aria-hidden
-                                                        className="flex items-center justify-center *:size-4">
-                                                        {feature.icon}
-                                                    </div>
-                                                    <div className="text-base">{feature.name}</div>
-                                                </Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </AccordionContent>
-                            </AccordionItem>
-                        )
-                    }
-                    return null
-                })}
-            </Accordion>
-            {mobileLinks.map((link, index) => {
-                if (link.name && link.href) {
-                    return (
-                        <Link
-                            key={index}
-                            href={link.href}
-                            onClick={closeMenu}
-                            className="group relative block border-0 border-b py-4 text-lg">
-                            {link.name}
-                        </Link>
-                    )
-                }
-                return null
-            })}
-        </nav>
+      <div>
+        
+      </div>
     )
 }
 
@@ -300,118 +251,9 @@ const NavMenu = () => {
     }
 
     return (
-        <NavigationMenu
-            ref={menuRef}
-            onValueChange={handleViewportHeight}
-            className="**:data-[slot=navigation-menu-viewport]:bg-transparent **:data-[slot=navigation-menu-viewport]:rounded-none **:data-[slot=navigation-menu-viewport]:ring-0 **:data-[slot=navigation-menu-viewport]:border-0 **:data-[slot=navigation-menu-viewport]:shadow-none [--color-muted:color-mix(in_oklch,var(--color-foreground)_5%,transparent)] [--viewport-outer-px:2rem] max-lg:hidden">
-            <NavigationMenuList className="gap-3">
-                <NavigationMenuItem value="product">
-                    <NavigationMenuTrigger>Product</NavigationMenuTrigger>
-                    <NavigationMenuContent className="mt-4.5 origin-top pb-14 pt-5 shadow-none ring-0">
-                        <div className="min-w-6xl pr-22 divide-foreground/10 grid w-full grid-cols-4 gap-4 divide-x">
-                            <div className="row-span-2 -mr-2 grid grid-rows-subgrid gap-1 pr-2">
-                                <span className="text-muted-foreground ml-2 text-xs">Features</span>
-                                <ul className="mt-1 space-y-2">
-                                    {features.map((feature, index) => (
-                                        <ListItem
-                                            key={index}
-                                            href={feature.href}
-                                            title={feature.name}
-                                            description={feature.description}>
-                                            {feature.icon}
-                                        </ListItem>
-                                    ))}
-                                </ul>
-                            </div>
-                            <div className="col-span-2 row-span-2 grid grid-rows-subgrid gap-1 border-r-0">
-                                <span className="text-muted-foreground ml-2 text-xs">More Features</span>
-                                <ul className="mt-1 grid grid-cols-2 gap-2">
-                                    {moreFeatures.map((feature, index) => (
-                                        <ListItem
-                                            key={index}
-                                            href={feature.href}
-                                            title={feature.name}
-                                            description={feature.description}>
-                                            {feature.icon}
-                                        </ListItem>
-                                    ))}
-                                </ul>
-                            </div>
-                            <div className="row-span-2 grid grid-rows-subgrid gap-1">
-                                <span className="text-muted-foreground ml-2 text-xs">Changelog</span>
-                                <div className="bg-linear-to-br inset-ring-foreground/10 inset-ring-1 relative mt-3 grid overflow-hidden rounded-xl bg-blue-200 from-pink-50 via-white/50 to-emerald-200 p-1 transition-colors duration-200 hover:bg-blue-300">
-                                    <div className="absolute inset-0 aspect-video px-6">
-                                        <div className="mask-b-from-35% before:bg-background before:ring-foreground/10 after:ring-foreground/5 after:bg-background/75 before:z-1 group relative -mx-4 h-4/5 px-4 pt-6 before:absolute before:inset-x-6 before:bottom-0 before:top-4 before:rounded-t-xl before:border before:border-transparent before:ring-1 after:absolute after:inset-x-9 after:bottom-0 after:top-2 after:rounded-t-xl after:border after:border-transparent after:ring-1">
-                                            <div className="bg-card ring-foreground/10 relative z-10 h-full overflow-hidden rounded-t-xl border border-transparent p-8 text-sm shadow-xl shadow-black/25 ring-1"></div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-0.5 self-end p-3">
-                                        <NavigationMenuLink
-                                            asChild
-                                            className="text-foreground p-0 text-sm font-medium before:absolute before:inset-0 hover:bg-transparent focus:bg-transparent">
-                                            <Link href="#">Multimodal Learning</Link>
-                                        </NavigationMenuLink>
-                                        <p className="text-muted-foreground line-clamp-1 text-xs">Explore how our platform integrates text, image, and audio processing into a unified framework.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </NavigationMenuContent>
-                </NavigationMenuItem>
-                <NavigationMenuItem value="solutions">
-                    <NavigationMenuTrigger>Solutions</NavigationMenuTrigger>
-                    <NavigationMenuContent className="mt-4.5 origin-top pb-12 pt-5">
-                        <div className="min-w-6xl pr-22 divide-foreground/10 grid w-full grid-cols-4 gap-4 divide-x">
-                            <div className="col-span-2 row-span-2 -mr-4 grid grid-rows-subgrid gap-1 pr-2">
-                                <span className="text-muted-foreground ml-2 text-xs">Use Cases</span>
-                                <ul className="mt-1 grid grid-cols-2 gap-2">
-                                    {useCases.map((useCase, index) => (
-                                        <ListItem
-                                            key={index}
-                                            href={useCase.href}
-                                            title={useCase.name}
-                                            description={useCase.description}>
-                                            {useCase.icon}
-                                        </ListItem>
-                                    ))}
-                                </ul>
-                            </div>
-                            <div className="row-span-2 grid grid-rows-subgrid gap-1 pl-2">
-                                <span className="text-muted-foreground ml-2 text-xs">Content</span>
-                                <ul className="mt-1">
-                                    {contentLinks.map((content, index) => (
-                                        <NavigationMenuLink
-                                            key={index}
-                                            asChild>
-                                            <Link
-                                                href={content.href}
-                                                className="grid grid-cols-[auto_1fr] items-center gap-2.5">
-                                                {content.icon}
-                                                <div className="text-foreground text-sm font-medium">{content.name}</div>
-                                            </Link>
-                                        </NavigationMenuLink>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </NavigationMenuContent>
-                </NavigationMenuItem>
-                <NavigationMenuItem value="pricing">
-                    <NavigationMenuLink
-                        asChild
-                        className={navigationMenuTriggerStyle()}>
-                        <Link href="#">Pricing</Link>
-                    </NavigationMenuLink>
-                </NavigationMenuItem>
-                <NavigationMenuItem value="company">
-                    <NavigationMenuLink
-                        asChild
-                        className={navigationMenuTriggerStyle()}>
-                        <Link href="#">Company</Link>
-                    </NavigationMenuLink>
-                </NavigationMenuItem>
-            </NavigationMenuList>
-        </NavigationMenu>
+      
+    <>  </>
+      
     )
 }
 

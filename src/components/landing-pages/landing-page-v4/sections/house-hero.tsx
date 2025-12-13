@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { HouseHeroIllustration } from "./house-hero-illustration"
+import { HouseHeroIllustration } from "../components/house-hero-illustration"
 
 export function HouseHero() {
     return (
