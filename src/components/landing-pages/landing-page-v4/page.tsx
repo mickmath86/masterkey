@@ -1,9 +1,12 @@
 import { HeroSection } from "./sections/hero-section";
-
-import { SecondaryHero20 } from "./sections/secondary-hero-20";
-import { SecondaryHero4 } from "./sections/secondary-hero-4";
-import { FeaturesSection } from "./sections/features-12";
+import  Content6  from "./sections/content-6";
 import { CallToAction } from "./components/call-to-action";
+import AboutUsSection from "./sections/about-us";
+import  WhyThisWorksSection  from "./sections/why-this-works";
+import FAQ from "./sections/faq";
+import Footer from './sections/footer'
+import { FeaturesSection } from "./sections/features-12";
+
 import { Testimonials } from "./components/testimonials-8";
 
 import { FeaturesSection as HowItWorksSection }  from "./components/how-it-works-3";
@@ -16,29 +19,22 @@ import { HomeStats } from "./sections/stats-4";
 
 import { HouseHero } from "./sections/house-hero";
 import { HeroSection as Hero2 } from "./sections/hero2";
-import  Content6  from "./sections/content-6";
+
 
 export default function LandingPageV4() {
     return (
     <>
         <HeroSection />
          <Content6 />
-        <SecondaryHero20 />
-        <CallToAction /> 
-       
-        <Testimonials /> 
-        <HowItWorksSection />
-    
-        <HouseHero />
-        <FeaturesSection4 />
-    
-        <Process />
-       
-        <FeaturesSection />
         
-       
-        <ContentSection2 />
-        <StatsSection />
+        <CallToAction /> 
+       <AboutUsSection />
+        <Testimonials /> 
+        <WhyThisWorksSection />
+        <FAQ/>
+        <CallToAction /> 
+        <Footer />
+      
        
     </>
         

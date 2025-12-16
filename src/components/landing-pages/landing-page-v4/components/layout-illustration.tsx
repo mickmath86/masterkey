@@ -13,7 +13,7 @@ export const LayoutIllustration = () => (
                 </div>
             </div>
             <div className="ml-auto w-[calc(100%-12rem)]">
-                <div className="h-11 border-b"></div>
+                <div className="h-11 border-b "></div>
                 <div className="relative h-80">
                     <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,var(--color-border),var(--color-border)_1px,transparent_1px,transparent_6px)] opacity-50"></div>
                 </div>
