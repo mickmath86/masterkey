@@ -119,7 +119,7 @@ const logos: Record<'ai' | 'hosting' | 'streaming' | 'payments', React.ReactNode
 
 type LogoGroup = keyof typeof logos
 
-export function LogoCloud() {
+export function LogoCloud({ className }: { className?: string }) {
     const [currentGroup, setCurrentGroup] = useState<LogoGroup>('ai')
 
     useEffect(() => {
@@ -136,7 +136,7 @@ export function LogoCloud() {
     }, [])
 
     return (
-        <Container className="bg-background lg:**:data-[slot=content]:py-16">
+        <Container className={`bg-background lg:**:data-[slot=content]:py-16 ${className || ''}`}>
             <div className="mx-auto mb-12 max-w-xl text-balance text-center md:mb-16">
                 <p
                     data-current={currentGroup}
