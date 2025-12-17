@@ -70,9 +70,3 @@ export const ImageIllustration = () => {
         </motion.div>
     )
 }
-
-declare module 'react' {
-    interface IntrinsicElements {
-        'wistia-player': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>
-    }
-}
