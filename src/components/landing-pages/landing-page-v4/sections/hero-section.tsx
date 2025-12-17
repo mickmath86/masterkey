@@ -88,7 +88,7 @@ export function HeroSection() {
                             asChild
                             size="lg"
                             className="px-4 text-sm">
-                            <Link href="#">Call Now</Link>
+                            <Link href="tel:805-262-9707">Call Now</Link>
                         </Button>
                          <Button
                             asChild

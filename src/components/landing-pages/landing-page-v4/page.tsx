@@ -1,13 +1,15 @@
 import { HeroSection } from "./sections/hero-section";
 import  Content6  from "./sections/content-6";
+import CTA3 from "./components/cta3";
 import { CallToAction } from "./components/call-to-action";
 import AboutUsSection from "./sections/about-us";
 import  WhyThisWorksSection  from "./sections/why-this-works";
 import FAQ from "./sections/faq";
+import CTA2 from "./sections/cta2";
 import Footer from './sections/footer'
 import { FeaturesSection } from "./sections/features-12";
 
-import { Testimonials } from "./components/testimonials-8";
+import Testimonials  from "./components/testimonials";
 
 import { FeaturesSection as HowItWorksSection }  from "./components/how-it-works-3";
 import { ContentSection2 } from "./components/content-section2";
@@ -25,14 +27,13 @@ export default function LandingPageV4() {
     return (
     <>
         <HeroSection />
-         <Content6 />
-        
-        <CallToAction /> 
-       <AboutUsSection />
+        <Content6 />
+        <CTA3/>
+        <AboutUsSection />
         <Testimonials /> 
         <WhyThisWorksSection />
         <FAQ/>
-        <CallToAction /> 
+        <CTA2 /> 
         <Footer />
       
        

@@ -160,7 +160,7 @@ export function Header() {
             role="banner"
             data-state={isMobileMenuOpen ? 'active' : 'inactive'}
             {...(isScrolled && { 'data-scrolled': true })}
-            className="has-data-[state=open]:h-screen has-data-[state=open]:backdrop-blur has-data-[state=open]:bg-background/50  fixed inset-x-0 top-0 z-50">
+            className="has-data-[state=open]:h-screen has-data-[state=open]:backdrop-blur has-data-[state=open]:bg-background/50 my-auto fixed inset-x-0 top-0 z-50">
             <div
                 className={cn(
                     'h-18 absolute inset-x-0 top-0 z-50 border-transparent ring-1 ring-transparent transition-all duration-300',
@@ -183,13 +183,23 @@ export function Header() {
                             </Link>
 
                             {isLarge && <NavMenu />}
-                            <button
-                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            {/* <button
+                                
                                 aria-label={isMobileMenuOpen == true ? 'Close Menu' : 'Open Menu'}
                                 className="relative z-20 -m-2.5 -mr-3 block cursor-pointer p-2.5 lg:hidden">
                                 <Menu className="in-data-[state=active]:rotate-180 in-data-[state=active]:scale-0 in-data-[state=active]:opacity-0 m-auto size-5 duration-200" />
                                 <X className="in-data-[state=active]:rotate-0 in-data-[state=active]:scale-100 in-data-[state=active]:opacity-100 absolute inset-0 m-auto size-5 -rotate-180 scale-0 opacity-0 duration-200" />
-                            </button>
+                            </button> */}
+                            <Button
+                               className="lg:hidden mt-3"
+
+
+                            >
+                                   <Link href="tel:805-262-9707">
+                                        <span>Call Now</span>
+                                    </Link>
+                            </Button>
+                            
                         </div>
 
                         {!isLarge && isMobileMenuOpen && <MobileMenu closeMenu={() => setIsMobileMenuOpen(false)} />}
@@ -200,7 +210,7 @@ export function Header() {
                                     asChild
                                    
                                     size="sm">
-                                    <Link href="#">
+                                    <Link href="tel:805-262-9707">
                                         <span>Call Now</span>
                                     </Link>
                                 </Button>
@@ -211,7 +221,7 @@ export function Header() {
                                      >
                                        
                                     <Link href="#">
-                                        <span>Chat with an Agent</span>
+                                        <span>Schedule Appointment</span>
                                     </Link>
                                 </Button>
                             </div>
@@ -264,7 +274,7 @@ function ListItem({ title, description, children, href, ...props }: React.Compon
                 <Link
                     href={href}
                     className="grid grid-cols-[auto_1fr] gap-3.5">
-                    <div className="bg-background ring-foreground/10 relative flex size-9 items-center justify-center rounded border border-transparent shadow shadow-sm ring-1">{children}</div>
+                    <div className="bg-background ring-foreground/10 relative flex size-9 items-center justify-center rounded border border-transparent shadow ring-1">{children}</div>
                     <div className="space-y-0.5">
                         <div className="text-foreground text-sm font-medium">{title}</div>
                         <p className="text-muted-foreground line-clamp-1 text-xs">{description}</p>

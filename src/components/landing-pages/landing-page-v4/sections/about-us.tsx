@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import OurTeam from '../components/our-team'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
@@ -54,13 +55,13 @@ export default function AboutUsSection() {
           <div className="mx-auto max-w-7xl px-6 py-32 sm:py-40 lg:px-8">
             <div className="mx-auto max-w-2xl lg:mx-0 lg:grid lg:max-w-none lg:grid-cols-2 lg:gap-x-16 lg:gap-y-8 xl:grid-cols-1 xl:grid-rows-1 xl:gap-x-8">
               <h1 className="max-w-2xl text-5xl font-semibold tracking-tight text-balance text-gray-900 sm:text-7xl lg:col-span-2 xl:col-auto dark:text-white">
-                We’re a passionate group of people building the future of ecommerce
+                We’re a passionate group of people building the future of real estate
               </h1>
               <div className="mt-6 max-w-xl lg:mt-0 xl:col-end-1 xl:row-start-1">
                 <p className="text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
-                  Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo. Elit sunt
-                  amet fugiat veniam occaecat fugiat aliqua. Anim aute id magna aliqua ad ad non deserunt sunt. Qui
-                  irure qui lorem cupidatat commodo.
+                  We believe selling your home should be backed by data, not guesswork. That's why we created the 
+                  Verified Value Guarantee — a comprehensive approach that combines professional appraisals, strategic 
+                  pricing, and performance-based accountability to deliver results you can trust.
                 </p>
               </div>
               <img
@@ -75,7 +76,7 @@ export default function AboutUsSection() {
 
         {/* Timeline section */}
         <div className="mx-auto -mt-8 max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto grid max-w-2xl grid-cols-1 gap-8 overflow-hidden lg:mx-0 lg:max-w-none lg:grid-cols-4">
+          {/* <div className="mx-auto grid max-w-2xl grid-cols-1 gap-8 overflow-hidden lg:mx-0 lg:max-w-none lg:grid-cols-4">
             {timeline.map((item) => (
               <div key={item.name}>
                 <time
@@ -95,63 +96,14 @@ export default function AboutUsSection() {
                 <p className="mt-1 text-base/7 text-gray-600 dark:text-gray-400">{item.description}</p>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
 
         
 
-        {/* CTA section */}
-        <div className="mt-32 overflow-hidden sm:mt-40">
-          <div className="mx-auto max-w-7xl px-6 lg:flex lg:px-8">
-            <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-12 gap-y-16 lg:mx-0 lg:max-w-none lg:min-w-full lg:flex-none lg:gap-y-8">
-              <div className="lg:col-end-1 lg:w-full lg:max-w-lg lg:pb-8">
-                <h2 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
-                  Our people
-                </h2>
-                <p className="mt-6 text-xl/8 text-gray-700 dark:text-gray-300">
-                  Quasi est quaerat. Sit molestiae et. Provident ad dolorem occaecati eos iste. Soluta rerum quidem
-                  minus ut molestiae velit error quod. Excepturi quidem expedita molestias quas.
-                </p>
-                <p className="mt-6 text-base/7 text-gray-600 dark:text-gray-400">
-                  Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo. Elit sunt
-                  amet fugiat veniam occaecat fugiat. Quasi aperiam sit non sit neque reprehenderit.
-                </p>
-              </div>
-              <div className="flex flex-wrap items-start justify-end gap-6 sm:gap-8 lg:contents">
-                <div className="w-0 flex-auto lg:ml-auto lg:w-auto lg:flex-none lg:self-end">
-                  <img
-                    alt=""
-                    src="https://images.unsplash.com/photo-1670272502246-768d249768ca?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1152&q=80"
-                    className="aspect-7/5 w-148 max-w-none rounded-2xl bg-gray-50 object-cover max-sm:w-120 dark:bg-gray-800"
-                  />
-                </div>
-                <div className="contents lg:col-span-2 lg:col-end-2 lg:ml-auto lg:flex lg:w-148 lg:items-start lg:justify-end lg:gap-x-8">
-                  <div className="order-first flex w-64 flex-none justify-end self-end max-sm:w-40 lg:w-auto">
-                    <img
-                      alt=""
-                      src="https://images.unsplash.com/photo-1605656816944-971cd5c1407f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=768&h=604&q=80"
-                      className="aspect-4/3 w-[24rem] max-w-none flex-none rounded-2xl bg-gray-50 object-cover dark:bg-gray-800"
-                    />
-                  </div>
-                  <div className="flex w-96 flex-auto justify-end lg:w-auto lg:flex-none">
-                    <img
-                      alt=""
-                      src="https://images.unsplash.com/photo-1568992687947-868a62a9f521?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1152&h=842&q=80"
-                      className="aspect-7/5 w-148 max-w-none flex-none rounded-2xl bg-gray-50 object-cover max-sm:w-120 dark:bg-gray-800"
-                    />
-                  </div>
-                  <div className="hidden sm:block sm:w-0 sm:flex-auto lg:w-auto lg:flex-none">
-                    <img
-                      alt=""
-                      src="https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=768&h=604&q=80"
-                      className="aspect-4/3 w-[24rem] max-w-none rounded-2xl bg-gray-50 object-cover dark:bg-gray-800"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        
+        <OurTeam />
+   
 
         {/* Stats */}
         <div className="mx-auto mt-32 max-w-7xl px-6 sm:mt-40 lg:px-8">
@@ -166,33 +118,33 @@ export default function AboutUsSection() {
           </div>
           <div className="mx-auto mt-16 flex max-w-2xl flex-col gap-8 lg:mx-0 lg:mt-20 lg:max-w-none lg:flex-row lg:items-end">
             <div className="flex flex-col-reverse justify-between gap-x-16 gap-y-8 rounded-2xl bg-gray-50 p-8 sm:w-3/4 sm:max-w-md sm:flex-row-reverse sm:items-end lg:w-72 lg:max-w-none lg:flex-none lg:flex-col lg:items-start dark:bg-white/5 dark:inset-ring dark:inset-ring-white/10">
-              <p className="flex-none text-3xl font-bold tracking-tight text-gray-900 dark:text-white">250k</p>
+              <p className="flex-none text-3xl font-bold tracking-tight text-gray-900 dark:text-white">6</p>
               <div className="sm:w-80 sm:shrink lg:w-auto lg:flex-none">
                 <p className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
-                  Users on the platform
+                  States we've conducted real estate transactions
                 </p>
                 <p className="mt-2 text-base/7 text-gray-600 dark:text-gray-300">
-                  Vel labore deleniti veniam consequuntur sunt nobis.
+                  Combined expertise across real estate, construction, and property management.
                 </p>
               </div>
             </div>
             <div className="flex flex-col-reverse justify-between gap-x-16 gap-y-8 rounded-2xl bg-gray-900 p-8 sm:flex-row-reverse sm:items-end lg:w-full lg:max-w-sm lg:flex-auto lg:flex-col lg:items-start lg:gap-y-44 dark:bg-gray-700 dark:inset-ring dark:inset-ring-white/10">
-              <p className="flex-none text-3xl font-bold tracking-tight text-white">$8.9 billion</p>
+              <p className="flex-none text-3xl font-bold tracking-tight text-white">$150 Million</p>
               <div className="sm:w-80 sm:shrink lg:w-auto lg:flex-none">
                 <p className="text-lg font-semibold tracking-tight text-white">
-                  We’re proud that our customers have made over $8 billion in total revenue.
+                 Total Transaction Volume
                 </p>
                 <p className="mt-2 text-base/7 text-gray-400 dark:text-gray-300">
-                  Eu duis porta aliquam ornare. Elementum eget magna egestas.
+                  Successfully closed deals representing over $150 million in real estate value.
                 </p>
               </div>
             </div>
             <div className="flex flex-col-reverse justify-between gap-x-16 gap-y-8 rounded-2xl bg-sky-600 p-8 sm:w-11/12 sm:max-w-xl sm:flex-row-reverse sm:items-end lg:w-full lg:max-w-none lg:flex-auto lg:flex-col lg:items-start lg:gap-y-28 dark:inset-ring dark:inset-ring-white/10">
-              <p className="flex-none text-3xl font-bold tracking-tight text-white">401,093</p>
+              <p className="flex-none text-3xl font-bold tracking-tight text-white">70+</p>
               <div className="sm:w-80 sm:shrink lg:w-auto lg:flex-none">
-                <p className="text-lg font-semibold tracking-tight text-white">Transactions this year</p>
+                <p className="text-lg font-semibold tracking-tight text-white">Years of combined real estate experience</p>
                 <p className="mt-2 text-base/7 text-sky-200 dark:text-sky-100">
-                  Eu duis porta aliquam ornare. Elementum eget magna egestas. Eu duis porta aliquam ornare.
+                  Decades of market knowledge, negotiation expertise, and proven results across residential and commercial properties.
                 </p>
               </div>
             </div>
@@ -205,46 +157,10 @@ export default function AboutUsSection() {
               Our customers love us
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-lg/8 text-gray-300">
-              Aliquip reprehenderit incididunt amet quis fugiat ut velit. Sit occaecat labore proident cillum in nisi
-              adipisicing officia excepteur tempor deserunt.
+              Sellers choose us because we remove the uncertainty from the process. Our Verified Value Guarantee 
+              means you know exactly what to expect — no guessing, no hoping, just results.
             </p>
-            <div className="mx-auto mt-20 grid max-w-lg grid-cols-4 items-center gap-x-8 gap-y-12 sm:max-w-xl sm:grid-cols-6 sm:gap-x-10 sm:gap-y-14 lg:max-w-4xl lg:grid-cols-5">
-              <img
-                alt="Transistor"
-                src="https://tailwindcss.com/plus-assets/img/logos/158x48/transistor-logo-white.svg"
-                width={158}
-                height={48}
-                className="col-span-2 max-h-12 w-full object-contain lg:col-span-1"
-              />
-              <img
-                alt="Reform"
-                src="https://tailwindcss.com/plus-assets/img/logos/158x48/reform-logo-white.svg"
-                width={158}
-                height={48}
-                className="col-span-2 max-h-12 w-full object-contain lg:col-span-1"
-              />
-              <img
-                alt="Tuple"
-                src="https://tailwindcss.com/plus-assets/img/logos/158x48/tuple-logo-white.svg"
-                width={158}
-                height={48}
-                className="col-span-2 max-h-12 w-full object-contain lg:col-span-1"
-              />
-              <img
-                alt="SavvyCal"
-                src="https://tailwindcss.com/plus-assets/img/logos/158x48/savvycal-logo-white.svg"
-                width={158}
-                height={48}
-                className="col-span-2 max-h-12 w-full object-contain sm:col-start-2 lg:col-span-1"
-              />
-              <img
-                alt="Statamic"
-                src="https://tailwindcss.com/plus-assets/img/logos/158x48/statamic-logo-white.svg"
-                width={158}
-                height={48}
-                className="col-span-2 col-start-2 max-h-12 w-full object-contain sm:col-start-auto lg:col-span-1"
-              />
-            </div>
+          
             <div aria-hidden="true" className="absolute -top-24 right-0 -z-10 transform-gpu blur-3xl">
               <div
                 style={{
@@ -255,13 +171,8 @@ export default function AboutUsSection() {
               />
             </div>
           </div>
-        </div>
-
-  
-       
-      </main>
-
- 
+        </div>   
+     </main>
     </div>
   )
 }

@@ -9,7 +9,7 @@ export default function WhyThisWorksSection() {
       <div className="mx-auto max-w-2xl px-6 lg:max-w-7xl lg:px-8">
         {/* <h2 className="text-base/7 font-semibold text-sky-600 dark:text-sky-400">Deploy faster</h2> */}
         <p className="mt-2 max-w-lg text-4xl font-semibold tracking-tight text-pretty text-gray-950 sm:text-5xl dark:text-white">
-         Why this works
+         What Makes Our Approach Different
         </p>
         <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2">
           <div className="relative lg:col-span-3">
@@ -44,17 +44,7 @@ export default function WhyThisWorksSection() {
           <div className="relative lg:col-span-3">
             <div className="absolute inset-0 rounded-lg bg-white lg:rounded-tr-4xl dark:bg-gray-800" />
             <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(var(--radius-lg)+1px)] lg:rounded-tr-[calc(2rem+1px)]">
-              {/* <img
-                alt=""
-                src="https://tailwindcss.com/plus-assets/img/component-images/bento-01-releases.png"
-                className="h-80 object-cover object-left lg:object-right dark:hidden"
-              />
-              <img
-                alt=""
-                src="https://tailwindcss.com/plus-assets/img/component-images/dark-bento-01-releases.png"
-                className="h-80 object-cover object-left not-dark:hidden lg:object-right"
-              />
-              */}
+              
                <div className="flex items-center justify-center p-4 h-[100%]">
                 <VisualizationIllustration />   
               </div> 

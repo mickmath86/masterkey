@@ -66,10 +66,7 @@ export function Testimonials() {
 
                         <div className="max-lg:rounded-(--radius) lg:rounded-tl-(--radius) lg:rounded-br-(--radius) bg-card ring-foreground/5 row-start-1 flex flex-col justify-between gap-6 border border-transparent p-8 shadow-lg shadow-black/10 ring-1 lg:col-start-1">
                             <div className="space-y-6">
-                                <TailwindCSS
-                                    height={20}
-                                    width={136}
-                                />
+                               
                                 <p>"MasterKey transformed our property investment strategy. Their comprehensive market analysis and professional guidance helped us maximize our returns while minimizing our stress throughout the entire process."</p>
                             </div>
                             <div className="flex items-center gap-3">
@@ -91,10 +88,7 @@ export function Testimonials() {
                         </div>
                         <div className="rounded-(--radius) bg-card ring-foreground/5 row-start-3 flex flex-col justify-between gap-6 border border-transparent p-8 shadow-lg shadow-black/10 ring-1 sm:col-start-2 lg:row-start-2">
                             <div className="space-y-6">
-                                <Hulu
-                                    height={20}
-                                    width={56}
-                                />
+                               
                                 <p>"Working with MasterKey was a game-changer for our property portfolio. Their expertise in both management and sales helped us make informed decisions that significantly increased our property values."</p>
                             </div>
                             <div className="flex items-center gap-3">
@@ -116,10 +110,7 @@ export function Testimonials() {
                         </div>
                         <div className="rounded-(--radius) bg-card ring-foreground/5 flex flex-col justify-between gap-6 border border-transparent p-8 shadow-lg shadow-black/10 ring-1 sm:row-start-2 lg:col-start-3 lg:row-start-3 lg:rounded-bl-none lg:rounded-tr-none">
                             <div className="space-y-6">
-                                <Stripe
-                                    height={24}
-                                    width={56}
-                                />
+                              
                                 <p>"MasterKey's market analysis tools gave us unprecedented insight into local property trends. We were able to time our sale perfectly and achieved 15% above our initial asking price."</p>
                             </div>
                             <div className="flex items-center gap-3">
