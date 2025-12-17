@@ -4,7 +4,7 @@ const MediawikiWordmarkDark = (props: SVGProps<SVGSVGElement>) => (
   <svg
     {...props}
     viewBox="0 0 270 300"
-    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlnsXlink="http://www.w3.org/1999/xlink"
   >
     <linearGradient
       id="a"
@@ -14,9 +14,9 @@ const MediawikiWordmarkDark = (props: SVGProps<SVGSVGElement>) => (
       y1="238"
       y2="16"
     >
-      <stop offset="0" stop-color="#0a00b2" />
-      <stop offset=".5" stop-color="#f00" />
-      <stop offset="1" stop-color="#fffc00" />
+      <stop offset="0" stopColor="#0a00b2" />
+      <stop offset=".5" stopColor="#f00" />
+      <stop offset="1" stopColor="#fffc00" />
     </linearGradient>
     <path
       fill="white"
