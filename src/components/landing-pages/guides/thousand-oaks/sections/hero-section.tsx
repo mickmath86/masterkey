@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Header } from "../../../landing-page-v4/sections/header"
 import Image from 'next/image'
@@ -12,7 +12,7 @@ interface HeroFormData {
   phone: string
 }
 
-export function HeroSection() {
+function HeroSectionContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [formData, setFormData] = useState<HeroFormData>({
@@ -303,5 +303,13 @@ export function HeroSection() {
         </section>
       </main>
     </>
+  )
+}
+
+export function HeroSection() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-muted/50" />}>
+      <HeroSectionContent />
+    </Suspense>
   )
 }
