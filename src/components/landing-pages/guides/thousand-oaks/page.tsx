@@ -12,7 +12,7 @@ export default function ThousandOaksGuide() {
     <>
       <Header />
       <HeroSection />
-      <VideoSection />
+      {/* <VideoSection /> */}
       <ValueSection />
       <AboutUsSection />
       <Testimonials />
