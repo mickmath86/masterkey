@@ -1,6 +1,9 @@
+'use client'
+import { useState } from 'react'
 import type { Quote } from '../data/quotes-data'
 import { QuoteBox } from './quote-box'
 import { ImageCarousel } from './image-carousel'
+import { scoreDescriptions } from '../data/score-descriptions'
 
 interface AreaCardProps {
   name: string
@@ -49,16 +52,26 @@ export function AreaCard({
     return 'bg-red-500'
   }
 
+  const [expandedScore, setExpandedScore] = useState<string | null>(null)
+
   const scoreCategories = [
-    { name: 'Amenities', value: scores.amenities },
-    { name: 'Transit & Commute', value: scores.transit },
-    { name: 'Schools', value: scores.schools },
-    { name: 'Economic Stability', value: scores.economic },
-    { name: 'Health & Safety', value: scores.health },
-    { name: 'Crime', value: scores.crime },
-    { name: 'Area Value', value: scores.value },
-    { name: 'Space & Density', value: scores.space },
+    { name: 'Amenities', value: scores.amenities, key: 'amenities' },
+    { name: 'Transit & Commute', value: scores.transit, key: 'transit' },
+    { name: 'Schools', value: scores.schools, key: 'schools' },
+    { name: 'Economic Stability', value: scores.economic, key: 'economic' },
+    { name: 'Health & Safety', value: scores.health, key: 'health' },
+    { name: 'Crime', value: scores.crime, key: 'crime' },
+    { name: 'Area Value', value: scores.value, key: 'value' },
+    { name: 'Space & Density', value: scores.space, key: 'space' },
   ]
+
+  const getDescription = (key: string) => {
+    return scoreDescriptions[name]?.[key] || ''
+  }
+
+  const toggleDescription = (key: string) => {
+    setExpandedScore(expandedScore === key ? null : key)
+  }
 
   return (
     <div id={name.toLowerCase().replace(/\s+/g, '-')} className={`py-16 px-6 ${bgColor}`}>
@@ -126,22 +139,47 @@ export function AreaCard({
         <div className="mb-8">
           <h4 className="text-xl font-semibold text-gray-900 mb-4">Score Breakdown</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {scoreCategories.map((category) => (
-              <div key={category.name} className="flex items-center">
-                <div className="flex-1">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium text-gray-700">{category.name}</span>
-                    <span className="text-sm font-semibold text-gray-900">{category.value}/10</span>
+            {scoreCategories.map((category) => {
+              const description = getDescription(category.key)
+              const isExpanded = expandedScore === category.key
+              
+              return (
+                <div key={category.name} className="flex flex-col">
+                  <div className="flex items-center">
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-700">{category.name}</span>
+                          {description && (
+                            <button
+                              onClick={() => toggleDescription(category.key)}
+                              className="text-[#29B6F6] hover:text-[#1e88e5] transition-colors"
+                              aria-label={`Toggle ${category.name} description`}
+                            >
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900">{category.value}/10</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          className={`h-2.5 rounded-full ${getScoreColor(category.value)}`}
+                          style={{ width: `${category.value * 10}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className={`h-2.5 rounded-full ${getScoreColor(category.value)}`}
-                      style={{ width: `${category.value * 10}%` }}
-                    />
-                  </div>
+                  {description && isExpanded && (
+                    <div className="mt-2 p-3 bg-blue-50 border border-blue-100 rounded-md text-sm text-gray-700 leading-relaxed">
+                      {description}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
