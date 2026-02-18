@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Free Thousand Oaks Neighborhood Guide | Expert Area Ratings',
     description: 'Get expert video reviews and detailed ratings for 10 Thousand Oaks neighborhoods. Compare schools, amenities, transit, crime, and more.',
-    url: 'https://masterkeyrealestate.com/landing/guides/thousand-oaks',
+    url: 'https://masterkeyrealestate.com/landing/thousand-oaks',
     siteName: 'MasterKey Real Estate',
     images: [
       {
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://masterkeyrealestate.com/landing/guides/thousand-oaks',
+    canonical: 'https://masterkeyrealestate.com/landing/thousand-oaks',
   },
 }
 

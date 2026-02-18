@@ -14,6 +14,15 @@ export const initPostHog = () => {
         capture_pageview: false, // We'll handle this manually
         capture_pageleave: true,
         debug: false,
+        loaded: (posthog) => {
+          // Disable feature flags and experiments to prevent errors
+          if (isDevelopment) {
+            posthog.opt_out_capturing()
+          }
+        },
+        autocapture: false,
+        disable_session_recording: true,
+        advanced_disable_decide: true, // Disable the /decide endpoint which loads experiments
       })
     } else if (isDevelopment) {
       // In development, create a mock posthog object to prevent errors
