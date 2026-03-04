@@ -111,7 +111,7 @@ export default async function ArticlePage({ params }: Props) {
 
           {/* Article body */}
           <div
-            className="prose prose-lg prose-gray mt-10 max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:tracking-tight prose-a:text-sky-600 prose-a:no-underline hover:prose-a:text-sky-500 dark:prose-a:text-sky-400 dark:hover:prose-a:text-sky-300"
+            className="article-body mt-10 text-base/7 text-gray-700 dark:text-gray-300 [&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:text-gray-900 dark:[&_h2]:text-white [&_p]:mb-6 [&_ul]:mb-6 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-2 [&_li]:text-gray-700 dark:[&_li]:text-gray-300 [&_strong]:font-semibold [&_strong]:text-gray-900 dark:[&_strong]:text-white [&_em]:italic [&_a]:text-sky-600 [&_a]:hover:text-sky-500 dark:[&_a]:text-sky-400 dark:[&_a]:hover:text-sky-300"
             dangerouslySetInnerHTML={{ __html: article.body }}
           />
 
