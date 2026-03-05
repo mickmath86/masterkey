@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getRentcastAPI, type MarketStats } from '@/lib/rentcast'
+import { getRentcastAPI, type MarketStatistics } from '@/lib/api/rentcast'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -98,18 +98,18 @@ async function fetchRentcastData(zips: string[]): Promise<{
 }> {
   const api = getRentcastAPI()
 
-  // Fetch stats for each ZIP and average them
+  // Fetch sale stats for each ZIP and average them
   const results = await Promise.all(
     zips.map(zip =>
       api
-        .getMarketStatistics({ zipCode: zip, propertyType: 'Single Family' })
+        .getMarketStatistics(zip, 'Sale')
         .catch(() => null),
     ),
   )
-  const valid = results.filter((r): r is MarketStats => r !== null)
+  const valid = results.filter((r): r is MarketStatistics => r !== null)
 
   if (valid.length === 0) {
-    // Fallback mock data
+    // Fallback mock data when API unavailable
     return {
       medianPrice: 925000,
       priceChange: 4.2,
@@ -135,40 +135,45 @@ async function fetchRentcastData(zips: string[]): Promise<{
     }
   }
 
-  const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length
+  const avg = (arr: number[]) => arr.length === 0 ? 0 : arr.reduce((a, b) => a + b, 0) / arr.length
+  const nums = (arr: (number | undefined)[]) => arr.filter((n): n is number => n != null && n !== 0)
 
-  const medianPrice = avg(valid.map(r => r.medianSalePrice ?? 0))
-  const priceChange = avg(valid.map(r => r.medianSalePriceChange ?? 0))
-  const daysOnMarket = avg(valid.map(r => r.averageDaysOnMarket ?? 0))
-  const domChange = avg(valid.map(r => r.averageDaysOnMarketChange ?? 0))
-  const activeListings = Math.round(avg(valid.map(r => r.activeListings ?? 0)))
-  const inventoryChange = avg(valid.map(r => r.activeListingsChange ?? 0))
-
-  // Build price history from the first valid result that has it
-  const withHistory = valid.find(r => r.priceHistory && r.priceHistory.length > 0)
-  const priceHistory = withHistory?.priceHistory?.slice(-12).map(p => ({
-    month: new Date(p.date).toLocaleString('default', { month: 'short' }),
-    price: p.medianSalePrice,
-  })) ?? []
-
-  const withInventory = valid.find(
-    r => r.inventoryHistory && r.inventoryHistory.length > 0,
+  // Map from MarketStatistics fields to our dashboard fields
+  const medianPrice = avg(nums(valid.map(r => r.saleData?.medianPrice)))
+  const avgPrice = avg(nums(valid.map(r => r.saleData?.averagePrice)))
+  const daysOnMarket = Math.round(avg(nums(valid.map(r => r.saleData?.averageDaysOnMarket))))
+  const activeListings = Math.round(
+    valid.reduce((sum, r) => sum + (r.saleData?.totalListings ?? 0), 0),
   )
-  const inventoryHistory = withInventory?.inventoryHistory?.slice(-12).map(p => ({
-    month: new Date(p.date).toLocaleString('default', { month: 'short' }),
-    listings: p.activeListings,
-    dom: p.averageDaysOnMarket,
+
+  // Build price history from any result that has it
+  const withHistory = valid.find(r => r.saleData?.history && r.saleData.history.length > 0)
+  const priceHistory = withHistory?.saleData?.history?.slice(-12).map(p => ({
+    month: new Date(p.month).toLocaleString('default', { month: 'short' }),
+    price: p.averagePrice,
   })) ?? []
+
+  // Calculate price change from history if available
+  let priceChange = 0
+  if (priceHistory.length >= 2) {
+    const latest = priceHistory[priceHistory.length - 1].price
+    const yearAgo = priceHistory[0].price
+    priceChange = yearAgo > 0 ? parseFloat((((latest - yearAgo) / yearAgo) * 100).toFixed(1)) : 0
+  }
 
   return {
-    medianPrice,
+    medianPrice: medianPrice || avgPrice || 925000,
     priceChange,
-    daysOnMarket,
-    domChange,
-    activeListings,
-    inventoryChange,
+    daysOnMarket: daysOnMarket || 28,
+    domChange: 0, // Not directly available from RentCast single-point data
+    activeListings: activeListings || 142,
+    inventoryChange: 0, // Not directly available
     priceHistory,
-    inventoryHistory,
+    inventoryHistory: priceHistory.map(p => ({
+      month: p.month,
+      listings: activeListings, // Approximate; single-point data
+      dom: daysOnMarket,
+    })),
   }
 }
 
