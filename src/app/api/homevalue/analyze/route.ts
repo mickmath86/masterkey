@@ -43,6 +43,7 @@ export interface ValuationResult {
     soldDate: string;
     distanceFromSubject: string;
     relevanceNote: string;
+    sourceUrl: string;
   }[];
   neighborhoodInsights: {
     category: string;
@@ -123,7 +124,7 @@ SELLER CONTEXT:
 
 Search for:
 1. Current median home prices in the specific city/neighborhood
-2. Recent comparable sales (last 6 months) for similar homes nearby — include the actual street address for each comp
+2. Recent comparable sales (last 6 months) — you MUST search Zillow, Redfin, or Realtor.com for REAL, RECENTLY SOLD homes near this address. Only include comps where you found the actual listing page showing a confirmed sale. Do NOT fabricate addresses or invent comps. If you cannot find a verified sold listing with a real URL, omit it entirely.
 3. Current market conditions: days on market, list-to-sale ratio, inventory
 4. Year-over-year price trends for that area
 5. School ratings, walkability, and neighborhood factors
@@ -156,12 +157,13 @@ Respond with ONLY a valid JSON object (no markdown, no extra text, just the raw 
   },
   "comparables": [
     {
-      "address": "<actual street address of the comparable property, e.g. 1234 Oak Ave, Thousand Oaks, CA 91360>",
+      "address": "<actual street address of the sold property, e.g. 1234 Oak Ave, Thousand Oaks, CA 91360 — MUST be a real address you found on Zillow, Redfin, or public records>",
       "description": "<e.g. 3BD/2BA, 1,850 sqft, built 1998>",
       "soldPrice": <number>,
       "soldDate": "<e.g. Feb 2026>",
       "distanceFromSubject": "<e.g. 0.3 miles>",
-      "relevanceNote": "<why this is a good comp>"
+      "relevanceNote": "<why this is a good comp>",
+      "sourceUrl": "<the actual Zillow, Redfin, or Realtor.com URL where this sold listing appears — e.g. https://www.zillow.com/homes/12345678_zpid/ or https://www.redfin.com/CA/Thousand-Oaks/... — MUST be a real URL you found, not a constructed one>"
     }
   ],
   "neighborhoodInsights": [
@@ -181,7 +183,7 @@ Respond with ONLY a valid JSON object (no markdown, no extra text, just the raw 
   "executiveSummary": "<3-4 sentences addressed directly to the homeowner>"
 }
 
-Include exactly 4-6 valueDrivers, exactly 3-5 comparables, and exactly 3-5 neighborhoodInsights. All numbers must be plain integers or decimals, no commas, no dollar signs inside JSON values.`;
+Include exactly 4-6 valueDrivers, 3-5 comparables (ONLY include a comp if you found a real verified sold listing URL for it — fewer is fine if you cannot verify all 5), and exactly 3-5 neighborhoodInsights. All numbers must be plain integers or decimals, no commas, no dollar signs inside JSON values. CRITICAL: Every comp must have a real sourceUrl from Zillow, Redfin, or Realtor.com — do not construct URLs, only use URLs you actually found in your search results.`;
 
     const response = await fetch("https://api.perplexity.ai/chat/completions", {
       method: "POST",

@@ -323,9 +323,34 @@ export default function HomeValueResultsPage() {
               <p className="text-5xl sm:text-6xl font-bold text-white mb-3">
                 {fmtFull(result.estimatedValue)}
               </p>
-              <p className="text-green-300 text-sm font-medium mb-2">
-                Range: {fmtShort(result.valueLow)} – {fmtShort(result.valueHigh)}
-              </p>
+              {/* AVM Range Card */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/10 p-5 mb-6 max-w-sm">
+                <p className="text-xs text-white/50 font-semibold uppercase tracking-wider mb-4">Estimated Value Range</p>
+                <div className="flex items-center gap-3 mb-3">
+                  {/* Low */}
+                  <div className="text-center flex-1">
+                    <p className="text-xs text-white/40 mb-1">Conservative</p>
+                    <p className="text-lg font-bold text-white/70">{fmtShort(result.valueLow)}</p>
+                  </div>
+                  {/* Bar */}
+                  <div className="flex-[2] relative">
+                    <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-blue-400 via-green-400 to-blue-400 rounded-full" style={{ width: "100%" }} />
+                    </div>
+                    {/* Mid-point marker */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-green-400 shadow-lg" />
+                  </div>
+                  {/* High */}
+                  <div className="text-center flex-1">
+                    <p className="text-xs text-white/40 mb-1">Optimistic</p>
+                    <p className="text-lg font-bold text-white/70">{fmtShort(result.valueHigh)}</p>
+                  </div>
+                </div>
+                {/* Center label */}
+                <div className="text-center">
+                  <p className="text-xs text-white/40">AI best estimate: <span className="text-green-300 font-semibold">{fmtFull(result.estimatedValue)}</span></p>
+                </div>
+              </div>
 
               {/* Market condition badge */}
               <span
@@ -554,11 +579,21 @@ export default function HomeValueResultsPage() {
                 {result.comparables.map((comp, i) => (
                   <tr key={i} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
-                      {comp.address && (
-                        <p className="font-semibold text-gray-950 text-sm">
-                          {comp.address}
-                        </p>
-                      )}
+                      {comp.address ? (
+                        comp.sourceUrl ? (
+                          <a
+                            href={comp.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-blue-600 hover:text-blue-800 hover:underline text-sm inline-flex items-center gap-1 transition-colors"
+                          >
+                            {comp.address}
+                            <ArrowUpRightIcon className="w-3 h-3 flex-shrink-0 opacity-60" />
+                          </a>
+                        ) : (
+                          <p className="font-semibold text-gray-950 text-sm">{comp.address}</p>
+                        )
+                      ) : null}
                       <p className={`text-xs text-gray-500 ${comp.address ? "mt-0.5" : "font-medium text-gray-950"}`}>
                         {comp.description}
                       </p>
