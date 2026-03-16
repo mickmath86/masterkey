@@ -1,25 +1,16 @@
-import { generateText } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
-
 /**
  * POST /api/homevalue/analyze
  *
  * Accepts home value questionnaire answers, sends them to Perplexity
- * sonar-pro (which has live web search built in), and returns a fully
+ * Sonar API (which has live web search built in), and returns a fully
  * structured valuation report.
  *
- * Why generateText instead of generateObject:
- *   Perplexity's sonar models don't support the JSON-schema / tool-call
- *   structured-output mode that generateObject relies on. We instead ask
- *   the model to reply with a JSON code block and parse it ourselves.
+ * Uses direct HTTP fetch to Perplexity's chat completions endpoint.
+ * Perplexity's sonar models don't support structured-output mode,
+ * so we ask the model to reply with a JSON code block and parse it ourselves.
  *
  * Required env var: PERPLEXITY_API_KEY
  */
-
-const perplexity = createOpenAI({
-  apiKey: process.env.PERPLEXITY_API_KEY ?? "",
-  baseURL: "https://api.perplexity.ai",
-});
 
 // ─── Types (exported so the results page can import them) ─────────────────────
 
@@ -190,20 +181,39 @@ Respond with ONLY a valid JSON object (no markdown, no extra text, just the raw 
 
 Include exactly 4-6 valueDrivers, exactly 3-5 comparables, and exactly 3-5 neighborhoodInsights. All numbers must be plain integers or decimals, no commas, no dollar signs inside JSON values.`;
 
-    const { text } = await generateText({
-      model: perplexity("sonar-pro"),
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a professional real estate appraiser. Always search for current, accurate market data. Respond ONLY with a valid JSON object — no markdown fences, no explanation text, just the raw JSON.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
+    const response = await fetch("https://api.perplexity.ai/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "sonar",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a professional real estate appraiser. Always search for current, accurate market data. Respond ONLY with a valid JSON object — no markdown fences, no explanation text, just the raw JSON.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      }),
     });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Perplexity API error:", response.status, errorText);
+      return Response.json(
+        { error: "Failed to get response from Perplexity API", details: errorText },
+        { status: 500 }
+      );
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content || "";
 
     // Strip any accidental markdown fences or whitespace
     const cleaned = text
