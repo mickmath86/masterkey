@@ -15,7 +15,11 @@ import {
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  CheckCircleIcon,
+  PencilSquareIcon,
+  HomeIcon,
 } from "@heroicons/react/16/solid";
+import type { PropertyLookupResult } from "@/app/api/homevalue/property-lookup/route";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -192,12 +196,146 @@ function TextInput({
   );
 }
 
+// ─── Property confirm card ────────────────────────────────────────────────────
+
+type LookupStatus = "idle" | "loading" | "found" | "not_found" | "error";
+
+interface ConfirmFact {
+  label: string;
+  value: string;
+  field: keyof Pick<HomeValueFormData, "bedrooms" | "bathrooms" | "sqft" | "yearBuilt" | "propertyType">;
+  placeholder: string;
+}
+
+function PropertyConfirmCard({
+  status,
+  facts,
+  editing,
+  onToggleEdit,
+  onConfirm,
+  formData,
+  onFactChange,
+}: {
+  status: LookupStatus;
+  facts: ConfirmFact[];
+  editing: boolean;
+  onToggleEdit: () => void;
+  onConfirm: () => void;
+  formData: HomeValueFormData;
+  onFactChange: (field: ConfirmFact["field"], value: string) => void;
+}) {
+  if (status === "loading") {
+    return (
+      <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-5 animate-pulse">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-8 h-8 rounded-full bg-gray-200" />
+          <div className="h-4 bg-gray-200 rounded w-48" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg p-3 border border-gray-100">
+              <div className="h-3 bg-gray-200 rounded w-16 mb-2" />
+              <div className="h-5 bg-gray-200 rounded w-24" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "not_found" || status === "error") {
+    return null; // Silently fall through — user just fills out step 2 normally
+  }
+
+  if (status !== "found") return null;
+
+  return (
+    <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50/50 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-blue-100 bg-white">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <HomeIcon className="w-3.5 h-3.5 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-gray-900">We found your home</p>
+            <p className="text-xs text-gray-400">
+              {editing ? "Update any fields that look wrong" : "Do these details look right?"}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onToggleEdit}
+          className="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-blue-50"
+        >
+          <PencilSquareIcon className="w-3.5 h-3.5" />
+          {editing ? "Done adjusting" : "Adjust"}
+        </button>
+      </div>
+
+      {/* Facts grid */}
+      <div className="p-4">
+        <div className="grid grid-cols-2 gap-3">
+          {facts.map((fact) => (
+            <div key={fact.field} className="bg-white rounded-lg border border-gray-100 p-3.5">
+              <p className="text-xs text-gray-400 font-medium mb-1">{fact.label}</p>
+              {editing ? (
+                fact.field === "propertyType" ? (
+                  <select
+                    value={formData[fact.field]}
+                    onChange={(e) => onFactChange(fact.field, e.target.value)}
+                    className="w-full text-sm font-semibold text-gray-900 border-b border-gray-200 bg-transparent focus:outline-none focus:border-blue-400 pb-0.5"
+                  >
+                    {propertyTypes.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData[fact.field]}
+                    onChange={(e) => onFactChange(fact.field, e.target.value)}
+                    placeholder={fact.placeholder}
+                    className="w-full text-sm font-semibold text-gray-900 border-b border-gray-200 bg-transparent focus:outline-none focus:border-blue-400 pb-0.5"
+                  />
+                )
+              ) : (
+                <p className="text-sm font-semibold text-gray-900">
+                  {formData[fact.field] || (
+                    <span className="text-gray-400 font-normal italic">Unknown</span>
+                  )}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        {!editing && (
+          <button
+            onClick={onConfirm}
+            className="mt-4 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 rounded-lg transition-colors"
+          >
+            <CheckCircleIcon className="w-4 h-4" />
+            Yes, these look right — continue
+          </button>
+        )}
+        {editing && (
+          <p className="mt-3 text-xs text-gray-400 text-center">
+            Changes save automatically. Click "Done adjusting" when finished.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Step validation ──────────────────────────────────────────────────────────
 
-function isStepValid(step: number, data: HomeValueFormData): boolean {
+function isStepValid(step: number, data: HomeValueFormData, addressConfirmed: boolean): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   switch (step) {
-    case 1: return !!data.propertyAddress.trim();
+    case 1: return !!data.propertyAddress.trim() && addressConfirmed;
     case 2: return !!data.propertyType && !!data.bedrooms && !!data.bathrooms && !!data.sqft && !!data.yearBuilt;
     case 3: return !!data.condition && !!data.garage;
     case 4: return !!data.kitchenUpdate && !!data.bathroomUpdate && !!data.roofUpdate && !!data.hvacUpdate;
@@ -229,6 +367,11 @@ function HomeValueQuestionnaireContent() {
   const [emailError, setEmailError] = useState("");
   const [formData, setFormData] = useState<HomeValueFormData>(INITIAL);
 
+  // Address confirmation state
+  const [lookupStatus, setLookupStatus] = useState<LookupStatus>("idle");
+  const [addressConfirmed, setAddressConfirmed] = useState(false);
+  const [editingFacts, setEditingFacts] = useState(false);
+
   const totalSteps = 6;
 
   function set<K extends keyof HomeValueFormData>(key: K, value: HomeValueFormData[K]) {
@@ -254,8 +397,69 @@ function HomeValueQuestionnaireContent() {
     }
   }
 
+  // Called by GooglePlacesInput when the user selects a validated address
+  async function handleAddressSelected(address: string) {
+    set("propertyAddress", address);
+    setAddressConfirmed(false);
+    setEditingFacts(false);
+    setLookupStatus("loading");
+
+    // Reset any previously pre-filled property basics so stale data is cleared
+    setFormData((prev) => ({
+      ...prev,
+      propertyAddress: address,
+      propertyType: "",
+      bedrooms: "",
+      bathrooms: "",
+      sqft: "",
+      yearBuilt: "",
+    }));
+
+    try {
+      const res = await fetch(
+        `/api/homevalue/property-lookup?address=${encodeURIComponent(address)}`
+      );
+      const data: PropertyLookupResult = await res.json();
+
+      if (data.found) {
+        // Pre-fill the form with what we found
+        setFormData((prev) => ({
+          ...prev,
+          propertyType: data.propertyType || "Single Family Home",
+          bedrooms: data.bedrooms || "",
+          bathrooms: data.bathrooms || "",
+          sqft: data.sqft || "",
+          yearBuilt: data.yearBuilt || "",
+        }));
+        setLookupStatus("found");
+      } else {
+        setLookupStatus("not_found");
+        // No property data — auto-confirm so user can proceed to step 2 manually
+        setAddressConfirmed(true);
+      }
+    } catch {
+      setLookupStatus("error");
+      setAddressConfirmed(true);
+    }
+  }
+
+  function handleConfirmFacts() {
+    setAddressConfirmed(true);
+    setEditingFacts(false);
+    // Advance to step 2 automatically
+    setStep(2);
+  }
+
+  const facts: ConfirmFact[] = [
+    { label: "Property Type", field: "propertyType", value: formData.propertyType, placeholder: "Single Family Home" },
+    { label: "Bedrooms", field: "bedrooms", value: formData.bedrooms, placeholder: "3" },
+    { label: "Bathrooms", field: "bathrooms", value: formData.bathrooms, placeholder: "2" },
+    { label: "Living Area", field: "sqft", value: formData.sqft ? `${formData.sqft} sqft` : "", placeholder: "2,100" },
+    { label: "Year Built", field: "yearBuilt", value: formData.yearBuilt, placeholder: "1995" },
+  ];
+
   async function handleSubmit() {
-    if (!isStepValid(6, formData)) return;
+    if (!isStepValid(6, formData, addressConfirmed)) return;
     setIsSubmitting(true);
     try {
       const payload = {
@@ -274,13 +478,12 @@ function HomeValueQuestionnaireContent() {
       // continue to results regardless
     } finally {
       setIsSubmitting(false);
-      // Store for results page
       sessionStorage.setItem("hv_form", JSON.stringify(formData));
       router.push("/homevalue/results");
     }
   }
 
-  const valid = isStepValid(step, formData);
+  const valid = isStepValid(step, formData, addressConfirmed);
 
   // ── Step titles ──────────────────────────────────────────────────────────────
 
@@ -291,7 +494,7 @@ function HomeValueQuestionnaireContent() {
     },
     2: {
       heading: "Tell us about your property",
-      sub: "Basic details help us find the most relevant comparable sales.",
+      sub: "Confirm or update the details below — these help us find the most relevant comparable sales.",
     },
     3: {
       heading: "Condition and features",
@@ -387,7 +590,7 @@ function HomeValueQuestionnaireContent() {
             {stepMeta[step].sub}
           </p>
 
-          {/* ── Step 1 — Address ── */}
+          {/* ── Step 1 — Address + confirm card ── */}
           {step === 1 && (
             <div className="space-y-4 max-w-lg">
               <div>
@@ -396,17 +599,57 @@ function HomeValueQuestionnaireContent() {
                 </label>
                 <GooglePlacesInput
                   value={formData.propertyAddress}
-                  onChange={(address) => set("propertyAddress", address)}
+                  onChange={(address, placeDetails) => {
+                    if (placeDetails?.formatted_address) {
+                      // User selected a validated place from the dropdown — trigger lookup
+                      handleAddressSelected(address);
+                    } else {
+                      // User is still typing — reset confirmation state
+                      setAddressConfirmed(false);
+                      setLookupStatus("idle");
+                      set("propertyAddress", address);
+                    }
+                  }}
                   placeholder="e.g., 123 Oak Ridge Drive, Thousand Oaks, CA 91360"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
                 />
               </div>
+
+              {/* Property confirm card — shown after an address is selected */}
+              {formData.propertyAddress && lookupStatus !== "idle" && (
+                <PropertyConfirmCard
+                  status={lookupStatus}
+                  facts={facts}
+                  editing={editingFacts}
+                  onToggleEdit={() => setEditingFacts((v) => !v)}
+                  onConfirm={handleConfirmFacts}
+                  formData={formData}
+                  onFactChange={(field, value) => set(field, value)}
+                />
+              )}
+
+              {/* If lookup found nothing, show a quiet helper */}
+              {lookupStatus === "not_found" && (
+                <p className="text-xs text-gray-400 mt-2">
+                  We couldn&apos;t find public records for this address — you&apos;ll enter the details on the next step.
+                </p>
+              )}
             </div>
           )}
 
           {/* ── Step 2 — Property basics ── */}
           {step === 2 && (
             <div className="space-y-6 max-w-lg">
+              {/* Pre-filled notice */}
+              {(formData.bedrooms || formData.sqft) && (
+                <div className="flex items-start gap-2.5 text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
+                  <CheckCircleIcon className="w-4 h-4 flex-shrink-0 mt-0.5 text-blue-500" />
+                  <span>
+                    We pre-filled these from public records. Review and update anything that&apos;s off.
+                  </span>
+                </div>
+              )}
+
               <div>
                 <p className="text-sm font-medium text-gray-700 mb-3">Property Type</p>
                 <div className="grid grid-cols-1 gap-2">
