@@ -13,6 +13,8 @@ import {
   EnvelopeIcon,
   MapPinIcon,
   ExclamationCircleIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
 } from "@heroicons/react/16/solid";
 
 // ─── Form data type (mirrors questionnaire) ───────────────────────────────────
@@ -319,36 +321,47 @@ export default function HomeValueResultsPage() {
                 </p>
               )}
 
-              <p className="text-white/70 text-sm mb-2">AI-Estimated Market Value</p>
-              <p className="text-5xl sm:text-6xl font-bold text-white mb-3">
+              {/* Source badge */}
+              <div className="flex items-center gap-2 mb-3">
+                {result.valueSource === "rentcast" ? (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300 bg-emerald-400/10 border border-emerald-400/20 px-2.5 py-1 rounded-full">
+                    <ShieldCheckIcon className="w-3.5 h-3.5" />
+                    Verified by Rentcast AVM
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-300 bg-blue-400/10 border border-blue-400/20 px-2.5 py-1 rounded-full">
+                    <SparklesIcon className="w-3.5 h-3.5" />
+                    AI-Estimated Market Value
+                  </span>
+                )}
+              </div>
+              <p className="text-5xl sm:text-6xl font-bold text-white mb-2">
                 {fmtFull(result.estimatedValue)}
               </p>
+
               {/* AVM Range Card */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/10 p-5 mb-6 max-w-sm">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/15 p-5 mb-6 max-w-sm">
                 <p className="text-xs text-white/50 font-semibold uppercase tracking-wider mb-4">Estimated Value Range</p>
-                <div className="flex items-center gap-3 mb-3">
-                  {/* Low */}
-                  <div className="text-center flex-1">
+                {/* Low / High figures */}
+                <div className="flex items-end justify-between mb-3">
+                  <div>
                     <p className="text-xs text-white/40 mb-1">Conservative</p>
-                    <p className="text-lg font-bold text-white/70">{fmtShort(result.valueLow)}</p>
+                    <p className="text-2xl font-bold text-white/80">{fmtShort(result.valueLow)}</p>
                   </div>
-                  {/* Bar */}
-                  <div className="flex-[2] relative">
-                    <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-blue-400 via-green-400 to-blue-400 rounded-full" style={{ width: "100%" }} />
-                    </div>
-                    {/* Mid-point marker */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-green-400 shadow-lg" />
+                  <div className="text-center px-2">
+                    <p className="text-xs text-white/30 mb-1">Best estimate</p>
+                    <p className="text-sm font-bold text-green-300">{fmtFull(result.estimatedValue)}</p>
                   </div>
-                  {/* High */}
-                  <div className="text-center flex-1">
+                  <div className="text-right">
                     <p className="text-xs text-white/40 mb-1">Optimistic</p>
-                    <p className="text-lg font-bold text-white/70">{fmtShort(result.valueHigh)}</p>
+                    <p className="text-2xl font-bold text-white/80">{fmtShort(result.valueHigh)}</p>
                   </div>
                 </div>
-                {/* Center label */}
-                <div className="text-center">
-                  <p className="text-xs text-white/40">AI best estimate: <span className="text-green-300 font-semibold">{fmtFull(result.estimatedValue)}</span></p>
+                {/* Gradient bar with midpoint dot */}
+                <div className="relative h-2.5 bg-white/15 rounded-full overflow-visible">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-green-400 to-emerald-400 rounded-full" />
+                  {/* Midpoint marker — positioned at center */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-green-400 shadow-md z-10" />
                 </div>
               </div>
 
@@ -551,68 +564,78 @@ export default function HomeValueResultsPage() {
       {/* ── Comparable sales ── */}
       <div className="bg-white py-14">
         <div className="max-w-6xl mx-auto px-6 lg:px-12">
-          <h2 className="text-2xl font-bold text-gray-950 mb-2">
-            Recent Comparable Sales
-          </h2>
-          <p className="text-gray-500 text-sm mb-8">
-            Similar homes that sold recently in your area — the basis for your valuation.
-          </p>
-          <div className="overflow-hidden rounded-2xl border border-gray-200">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Property
-                  </th>
-                  <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Sold Price
-                  </th>
-                  <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                    Sold Date
-                  </th>
-                  <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">
-                    Distance
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {result.comparables.map((comp, i) => (
-                  <tr key={i} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      {comp.address ? (
-                        comp.sourceUrl ? (
-                          <a
-                            href={comp.sourceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-semibold text-blue-600 hover:text-blue-800 hover:underline text-sm inline-flex items-center gap-1 transition-colors"
-                          >
-                            {comp.address}
-                            <ArrowUpRightIcon className="w-3 h-3 flex-shrink-0 opacity-60" />
-                          </a>
-                        ) : (
-                          <p className="font-semibold text-gray-950 text-sm">{comp.address}</p>
-                        )
-                      ) : null}
-                      <p className={`text-xs text-gray-500 ${comp.address ? "mt-0.5" : "font-medium text-gray-950"}`}>
-                        {comp.description}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5">{comp.relevanceNote}</p>
-                    </td>
-                    <td className="px-6 py-4 text-right font-semibold text-gray-950">
-                      {fmtFull(comp.soldPrice)}
-                    </td>
-                    <td className="px-6 py-4 text-right text-gray-500 hidden sm:table-cell">
-                      {comp.soldDate}
-                    </td>
-                    <td className="px-6 py-4 text-right text-gray-400 hidden md:table-cell">
-                      {comp.distanceFromSubject}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex items-start justify-between mb-2">
+            <h2 className="text-2xl font-bold text-gray-950">Recent Comparable Sales</h2>
+            {result.valueSource === "rentcast" && (
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full mt-1">
+                <ShieldCheckIcon className="w-3.5 h-3.5" />
+                Verified Rentcast data
+              </span>
+            )}
           </div>
+          <p className="text-gray-500 text-sm mb-8">
+            {result.valueSource === "rentcast"
+              ? "Real comparable sales from Rentcast — verified sold listings used to calculate your AVM."
+              : "Similar homes that sold recently in your area — the basis for your valuation."}
+          </p>
+
+          {result.comparables.length === 0 ? (
+            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center">
+              <p className="text-gray-400 text-sm">No comparable sales data available for this address.</p>
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-2xl border border-gray-200">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Property</th>
+                    <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Sold Price</th>
+                    <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Distance</th>
+                    <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Match</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {result.comparables.map((comp, i) => (
+                    <tr key={i} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-gray-950 text-sm">{comp.formattedAddress}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {[
+                            comp.bedrooms && `${comp.bedrooms} bd`,
+                            comp.bathrooms && `${comp.bathrooms} ba`,
+                            comp.squareFootage && `${comp.squareFootage.toLocaleString()} sqft`,
+                          ].filter(Boolean).join(" · ")}
+                          {comp.daysOld > 0 && (
+                            <span className="ml-2 text-gray-300">· sold ~{comp.daysOld}d ago</span>
+                          )}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <p className="font-semibold text-gray-950">{fmtFull(comp.price)}</p>
+                        {comp.squareFootage > 0 && (
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            ${Math.round(comp.price / comp.squareFootage).toLocaleString()}/sqft
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right text-gray-500 text-sm hidden sm:table-cell">
+                        {comp.distance} mi
+                      </td>
+                      <td className="px-6 py-4 text-right hidden md:table-cell">
+                        <span className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          comp.correlation >= 80 ? "bg-green-50 text-green-700" :
+                          comp.correlation >= 60 ? "bg-blue-50 text-blue-700" :
+                          "bg-gray-100 text-gray-500"
+                        }`}>
+                          {comp.correlation}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
 
