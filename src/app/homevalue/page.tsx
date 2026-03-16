@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/button";
-import { Gradient } from "@/components/gradient";
+
 import {
   ArrowRightIcon,
   CheckCircleIcon,
@@ -74,7 +74,8 @@ export default function HomeValuePage() {
               "url(https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)",
           }}
         />
-        <Gradient className="absolute inset-0 opacity-85" />
+        {/* Dark overlay for text legibility */}
+        <div className="absolute inset-0 bg-black/60" />
 
         {/* Back to home */}
         <div className="absolute top-6 left-6 z-20">
@@ -185,7 +186,7 @@ export default function HomeValuePage() {
               "url(https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)",
           }}
         />
-        <Gradient className="absolute inset-0 opacity-90" />
+        <div className="absolute inset-0 bg-black/65" />
         <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
             Ready to find out what your home is worth?

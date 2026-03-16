@@ -37,6 +37,7 @@ export interface ValuationResult {
     marketSummary: string;
   };
   comparables: {
+    address: string;
     description: string;
     soldPrice: number;
     soldDate: string;
@@ -122,7 +123,7 @@ SELLER CONTEXT:
 
 Search for:
 1. Current median home prices in the specific city/neighborhood
-2. Recent comparable sales (last 6 months) for similar homes nearby
+2. Recent comparable sales (last 6 months) for similar homes nearby — include the actual street address for each comp
 3. Current market conditions: days on market, list-to-sale ratio, inventory
 4. Year-over-year price trends for that area
 5. School ratings, walkability, and neighborhood factors
@@ -155,6 +156,7 @@ Respond with ONLY a valid JSON object (no markdown, no extra text, just the raw 
   },
   "comparables": [
     {
+      "address": "<actual street address of the comparable property, e.g. 1234 Oak Ave, Thousand Oaks, CA 91360>",
       "description": "<e.g. 3BD/2BA, 1,850 sqft, built 1998>",
       "soldPrice": <number>,
       "soldDate": "<e.g. Feb 2026>",

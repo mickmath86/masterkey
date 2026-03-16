@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/button";
-import { Gradient } from "@/components/gradient";
 import type { ValuationResult } from "@/app/api/homevalue/analyze/route";
 import {
   ArrowRightIcon,
@@ -77,52 +76,124 @@ const ratingLabel: Record<string, string> = {
   below_average: "Below Avg",
 };
 
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
+// ─── Animated checklist loading screen ───────────────────────────────────────
 
-function Skeleton({ className = "" }: { className?: string }) {
-  return (
-    <div className={`animate-pulse bg-white/20 rounded-lg ${className}`} />
-  );
-}
+const LOADING_STEPS = [
+  "Analyzing your property details",
+  "Searching recent comparable sales",
+  "Researching local market conditions",
+  "Calculating your home's estimated value",
+  "Preparing your personalized report",
+];
 
-function LoadingState() {
+function LoadingState({ address }: { address?: string }) {
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    // Stagger through steps: complete one every ~2.5s, keeping last one "in progress"
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    LOADING_STEPS.forEach((_, i) => {
+      if (i < LOADING_STEPS.length - 1) {
+        // Complete all but the last step
+        timers.push(
+          setTimeout(() => {
+            setCompletedSteps((prev) => [...prev, i]);
+            setActiveStep(i + 1);
+          }, (i + 1) * 2600)
+        );
+      }
+    });
+
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero placeholder */}
-      <div className="relative overflow-hidden bg-gray-900 py-28">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12">
-          <div className="grid lg:grid-cols-2 gap-12">
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-48" />
-              <Skeleton className="h-4 w-64" />
-              <Skeleton className="h-16 w-72" />
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-20 w-64" />
-            </div>
-            <Skeleton className="h-64 rounded-2xl" />
-          </div>
+    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center px-6">
+      {/* Address pill */}
+      {address && (
+        <div className="flex items-center gap-2 text-white/50 text-sm mb-10">
+          <MapPinIcon className="w-4 h-4 flex-shrink-0 text-blue-400" />
+          <span>{address}</span>
         </div>
+      )}
+
+      {/* Headline */}
+      <div className="text-center mb-10">
+        <h2 className="text-2xl font-bold text-white mb-2">
+          Generating Your Home Valuation
+        </h2>
+        <p className="text-white/50 text-sm">
+          Our AI is researching live market data — this takes about 15 seconds.
+        </p>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 lg:px-12 py-16 space-y-8">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-200 p-5 animate-pulse space-y-3">
-              <div className="h-3 bg-gray-200 rounded w-24" />
-              <div className="h-8 bg-gray-200 rounded w-32" />
+      {/* Checklist */}
+      <div className="w-full max-w-md space-y-4">
+        {LOADING_STEPS.map((step, i) => {
+          const isDone = completedSteps.includes(i);
+          const isActive = activeStep === i && !isDone;
+          const isPending = !isDone && !isActive;
+
+          return (
+            <div
+              key={i}
+              className={`flex items-center gap-4 transition-all duration-500 ${
+                isPending ? "opacity-30" : "opacity-100"
+              }`}
+              style={{
+                transform: isPending ? "translateX(8px)" : "translateX(0)",
+                transitionDelay: `${i * 80}ms`,
+              }}
+            >
+              {/* Icon */}
+              <div className="flex-shrink-0 w-7 h-7 flex items-center justify-center">
+                {isDone ? (
+                  <CheckCircleIcon className="w-7 h-7 text-green-400" />
+                ) : isActive ? (
+                  <span className="relative flex w-5 h-5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-50" />
+                    <span className="relative inline-flex rounded-full w-5 h-5 bg-blue-500" />
+                  </span>
+                ) : (
+                  <span className="w-5 h-5 rounded-full border-2 border-white/20" />
+                )}
+              </div>
+
+              {/* Label */}
+              <span
+                className={`text-sm font-medium transition-colors duration-300 ${
+                  isDone
+                    ? "text-green-400 line-through decoration-green-400/50"
+                    : isActive
+                    ? "text-white"
+                    : "text-white/30"
+                }`}
+              >
+                {step}
+              </span>
+
+              {/* "In progress..." badge */}
+              {isActive && (
+                <span className="ml-auto text-xs text-blue-400 font-medium animate-pulse">
+                  In progress…
+                </span>
+              )}
+              {isDone && (
+                <span className="ml-auto text-xs text-green-400/60 font-medium">
+                  Done
+                </span>
+              )}
             </div>
-          ))}
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 animate-pulse space-y-4">
-          <div className="h-5 bg-gray-200 rounded w-48" />
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex gap-4">
-              <div className="h-4 bg-gray-200 rounded flex-1" />
-              <div className="h-4 bg-gray-100 rounded w-20" />
-            </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
+
+      {/* Subtle bottom note */}
+      <p className="mt-12 text-white/20 text-xs text-center max-w-xs">
+        Powered by Perplexity AI with live web search. Data is fetched in real time.
+      </p>
     </div>
   );
 }
@@ -199,7 +270,7 @@ export default function HomeValueResultsPage() {
 
   // ── States ───────────────────────────────────────────────────────────────────
 
-  if (status === "loading") return <LoadingState />;
+  if (status === "loading") return <LoadingState address={formData?.propertyAddress} />;
   if (status === "error" || !result || !formData) {
     return <ErrorState onRetry={() => formData && fetchValuation(formData)} />;
   }
@@ -221,7 +292,7 @@ export default function HomeValueResultsPage() {
               "url(https://images.unsplash.com/photo-1592595896551-12b371d546d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)",
           }}
         />
-        <Gradient className="absolute inset-0 opacity-95" />
+        <div className="absolute inset-0 bg-black/70" />
 
         <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12 py-20 md:py-28">
           <div className="grid lg:grid-cols-2 gap-12 items-start">
@@ -483,7 +554,14 @@ export default function HomeValueResultsPage() {
                 {result.comparables.map((comp, i) => (
                   <tr key={i} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
-                      <p className="font-medium text-gray-950">{comp.description}</p>
+                      {comp.address && (
+                        <p className="font-semibold text-gray-950 text-sm">
+                          {comp.address}
+                        </p>
+                      )}
+                      <p className={`text-xs text-gray-500 ${comp.address ? "mt-0.5" : "font-medium text-gray-950"}`}>
+                        {comp.description}
+                      </p>
                       <p className="text-xs text-gray-400 mt-0.5">{comp.relevanceNote}</p>
                     </td>
                     <td className="px-6 py-4 text-right font-semibold text-gray-950">
@@ -574,16 +652,18 @@ export default function HomeValueResultsPage() {
             {/* Agent card */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
-                  M
-                </div>
+                <img
+                  src="/mike-avatar.png"
+                  alt="Mike Mathias"
+                  className="w-14 h-14 rounded-full object-cover flex-shrink-0"
+                />
                 <div>
                   <p className="font-semibold text-gray-950">Mike Mathias</p>
                   <p className="text-xs text-gray-500">
                     Founder · MasterKey Real Estate
                   </p>
                   <p className="text-xs text-blue-600 font-medium mt-0.5">
-                    DRE #XXXXXXX
+                    DRE #01892427
                   </p>
                 </div>
               </div>
@@ -594,11 +674,11 @@ export default function HomeValueResultsPage() {
               </p>
               <div className="space-y-3 mb-6">
                 <a
-                  href="tel:+18055550100"
+                  href="tel:+18052629707"
                   className="flex items-center gap-3 text-sm text-gray-600 hover:text-blue-600 transition-colors"
                 >
                   <PhoneIcon className="w-4 h-4 text-blue-500" />
-                  (805) 555-0100
+                  805.262.9707
                 </a>
                 <a
                   href="mailto:mike@usemasterkey.com"
@@ -630,7 +710,7 @@ export default function HomeValueResultsPage() {
               "url(https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)",
           }}
         />
-        <Gradient className="absolute inset-0 opacity-90" />
+        <div className="absolute inset-0 bg-black/65" />
         <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
             Questions about selling in today&apos;s market?
