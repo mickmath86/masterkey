@@ -446,8 +446,9 @@ function HomeValueQuestionnaireContent() {
   function handleConfirmFacts() {
     setAddressConfirmed(true);
     setEditingFacts(false);
-    // Advance to step 2 automatically
+    // Advance to step 2 and scroll to top
     setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   const facts: ConfirmFact[] = [
@@ -919,7 +920,7 @@ function HomeValueQuestionnaireContent() {
 
             {step < totalSteps ? (
               <Button
-                onClick={() => setStep((s) => s + 1)}
+                onClick={() => { setStep((s) => s + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                 disabled={!valid}
                 className="flex items-center gap-2"
               >
