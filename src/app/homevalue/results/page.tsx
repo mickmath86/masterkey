@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/button";
 import { Gradient } from "@/components/gradient";
+import type { ValuationResult } from "@/app/api/homevalue/analyze/route";
 import {
   ArrowRightIcon,
   ArrowUpRightIcon,
@@ -12,9 +13,10 @@ import {
   PhoneIcon,
   EnvelopeIcon,
   MapPinIcon,
+  ExclamationCircleIcon,
 } from "@heroicons/react/16/solid";
 
-// ─── Form data type ───────────────────────────────────────────────────────────
+// ─── Form data type (mirrors questionnaire) ───────────────────────────────────
 
 interface HomeValueFormData {
   propertyAddress: string;
@@ -38,64 +40,8 @@ interface HomeValueFormData {
   email: string;
 }
 
-// ─── Estimation engine ────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function estimateValue(data: HomeValueFormData) {
-  const sqft = parseInt((data.sqft || "1800").replace(/,/g, "")) || 1800;
-  const yearBuilt = parseInt(data.yearBuilt) || 1995;
-  const age = 2026 - yearBuilt;
-
-  let ppsf = 565; // Base $/sqft for Conejo Valley
-
-  // Condition
-  const conditionMap: Record<string, number> = {
-    "Excellent — like new / recently renovated": 1.12,
-    "Good — well maintained, minor wear": 1.0,
-    "Fair — needs some updating": 0.91,
-    "Needs Work — significant repairs needed": 0.80,
-  };
-  ppsf *= conditionMap[data.condition] ?? 1.0;
-
-  // Age
-  if (age < 10) ppsf *= 1.05;
-  else if (age > 40) ppsf *= 0.95;
-
-  // Features
-  const feats = Array.isArray(data.features) ? data.features : [];
-  if (feats.includes("Swimming Pool")) ppsf += 18;
-  if (feats.includes("Mountain / Canyon View")) ppsf += 25;
-  if (feats.includes("Solar Panels (owned)")) ppsf += 8;
-  if (feats.includes("ADU / Guest House")) ppsf += 35;
-  if (feats.includes("Updated Kitchen")) ppsf += 12;
-  if (feats.includes("Smart Home System")) ppsf += 5;
-
-  // Recent updates
-  const boostMap: Record<string, number> = {
-    "Within the last year": 1.04,
-    "1–5 years ago": 1.02,
-  };
-  ppsf *= boostMap[data.kitchenUpdate] ?? 1.0;
-  ppsf *= boostMap[data.bathroomUpdate] ?? 1.0;
-
-  const base = ppsf * sqft;
-  const beds = parseInt(data.bedrooms) || 3;
-  const baths = parseFloat(data.bathrooms) || 2;
-  const bedsBonus = Math.max(0, beds - 3) * 15000;
-  const bathBonus = Math.max(0, baths - 2) * 8000;
-
-  const mid = Math.round((base + bedsBonus + bathBonus) / 1000) * 1000;
-  const spread = mid * 0.055;
-  const low = Math.round((mid - spread) / 1000) * 1000;
-  const high = Math.round((mid + spread) / 1000) * 1000;
-  const confidence = data.condition && data.sqft && data.yearBuilt ? 91 : 78;
-
-  return { low, mid, high, confidence };
-}
-
-function fmt(n: number) {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
-  return `$${(n / 1000).toFixed(0)}K`;
-}
 function fmtFull(n: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -104,100 +50,161 @@ function fmtFull(n: number) {
   }).format(n);
 }
 
-// ─── Market data (Conejo Valley, March 2026) ──────────────────────────────────
+function fmtShort(n: number) {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  return `$${(n / 1000).toFixed(0)}K`;
+}
 
-const MARKET = {
-  medianPrice: 985000,
-  medianPriceChange: 4.2,
-  daysOnMarket: 22,
-  domChange: -3,
-  inventory: 312,
-  inventoryChange: -12,
-  listToSaleRatio: 98.7,
-  monthsSupply: 1.8,
-  neighborhoods: [
-    { name: "Thousand Oaks", median: 1080000, change: 5.1 },
-    { name: "Westlake Village", median: 1420000, change: 3.8 },
-    { name: "Newbury Park", median: 940000, change: 6.2 },
-    { name: "Agoura Hills", median: 1050000, change: 4.5 },
-  ],
+const marketConditionLabel: Record<string, { label: string; color: string; bg: string }> = {
+  strong_sellers: { label: "Strong Seller's Market", color: "text-green-700", bg: "bg-green-50 border-green-200" },
+  sellers: { label: "Seller's Market", color: "text-green-600", bg: "bg-green-50 border-green-100" },
+  balanced: { label: "Balanced Market", color: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
+  buyers: { label: "Buyer's Market", color: "text-orange-600", bg: "bg-orange-50 border-orange-100" },
+  strong_buyers: { label: "Strong Buyer's Market", color: "text-red-600", bg: "bg-red-50 border-red-100" },
 };
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+const ratingColor: Record<string, string> = {
+  excellent: "text-green-600 bg-green-50",
+  good: "text-blue-600 bg-blue-50",
+  average: "text-yellow-600 bg-yellow-50",
+  below_average: "text-red-500 bg-red-50",
+};
 
-function StatCard({
-  label,
-  value,
-  change,
-  positive,
-}: {
-  label: string;
-  value: string;
-  change?: string;
-  positive?: boolean;
-}) {
+const ratingLabel: Record<string, string> = {
+  excellent: "Excellent",
+  good: "Good",
+  average: "Average",
+  below_average: "Below Avg",
+};
+
+// ─── Loading skeleton ─────────────────────────────────────────────────────────
+
+function Skeleton({ className = "" }: { className?: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-5">
-      <div className="flex items-start justify-between mb-3">
-        <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">{label}</p>
-        {change && (
-          <span
-            className={`inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full ${
-              positive
-                ? "bg-green-50 text-green-600"
-                : "bg-red-50 text-red-500"
-            }`}
-          >
-            {positive ? (
-              <ArrowUpRightIcon className="w-3 h-3" />
-            ) : (
-              <ArrowDownRightIcon className="w-3 h-3" />
-            )}
-            {change}
-          </span>
-        )}
+    <div className={`animate-pulse bg-white/20 rounded-lg ${className}`} />
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero placeholder */}
+      <div className="relative overflow-hidden bg-gray-900 py-28">
+        <div className="max-w-6xl mx-auto px-6 lg:px-12">
+          <div className="grid lg:grid-cols-2 gap-12">
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-4 w-64" />
+              <Skeleton className="h-16 w-72" />
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-20 w-64" />
+            </div>
+            <Skeleton className="h-64 rounded-2xl" />
+          </div>
+        </div>
       </div>
-      <p className="text-2xl font-bold text-gray-950">{value}</p>
+
+      <div className="max-w-6xl mx-auto px-6 lg:px-12 py-16 space-y-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-gray-200 p-5 animate-pulse space-y-3">
+              <div className="h-3 bg-gray-200 rounded w-24" />
+              <div className="h-8 bg-gray-200 rounded w-32" />
+            </div>
+          ))}
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-200 p-8 animate-pulse space-y-4">
+          <div className="h-5 bg-gray-200 rounded w-48" />
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex gap-4">
+              <div className="h-4 bg-gray-200 rounded flex-1" />
+              <div className="h-4 bg-gray-100 rounded w-20" />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-// ─── Page ────────────────────────────────────────────────────────────────────
+// ─── Error state ──────────────────────────────────────────────────────────────
 
-export default function HomeValueResultsPage() {
-  const [formData, setFormData] = useState<HomeValueFormData | null>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const raw = sessionStorage.getItem("hv_form");
-    if (raw) {
-      try {
-        setFormData(JSON.parse(raw));
-      } catch {
-        // ignore parse errors
-      }
-    }
-    setTimeout(() => setVisible(true), 100);
-  }, []);
-
-  // Fallback if no session data
-  if (!formData) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
-        <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-gray-950 mb-3">No valuation found</h2>
-          <p className="text-gray-500 mb-6">
-            Please complete the home valuation questionnaire first.
-          </p>
-          <Button href="/homevalue/questionnaire">
-            Start valuation <ArrowRightIcon className="w-4 h-4 ml-1" />
+function ErrorState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
+      <div className="text-center max-w-md">
+        <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+          <ExclamationCircleIcon className="w-8 h-8 text-red-400" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-950 mb-3">
+          Something went wrong
+        </h2>
+        <p className="text-gray-500 mb-6 text-sm leading-relaxed">
+          We couldn&apos;t generate your valuation. This is usually a temporary issue.
+          Try again or contact us directly.
+        </p>
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Button onClick={onRetry}>Try again</Button>
+          <Button variant="secondary" href="/contact">
+            Contact us
           </Button>
         </div>
       </div>
-    );
+    </div>
+  );
+}
+
+// ─── Main results page ────────────────────────────────────────────────────────
+
+export default function HomeValueResultsPage() {
+  const [formData, setFormData] = useState<HomeValueFormData | null>(null);
+  const [result, setResult] = useState<ValuationResult | null>(null);
+  const [status, setStatus] = useState<"loading" | "done" | "error">("loading");
+  const [visible, setVisible] = useState(false);
+
+  async function fetchValuation(data: HomeValueFormData) {
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/homevalue/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Unknown error");
+      setResult(json.data as ValuationResult);
+      setStatus("done");
+      setTimeout(() => setVisible(true), 80);
+    } catch (err) {
+      console.error("Valuation fetch error:", err);
+      setStatus("error");
+    }
   }
 
-  const { low, mid, high, confidence } = estimateValue(formData);
+  useEffect(() => {
+    const raw = sessionStorage.getItem("hv_form");
+    if (!raw) {
+      setStatus("error");
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw) as HomeValueFormData;
+      setFormData(parsed);
+      fetchValuation(parsed);
+    } catch {
+      setStatus("error");
+    }
+  }, []);
+
+  // ── States ───────────────────────────────────────────────────────────────────
+
+  if (status === "loading") return <LoadingState />;
+  if (status === "error" || !result || !formData) {
+    return <ErrorState onRetry={() => formData && fetchValuation(formData)} />;
+  }
+
+  const mktStyle = marketConditionLabel[result.market.marketCondition] ?? marketConditionLabel.balanced;
 
   return (
     <div
@@ -205,7 +212,7 @@ export default function HomeValueResultsPage() {
         visible ? "opacity-100" : "opacity-0"
       }`}
     >
-      {/* ── Hero valuation banner ── */}
+      {/* ── Hero — estimated value ── */}
       <div className="relative overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -218,297 +225,374 @@ export default function HomeValueResultsPage() {
 
         <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12 py-20 md:py-28">
           <div className="grid lg:grid-cols-2 gap-12 items-start">
+
             {/* Left — main value */}
             <div>
-              <p className="text-white/60 text-sm flex items-center gap-1.5 mb-4">
-                <MapPinIcon className="w-4 h-4" />
-                {formData.propertyAddress}
-              </p>
-              {formData.propertyType && (
-                <p className="text-white/50 text-xs mb-6">
-                  {formData.propertyType}
-                  {formData.bedrooms && ` · ${formData.bedrooms} bed`}
-                  {formData.bathrooms && ` / ${formData.bathrooms} bath`}
-                  {formData.sqft && ` · ${formData.sqft} sqft`}
-                  {formData.yearBuilt && ` · Built ${formData.yearBuilt}`}
+              {formData.propertyAddress && (
+                <p className="text-white/60 text-sm flex items-center gap-1.5 mb-2">
+                  <MapPinIcon className="w-4 h-4 flex-shrink-0" />
+                  {formData.propertyAddress}
+                </p>
+              )}
+              {(formData.propertyType || formData.bedrooms) && (
+                <p className="text-white/40 text-xs mb-6">
+                  {[
+                    formData.propertyType,
+                    formData.bedrooms && `${formData.bedrooms} bed`,
+                    formData.bathrooms && `${formData.bathrooms} bath`,
+                    formData.sqft && `${formData.sqft} sqft`,
+                    formData.yearBuilt && `Built ${formData.yearBuilt}`,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
               )}
 
-              <p className="text-white/70 text-sm mb-2">Estimated Market Value</p>
+              <p className="text-white/70 text-sm mb-2">AI-Estimated Market Value</p>
               <p className="text-5xl sm:text-6xl font-bold text-white mb-3">
-                {fmtFull(mid)}
+                {fmtFull(result.estimatedValue)}
               </p>
-              <p className="text-green-300 text-sm font-medium mb-8">
-                Range: {fmt(low)} – {fmt(high)}
+              <p className="text-green-300 text-sm font-medium mb-2">
+                Range: {fmtShort(result.valueLow)} – {fmtShort(result.valueHigh)}
               </p>
 
-              {/* Confidence bar */}
+              {/* Market condition badge */}
+              <span
+                className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border mb-8 ${mktStyle.bg} ${mktStyle.color}`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                {mktStyle.label}
+              </span>
+
+              {/* Confidence */}
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 max-w-xs">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-white/60 font-medium">
-                    Confidence Score
+                  <span className="text-xs text-white/60 font-medium">AI Confidence</span>
+                  <span className="text-sm font-bold text-white">
+                    {result.confidenceScore}%
                   </span>
-                  <span className="text-sm font-bold text-white">{confidence}%</span>
                 </div>
                 <div className="h-2 bg-white/20 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-green-400 rounded-full transition-all duration-1000"
-                    style={{ width: `${confidence}%` }}
+                    style={{ width: `${result.confidenceScore}%` }}
                   />
                 </div>
-                <p className="text-xs text-white/40 mt-2">
-                  Based on comparable sales and property details
+                <p className="text-xs text-white/40 mt-2">{result.confidenceRationale}</p>
+              </div>
+            </div>
+
+            {/* Right — executive summary */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/10 p-6 space-y-5">
+              <div>
+                <p className="text-xs text-white/50 font-semibold uppercase tracking-wider mb-2">
+                  AI Analysis
+                </p>
+                <p className="text-white/90 text-sm leading-relaxed">
+                  {result.executiveSummary}
                 </p>
               </div>
-            </div>
 
-            {/* Right — breakdown */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
-              <h3 className="text-white font-semibold text-sm mb-4">
-                Valuation Breakdown
-              </h3>
-              <div className="space-y-0">
-                {[
-                  {
-                    label: "Base value (price/sqft × size)",
-                    value: `~${fmt(Math.round((mid * 0.87) / 1000) * 1000)}`,
-                    pos: true,
-                  },
-                  {
-                    label: "Condition adjustment",
-                    value: formData.condition?.startsWith("Excellent")
-                      ? "+~$30K"
-                      : formData.condition?.startsWith("Fair")
-                      ? "−~$35K"
-                      : formData.condition?.startsWith("Needs")
-                      ? "−~$70K"
-                      : "+$0",
-                    pos: !formData.condition?.startsWith("Needs") && !formData.condition?.startsWith("Fair"),
-                  },
-                  {
-                    label: "Feature premiums (pool, view, solar, ADU…)",
-                    value: `+$${(Array.isArray(formData.features) ? formData.features : []).length * 8}K`,
-                    pos: true,
-                  },
-                  {
-                    label: "Recent renovation uplift",
-                    value: "+~$15K",
-                    pos: true,
-                  },
-                  {
-                    label: "Current market conditions (Conejo Valley)",
-                    value: "+4.2% YoY",
-                    pos: true,
-                  },
-                ].map((row) => (
-                  <div
-                    key={row.label}
-                    className="flex items-center justify-between py-3 border-b border-white/10 last:border-0"
-                  >
-                    <span className="text-xs text-white/60 flex-1 pr-4">
-                      {row.label}
-                    </span>
-                    <span
-                      className={`text-xs font-semibold ${
-                        row.pos ? "text-green-300" : "text-red-300"
-                      }`}
-                    >
-                      {row.value}
-                    </span>
-                  </div>
-                ))}
-                <div className="flex items-center justify-between pt-4 mt-2 border-t border-white/20">
-                  <span className="text-sm font-semibold text-white">
-                    Estimated Value
-                  </span>
-                  <span className="text-lg font-bold text-white">
-                    {fmtFull(mid)}
-                  </span>
-                </div>
+              <div className="border-t border-white/10 pt-4">
+                <p className="text-xs text-white/50 font-semibold uppercase tracking-wider mb-3">
+                  Recommended List Price
+                </p>
+                <p className="text-3xl font-bold text-white">
+                  {fmtFull(result.sellerStrategy.recommendedListPrice)}
+                </p>
+                <p className="text-xs text-white/50 mt-1">
+                  Est. net proceeds: {result.sellerStrategy.estimatedNetProceeds}
+                </p>
+              </div>
+
+              <div className="border-t border-white/10 pt-4">
+                <p className="text-xs text-white/50 font-semibold uppercase tracking-wider mb-2">
+                  Best Time to List
+                </p>
+                <p className="text-sm text-white/80">{result.sellerStrategy.bestTimeToList}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Market snapshot ── */}
-      <div className="bg-gray-50 py-16">
+      {/* ── Value drivers ── */}
+      <div className="bg-white py-14">
         <div className="max-w-6xl mx-auto px-6 lg:px-12">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-950">
-                Conejo Valley Market Snapshot
-              </h2>
-              <p className="text-gray-500 text-sm mt-1">March 2026 · Updated weekly</p>
-            </div>
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium bg-green-50 text-green-700 border border-green-200 px-3 py-1.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              Strong Seller&apos;s Market
-            </span>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-            <StatCard
-              label="Median Sale Price"
-              value={fmt(MARKET.medianPrice)}
-              change={`${MARKET.medianPriceChange}% YoY`}
-              positive
-            />
-            <StatCard
-              label="Avg. Days on Market"
-              value={`${MARKET.daysOnMarket} days`}
-              change={`${Math.abs(MARKET.domChange)} days vs. last yr`}
-              positive={MARKET.domChange < 0}
-            />
-            <StatCard
-              label="Active Inventory"
-              value={`${MARKET.inventory} homes`}
-              change={`${Math.abs(MARKET.inventoryChange)}% YoY`}
-              positive={false}
-            />
-            <StatCard
-              label="List-to-Sale Ratio"
-              value={`${MARKET.listToSaleRatio}%`}
-              change="Up from 96.2%"
-              positive
-            />
-          </div>
-
-          {/* Neighborhood table */}
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-950 text-sm">
-                Neighborhood Medians
-              </h3>
-              <span className="text-xs text-gray-400">Last 90 days</span>
-            </div>
-            <div className="divide-y divide-gray-50">
-              {MARKET.neighborhoods.map((n) => (
-                <div
-                  key={n.name}
-                  className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <MapPinIcon className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                    <span className="text-sm font-medium text-gray-900">
-                      {n.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-gray-700">{fmtFull(n.median)}</span>
-                    <span className="inline-flex items-center gap-0.5 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                      <ArrowUpRightIcon className="w-3 h-3" />
-                      {n.change}%
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── What this means ── */}
-      <div className="bg-white py-16 border-y border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12">
-          <h2 className="text-2xl font-bold text-gray-950 mb-8">
-            What this means for you
-            {formData.firstName ? `, ${formData.firstName}` : ""}
+          <h2 className="text-2xl font-bold text-gray-950 mb-2">
+            What&apos;s driving your home&apos;s value
           </h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                title: "It's a great time to sell",
-                body: `With only ${MARKET.monthsSupply} months of supply, buyers are competing for limited inventory. Homes priced right are getting ${MARKET.listToSaleRatio}% of asking price and closing in under a month.`,
-              },
-              {
-                title: "Spring is peak season",
-                body: `March through June consistently delivers the highest sale prices in the Conejo Valley. Listing now positions you at the peak of buyer demand before the summer slowdown.`,
-              },
-              {
-                title: "Your equity position",
-                body: `If your home is worth ${fmtFull(mid)}, you may be sitting on significant equity. A MasterKey agent can give you a precise net proceeds estimate with a full closing cost breakdown.`,
-              },
-            ].map((card) => (
+          <p className="text-gray-500 text-sm mb-8">
+            Key factors the AI identified based on your property details and local market data.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {result.valueDrivers.map((driver, i) => (
               <div
-                key={card.title}
-                className="bg-gray-50 rounded-2xl p-6 border border-gray-100"
+                key={i}
+                className={`rounded-2xl border p-5 ${
+                  driver.impact === "positive"
+                    ? "border-green-100 bg-green-50"
+                    : driver.impact === "negative"
+                    ? "border-red-100 bg-red-50"
+                    : "border-gray-100 bg-gray-50"
+                }`}
               >
-                <h3 className="font-semibold text-gray-950 text-sm mb-2">
-                  {card.title}
-                </h3>
-                <p className="text-xs text-gray-500 leading-relaxed">{card.body}</p>
+                <div className="flex items-start justify-between mb-2">
+                  <p className="font-semibold text-gray-950 text-sm flex-1 pr-2">
+                    {driver.factor}
+                  </p>
+                  <span
+                    className={`text-xs font-bold flex-shrink-0 ${
+                      driver.impact === "positive"
+                        ? "text-green-600"
+                        : driver.impact === "negative"
+                        ? "text-red-500"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {driver.estimatedImpact}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  {driver.description}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* ── CTA + Agent card ── */}
-      <div className="bg-gray-50 py-16">
+      {/* ── Market snapshot ── */}
+      <div className="bg-gray-50 py-14 border-y border-gray-100">
         <div className="max-w-6xl mx-auto px-6 lg:px-12">
-          <div className="grid lg:grid-cols-[1.2fr_1fr] gap-12 items-start">
-            {/* Left */}
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-3xl font-bold text-gray-950 mb-4">
-                Ready to take the next step?
+              <h2 className="text-2xl font-bold text-gray-950">
+                {result.market.area} Market Snapshot
               </h2>
-              <p className="text-gray-500 mb-6 leading-relaxed">
-                Your free estimate is a great starting point. A MasterKey listing
-                consultation gives you a precise CMA, a personalized pricing strategy,
-                and a plan to maximize your net proceeds.
+              <p className="text-gray-500 text-sm mt-1">
+                Current conditions · AI-researched data
               </p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  "Free in-home or virtual consultation",
-                  "Detailed comparative market analysis (CMA)",
-                  "Net proceeds estimate with closing cost breakdown",
-                  "Custom marketing plan for your property",
-                  "No obligation — just expert advice",
-                ].map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-start gap-2.5 text-sm text-gray-600"
-                  >
-                    <CheckCircleIcon className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                    {item}
-                  </li>
+            </div>
+            <span
+              className={`hidden sm:inline-flex items-center gap-1.5 text-xs font-medium border px-3 py-1.5 rounded-full ${mktStyle.bg} ${mktStyle.color}`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+              {mktStyle.label}
+            </span>
+          </div>
+
+          {/* Stat cards */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            {[
+              {
+                label: "Median Sale Price",
+                value: fmtShort(result.market.medianHomePrice),
+                change: `${result.market.medianPriceChangeYoY > 0 ? "+" : ""}${result.market.medianPriceChangeYoY.toFixed(1)}% YoY`,
+                positive: result.market.medianPriceChangeYoY >= 0,
+              },
+              {
+                label: "Avg. Days on Market",
+                value: `${result.market.avgDaysOnMarket} days`,
+                change: undefined,
+                positive: true,
+              },
+              {
+                label: "List-to-Sale Ratio",
+                value: `${result.market.listToSaleRatio.toFixed(1)}%`,
+                change: result.market.listToSaleRatio >= 98 ? "Competitive" : undefined,
+                positive: result.market.listToSaleRatio >= 97,
+              },
+              {
+                label: "Months of Supply",
+                value: `${result.market.monthsOfSupply.toFixed(1)} mos`,
+                change: result.market.monthsOfSupply <= 2 ? "Low inventory" : undefined,
+                positive: result.market.monthsOfSupply <= 3,
+              },
+            ].map((card) => (
+              <div
+                key={card.label}
+                className="bg-white rounded-2xl border border-gray-200 p-5"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                    {card.label}
+                  </p>
+                  {card.change && (
+                    <span
+                      className={`inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${
+                        card.positive
+                          ? "bg-green-50 text-green-600"
+                          : "bg-red-50 text-red-500"
+                      }`}
+                    >
+                      {card.positive ? (
+                        <ArrowUpRightIcon className="w-3 h-3" />
+                      ) : (
+                        <ArrowDownRightIcon className="w-3 h-3" />
+                      )}
+                      {card.change}
+                    </span>
+                  )}
+                </div>
+                <p className="text-2xl font-bold text-gray-950">{card.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Market summary */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+              Market Commentary
+            </p>
+            <p className="text-gray-700 text-sm leading-relaxed">
+              {result.market.marketSummary}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Comparable sales ── */}
+      <div className="bg-white py-14">
+        <div className="max-w-6xl mx-auto px-6 lg:px-12">
+          <h2 className="text-2xl font-bold text-gray-950 mb-2">
+            Recent Comparable Sales
+          </h2>
+          <p className="text-gray-500 text-sm mb-8">
+            Similar homes that sold recently in your area — the basis for your valuation.
+          </p>
+          <div className="overflow-hidden rounded-2xl border border-gray-200">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Property
+                  </th>
+                  <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Sold Price
+                  </th>
+                  <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                    Sold Date
+                  </th>
+                  <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                    Distance
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {result.comparables.map((comp, i) => (
+                  <tr key={i} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <p className="font-medium text-gray-950">{comp.description}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{comp.relevanceNote}</p>
+                    </td>
+                    <td className="px-6 py-4 text-right font-semibold text-gray-950">
+                      {fmtFull(comp.soldPrice)}
+                    </td>
+                    <td className="px-6 py-4 text-right text-gray-500 hidden sm:table-cell">
+                      {comp.soldDate}
+                    </td>
+                    <td className="px-6 py-4 text-right text-gray-400 hidden md:table-cell">
+                      {comp.distanceFromSubject}
+                    </td>
+                  </tr>
                 ))}
-              </ul>
-              <div className="flex flex-wrap gap-4">
-                <Button href="/contact">
-                  Schedule a consultation
-                  <ArrowRightIcon className="w-4 h-4 ml-1" />
-                </Button>
-                <Button variant="secondary" href="/homevalue/questionnaire">
-                  Value another home
-                </Button>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Neighborhood insights ── */}
+      <div className="bg-gray-50 py-14 border-y border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 lg:px-12">
+          <h2 className="text-2xl font-bold text-gray-950 mb-8">
+            Neighborhood Insights
+          </h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {result.neighborhoodInsights.map((insight, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl border border-gray-200 p-5"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <p className="font-semibold text-gray-950 text-sm">
+                    {insight.category}
+                  </p>
+                  <span
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-full ${ratingColor[insight.rating]}`}
+                  >
+                    {ratingLabel[insight.rating]}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  {insight.detail}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Seller strategy ── */}
+      <div className="bg-white py-14">
+        <div className="max-w-6xl mx-auto px-6 lg:px-12">
+          <h2 className="text-2xl font-bold text-gray-950 mb-8">
+            Your Selling Strategy
+            {formData.firstName ? `, ${formData.firstName}` : ""}
+          </h2>
+          <div className="grid lg:grid-cols-[1.3fr_1fr] gap-8 items-start">
+            {/* Pricing rationale + tips */}
+            <div className="space-y-6">
+              <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                  Pricing Strategy
+                </p>
+                <p className="text-3xl font-bold text-gray-950 mb-3">
+                  {fmtFull(result.sellerStrategy.recommendedListPrice)}
+                </p>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {result.sellerStrategy.pricingRationale}
+                </p>
+              </div>
+
+              <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
+                  Tips to Maximize Your Sale Price
+                </p>
+                <ul className="space-y-3">
+                  {result.sellerStrategy.topSellingTips.map((tip, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-sm text-gray-600">
+                      <CheckCircleIcon className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
 
             {/* Agent card */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xl">
+                <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
                   M
                 </div>
                 <div>
                   <p className="font-semibold text-gray-950">Mike Mathias</p>
-                  <p className="text-xs text-gray-500">Founder · MasterKey Real Estate</p>
+                  <p className="text-xs text-gray-500">
+                    Founder · MasterKey Real Estate
+                  </p>
                   <p className="text-xs text-blue-600 font-medium mt-0.5">
                     DRE #XXXXXXX
                   </p>
                 </div>
               </div>
               <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                {formData.firstName
-                  ? `Hi ${formData.firstName}, I'd`
-                  : "I'd"}{" "}
-                love to walk you through your home's value in detail and share
-                what we're seeing in the current market. Reach out anytime — no
-                pressure.
+                {formData.firstName ? `Hi ${formData.firstName}, I'd` : "I'd"} love
+                to walk you through this in detail — the AI gives you a strong starting
+                point, and I can add the local knowledge to sharpen it. Let&apos;s talk.
               </p>
-              <div className="space-y-3">
+              <div className="space-y-3 mb-6">
                 <a
                   href="tel:+18055550100"
                   className="flex items-center gap-3 text-sm text-gray-600 hover:text-blue-600 transition-colors"
@@ -525,9 +609,13 @@ export default function HomeValueResultsPage() {
                 </a>
                 <p className="flex items-center gap-3 text-sm text-gray-500">
                   <MapPinIcon className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                  Thousand Oaks, CA · Serving all of Ventura County
+                  Thousand Oaks, CA · Ventura County
                 </p>
               </div>
+              <Button href="/contact" className="w-full justify-center">
+                Schedule a consultation
+                <ArrowRightIcon className="w-4 h-4 ml-1" />
+              </Button>
             </div>
           </div>
         </div>
@@ -548,12 +636,17 @@ export default function HomeValueResultsPage() {
             Questions about selling in today&apos;s market?
           </h2>
           <p className="text-white/70 mb-8">
-            Our team is ready to help. Free consultation, no obligation.
+            Free consultation. No obligation. Expert guidance.
           </p>
-          <Button href="/contact" className="text-base px-8 py-3">
-            Talk to an agent
-            <ArrowRightIcon className="w-4 h-4 ml-1" />
-          </Button>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Button href="/contact">
+              Talk to an agent
+              <ArrowRightIcon className="w-4 h-4 ml-1" />
+            </Button>
+            <Button variant="secondary" href="/homevalue/questionnaire">
+              Value another home
+            </Button>
+          </div>
         </div>
       </div>
     </div>
