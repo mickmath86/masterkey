@@ -598,7 +598,15 @@ export default function HomeValueResultsPage() {
                   {result.comparables.map((comp, i) => (
                     <tr key={i} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4">
-                        <p className="font-semibold text-gray-950 text-sm">{comp.formattedAddress}</p>
+                        <a
+                          href={`https://www.zillow.com/homes/${encodeURIComponent(comp.formattedAddress)}_rb/`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group inline-flex items-center gap-1 font-semibold text-gray-950 text-sm hover:text-blue-600 transition-colors"
+                        >
+                          {comp.formattedAddress}
+                          <ArrowUpRightIcon className="w-3 h-3 text-gray-300 group-hover:text-blue-500 flex-shrink-0" />
+                        </a>
                         <p className="text-xs text-gray-400 mt-0.5">
                           {[
                             comp.bedrooms && `${comp.bedrooms} bd`,

@@ -333,11 +333,11 @@ export async function POST(request: Request) {
       return Response.json({ error: "propertyAddress is required" }, { status: 400 });
     }
 
-    // Run Rentcast AVM + Perplexity narrative in parallel for speed
-    const [rentcastAVM, narrative] = await Promise.all([
-      fetchRentcastAVM(propertyAddress, bedrooms, bathrooms, sqft),
-      fetchPerplexityNarrative(body, null), // Start Perplexity immediately; we'll merge numbers after
-    ]);
+    // Phase 1: Rentcast AVM — must run first so we can anchor Perplexity to real numbers
+    const rentcastAVM = await fetchRentcastAVM(propertyAddress, bedrooms, bathrooms, sqft);
+
+    // Phase 2: Perplexity narrative — receives verified AVM numbers (or null if Rentcast failed)
+    const narrative = await fetchPerplexityNarrative(body, rentcastAVM);
 
     // If both failed entirely, return error
     if (!rentcastAVM && !narrative) {
