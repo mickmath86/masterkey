@@ -127,7 +127,8 @@ async function fetchRentcastAVM(
   if (!apiKey) return null;
 
   try {
-    const qs = new URLSearchParams({ address, compCount: "5" });
+    // Request up to 10 comps — more data = better AVM accuracy (closer to Zillow/Redfin estimates)
+    const qs = new URLSearchParams({ address, compCount: "10" });
     if (beds) qs.set("bedrooms", beds);
     if (baths) qs.set("bathrooms", baths);
     if (sqft) qs.set("squareFootage", sqft);
@@ -149,24 +150,47 @@ async function fetchRentcastAVM(
 
     if (!data.price) return null;
 
-    // Normalise comparables — add Street View thumbnail for each
-    const comps: RentcastComp[] = (data.comparables ?? []).map((c: any) => {
-      const addr = c.formattedAddress ?? c.addressLine1 ?? "Unknown address";
-      return {
-        formattedAddress: addr,
-        bedrooms: c.bedrooms ?? 0,
-        bathrooms: c.bathrooms ?? 0,
-        squareFootage: c.squareFootage ?? 0,
-        price: c.price ?? 0,
-        distance: Math.round((c.distance ?? 0) * 10) / 10,
-        daysOld: c.daysOld ?? 0,
-        correlation: Math.round((c.correlation ?? 0) * 100),
-        city: c.city ?? "",
-        state: c.state ?? "",
-        zipCode: c.zipCode ?? "",
-        streetViewUrl: streetViewUrl(addr, 400, 280),
-      };
-    });
+    // Normalise comparables — add Street View thumbnail for each.
+    // Filter to SOLD listings only (exclude Active / Pending / For Sale).
+    // Sort by daysOld ascending so the most recently sold comps appear first.
+    const rawComps: RentcastComp[] = (data.comparables ?? [])
+      .filter((c: any) => {
+        // Rentcast now returns a `status` field on comparables.
+        // Accept a comp only when status is explicitly "Sold", OR when status
+        // is absent (older API response before the field was added) AND
+        // daysOld > 0 (daysOld === 0 can mean it's a live active listing).
+        const status: string | undefined = c.status;
+        if (status !== undefined) {
+          return status.toLowerCase() === "sold";
+        }
+        // Fallback: no status field — exclude anything that looks active
+        // (listingType === 'sale' with daysOld === 0 is likely an active listing)
+        const listingType: string | undefined = c.listingType;
+        if (listingType !== undefined && listingType.toLowerCase() === "sale" && (c.daysOld ?? 0) === 0) {
+          return false;
+        }
+        return (c.daysOld ?? 0) > 0;
+      })
+      .map((c: any) => {
+        const addr = c.formattedAddress ?? c.addressLine1 ?? "Unknown address";
+        return {
+          formattedAddress: addr,
+          bedrooms: c.bedrooms ?? 0,
+          bathrooms: c.bathrooms ?? 0,
+          squareFootage: c.squareFootage ?? 0,
+          price: c.price ?? 0,
+          distance: Math.round((c.distance ?? 0) * 10) / 10,
+          daysOld: c.daysOld ?? 0,
+          correlation: Math.round((c.correlation ?? 0) * 100),
+          city: c.city ?? "",
+          state: c.state ?? "",
+          zipCode: c.zipCode ?? "",
+          streetViewUrl: streetViewUrl(addr, 400, 280),
+        };
+      });
+
+    // Sort most recently sold first (smallest daysOld = most recent)
+    const comps = rawComps.sort((a, b) => a.daysOld - b.daysOld);
 
     return {
       price: data.price,
@@ -217,7 +241,8 @@ async function fetchPerplexityNarrative(
   // If we have real Rentcast numbers, anchor the AI to them — including the raw comps
   let avmAnchor = "";
   if (rentcastAVM) {
-    const compLines = (rentcastAVM.comparables ?? []).map((c, i) => {
+    // Send up to 5 most recent sold comps to Perplexity (already filtered & sorted)
+    const compLines = (rentcastAVM.comparables ?? []).slice(0, 5).map((c, i) => {
       const ppsf = c.squareFootage > 0 ? Math.round(c.price / c.squareFootage) : null;
       return `  ${i + 1}. ${c.formattedAddress} — sold ${fmtUSD(c.price)}${
         ppsf ? ` ($${ppsf}/sqft)` : ""
