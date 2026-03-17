@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/button";
 import { Gradient } from "@/components/gradient";
@@ -362,6 +362,7 @@ const WEBHOOK_URL =
 
 function HomeValueQuestionnaireContent() {
   const router = useRouter();
+  const scrollPanelRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailError, setEmailError] = useState("");
@@ -373,6 +374,11 @@ function HomeValueQuestionnaireContent() {
   const [editingFacts, setEditingFacts] = useState(false);
 
   const totalSteps = 6;
+
+  // Scroll the right panel (overflow-scroll div) back to top
+  function scrollToTop() {
+    scrollPanelRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   function set<K extends keyof HomeValueFormData>(key: K, value: HomeValueFormData[K]) {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -446,9 +452,9 @@ function HomeValueQuestionnaireContent() {
   function handleConfirmFacts() {
     setAddressConfirmed(true);
     setEditingFacts(false);
-    // Advance to step 2 and scroll to top
+    // Advance to step 2 and scroll panel to top
     setStep(2);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollToTop();
   }
 
   const facts: ConfirmFact[] = [
@@ -561,7 +567,7 @@ function HomeValueQuestionnaireContent() {
       </div>
 
       {/* ── Right panel ── */}
-      <div className="flex-1 bg-white flex flex-col overflow-scroll relative">
+      <div ref={scrollPanelRef} className="flex-1 bg-white flex flex-col overflow-scroll relative">
         {/* Header + stepper */}
         <div className="p-8 border-b border-gray-200 sticky top-0 bg-white z-10">
           <div className="flex items-center justify-between mb-6">
@@ -920,7 +926,7 @@ function HomeValueQuestionnaireContent() {
 
             {step < totalSteps ? (
               <Button
-                onClick={() => { setStep((s) => s + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                onClick={() => { setStep((s) => s + 1); scrollToTop(); }}
                 disabled={!valid}
                 className="flex items-center gap-2"
               >

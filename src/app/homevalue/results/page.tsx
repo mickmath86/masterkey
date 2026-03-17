@@ -78,6 +78,39 @@ const ratingLabel: Record<string, string> = {
   below_average: "Below Avg",
 };
 
+// ─── Hero background — Street View with graceful fallback ──────────────────────
+
+const FALLBACK_BG =
+  "url(https://images.unsplash.com/photo-1592595896551-12b371d546d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)";
+
+function HeroBackground({ streetViewUrl }: { streetViewUrl: string }) {
+  if (!streetViewUrl) {
+    return (
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: FALLBACK_BG }}
+      />
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={streetViewUrl}
+      alt=""
+      aria-hidden
+      className="absolute inset-0 w-full h-full object-cover"
+      onError={(e) => {
+        const el = e.currentTarget;
+        el.style.display = "none";
+        const fb = document.createElement("div");
+        fb.className = "absolute inset-0 bg-cover bg-center";
+        fb.style.backgroundImage = FALLBACK_BG;
+        el.parentElement?.insertBefore(fb, el);
+      }}
+    />
+  );
+}
+
 // ─── Animated checklist loading screen ───────────────────────────────────────
 
 const LOADING_STEPS = [
@@ -287,13 +320,8 @@ export default function HomeValueResultsPage() {
     >
       {/* ── Hero — estimated value ── */}
       <div className="relative overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url(https://images.unsplash.com/photo-1592595896551-12b371d546d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)",
-          }}
-        />
+        {/* Street View of subject property, fallback to generic house photo */}
+        <HeroBackground streetViewUrl={result.subjectStreetViewUrl} />
         <div className="absolute inset-0 bg-black/70" />
 
         <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12 py-20 md:py-28">
@@ -597,7 +625,21 @@ export default function HomeValueResultsPage() {
                 <tbody className="divide-y divide-gray-100">
                   {result.comparables.map((comp, i) => (
                     <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          {/* Street View thumbnail */}
+                          {comp.streetViewUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={comp.streetViewUrl}
+                              alt={comp.formattedAddress}
+                              className="w-16 h-12 rounded-lg object-cover flex-shrink-0 bg-gray-100"
+                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                            />
+                          ) : (
+                            <div className="w-16 h-12 rounded-lg bg-gray-100 flex-shrink-0" />
+                          )}
+                          <div>
                         <a
                           href={`https://www.zillow.com/homes/${encodeURIComponent(comp.formattedAddress)}_rb/`}
                           target="_blank"
@@ -617,6 +659,8 @@ export default function HomeValueResultsPage() {
                             <span className="ml-2 text-gray-300">· sold ~{comp.daysOld}d ago</span>
                           )}
                         </p>
+                          </div>
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <p className="font-semibold text-gray-950">{fmtFull(comp.price)}</p>

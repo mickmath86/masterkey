@@ -35,6 +35,7 @@ export interface RentcastComp {
   city: string;
   state: string;
   zipCode: string;
+  streetViewUrl: string; // Google Street View Static API thumbnail
 }
 
 export interface ValuationResult {
@@ -43,6 +44,8 @@ export interface ValuationResult {
   valueLow: number;
   valueHigh: number;
   valueSource: "rentcast" | "ai";
+  // Street View URL for the subject property (empty string if unavailable)
+  subjectStreetViewUrl: string;
 
   // ── AI narrative fields ────────────────────────────────────────────────────
   confidenceScore: number;
@@ -90,6 +93,21 @@ function fmtUSD(n: number) {
   }).format(n);
 }
 
+// ─── Street View Static URL builder ─────────────────────────────────────────
+
+function streetViewUrl(address: string, width = 640, height = 360): string {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  if (!apiKey) return "";
+  const params = new URLSearchParams({
+    location: address,
+    size: `${width}x${height}`,
+    key: apiKey,
+    source: "outdoor",
+    fov: "90",
+  });
+  return `https://maps.googleapis.com/maps/api/streetview?${params}`;
+}
+
 // ─── Phase 1: Rentcast AVM ────────────────────────────────────────────────────
 
 interface RentcastAVMResponse {
@@ -131,20 +149,24 @@ async function fetchRentcastAVM(
 
     if (!data.price) return null;
 
-    // Normalise comparables
-    const comps: RentcastComp[] = (data.comparables ?? []).map((c: any) => ({
-      formattedAddress: c.formattedAddress ?? c.addressLine1 ?? "Unknown address",
-      bedrooms: c.bedrooms ?? 0,
-      bathrooms: c.bathrooms ?? 0,
-      squareFootage: c.squareFootage ?? 0,
-      price: c.price ?? 0,
-      distance: Math.round((c.distance ?? 0) * 10) / 10,
-      daysOld: c.daysOld ?? 0,
-      correlation: Math.round((c.correlation ?? 0) * 100),
-      city: c.city ?? "",
-      state: c.state ?? "",
-      zipCode: c.zipCode ?? "",
-    }));
+    // Normalise comparables — add Street View thumbnail for each
+    const comps: RentcastComp[] = (data.comparables ?? []).map((c: any) => {
+      const addr = c.formattedAddress ?? c.addressLine1 ?? "Unknown address";
+      return {
+        formattedAddress: addr,
+        bedrooms: c.bedrooms ?? 0,
+        bathrooms: c.bathrooms ?? 0,
+        squareFootage: c.squareFootage ?? 0,
+        price: c.price ?? 0,
+        distance: Math.round((c.distance ?? 0) * 10) / 10,
+        daysOld: c.daysOld ?? 0,
+        correlation: Math.round((c.correlation ?? 0) * 100),
+        city: c.city ?? "",
+        state: c.state ?? "",
+        zipCode: c.zipCode ?? "",
+        streetViewUrl: streetViewUrl(addr, 400, 280),
+      };
+    });
 
     return {
       price: data.price,
@@ -192,16 +214,25 @@ async function fetchPerplexityNarrative(
       ? features
       : "None";
 
-  // If we have real Rentcast numbers, anchor the AI to them
-  const avmAnchor = rentcastAVM
-    ? `
+  // If we have real Rentcast numbers, anchor the AI to them — including the raw comps
+  let avmAnchor = "";
+  if (rentcastAVM) {
+    const compLines = (rentcastAVM.comparables ?? []).map((c, i) => {
+      const ppsf = c.squareFootage > 0 ? Math.round(c.price / c.squareFootage) : null;
+      return `  ${i + 1}. ${c.formattedAddress} — sold ${fmtUSD(c.price)}${
+        ppsf ? ` ($${ppsf}/sqft)` : ""
+      }, ${c.bedrooms}bd/${c.bathrooms}ba, ${c.squareFootage > 0 ? c.squareFootage + " sqft" : "sqft unknown"}, ${c.daysOld}d ago, ${c.correlation}% match`;
+    });
+    avmAnchor = `
 IMPORTANT — VERIFIED AVM DATA (use these exact numbers, do not override them):
 - Verified Market Value: ${fmtUSD(rentcastAVM.price)}
 - Verified Range: ${fmtUSD(rentcastAVM.priceRangeLow)} – ${fmtUSD(rentcastAVM.priceRangeHigh)}
-- Source: Rentcast AVM (based on real comparable sales data)
-Your narrative, recommended list price, and all dollar figures must be consistent with these verified numbers.
-`
-    : "";
+- Source: Rentcast AVM derived from these real recent comparable sales:
+${compLines.length > 0 ? compLines.join("\n") : "  (no comps returned)"}
+
+All dollar figures, recommended list price, and your analysis of value drivers must be consistent with these verified numbers and comp data.
+`;
+  }
 
   const prompt = `You are an expert real estate agent for Southern California. A homeowner wants a home valuation report narrative.
 ${avmAnchor}
@@ -366,6 +397,7 @@ export async function POST(request: Request) {
       valueLow,
       valueHigh,
       valueSource: rentcastAVM ? "rentcast" : "ai",
+      subjectStreetViewUrl: streetViewUrl(propertyAddress, 1600, 900),
 
       confidenceScore: narrative?.confidenceScore ?? (rentcastAVM ? 82 : 60),
       confidenceRationale:
