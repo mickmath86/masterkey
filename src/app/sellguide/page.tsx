@@ -77,7 +77,6 @@ export default function SellGuidePage() {
       // still redirect
     } finally {
       setIsSubmitting(false);
-      // Trigger PDF download then redirect home
       const link = document.createElement("a");
       link.href = "/downloadables/masterkey-sellers-checklist.pdf";
       link.download = "Masterkey-Sellers-Prep-Checklist.pdf";
@@ -92,15 +91,17 @@ export default function SellGuidePage() {
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden bg-gray-950 pt-8 pb-0">
-        {/* Warm red/orange tint glow matching the cover */}
+        {/* Warm red/orange tint glow */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full bg-orange-600/12 blur-3xl" />
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-red-700/10 blur-3xl" />
         </div>
 
         <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12">
-          <div className="grid lg:grid-cols-2 gap-12 items-end">
-            {/* Left — copy */}
+          {/* items-center so cover is vertically centered on desktop */}
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+
+            {/* Left — copy + form + checklist */}
             <div className="py-12 lg:py-20">
               <div className="inline-flex items-center gap-2 text-xs font-semibold text-orange-400 bg-orange-400/10 border border-orange-400/20 px-3 py-1.5 rounded-full mb-6">
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
@@ -116,7 +117,89 @@ export default function SellGuidePage() {
                 top dollar — from prep and staging to closing with confidence.
               </p>
 
+              {/* ── Inline form (desktop: above checklist) ── */}
+              <form
+                onSubmit={handleSubmit}
+                className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8 space-y-4"
+              >
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-white/60 mb-1.5">
+                      First Name <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.firstName}
+                      onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
+                      placeholder="Jane"
+                      required
+                      className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-white/60 mb-1.5">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      value={form.lastName}
+                      onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
+                      placeholder="Smith"
+                      className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-white/60 mb-1.5">
+                    Phone <span className="text-white/30 font-normal">(optional)</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                    placeholder="(805) 555-0100"
+                    className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-white/60 mb-1.5">
+                    Email Address <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    placeholder="jane@example.com"
+                    required
+                    className={`w-full px-3 py-2.5 bg-white/10 border rounded-lg text-sm text-white placeholder-white/30 focus:ring-2 focus:ring-orange-400 focus:outline-none ${
+                      emailError ? "border-red-400" : "border-white/20 focus:border-orange-400"
+                    }`}
+                  />
+                  {emailError && (
+                    <p className="text-red-400 text-xs mt-1">{emailError}</p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={!isValid() || isSubmitting}
+                  className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors text-sm"
+                >
+                  <ArrowDownTrayIcon className="w-4 h-4" />
+                  {isSubmitting ? "Preparing your download…" : "Download the Seller's Prep Checklist — Free"}
+                </button>
+
+                <p className="text-xs text-white/30 text-center leading-relaxed">
+                  No spam, ever. We will never sell your information.
+                </p>
+              </form>
+
               {/* What's inside */}
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-3">
+                What&apos;s inside
+              </p>
               <ul className="space-y-2.5">
                 {WHAT_INSIDE.map((item, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-sm text-white/70">
@@ -127,10 +210,10 @@ export default function SellGuidePage() {
               </ul>
             </div>
 
-            {/* Right — PDF cover preview */}
-            <div className="flex justify-center lg:justify-end items-end">
+            {/* Right — PDF cover preview
+                pb-12 adds bottom padding on mobile so it doesn't clip */}
+            <div className="flex justify-center lg:justify-end items-center pb-12 lg:pb-0">
               <div className="relative">
-                {/* Shadow/depth glow */}
                 <div className="absolute -inset-1 rounded-xl bg-orange-500/20 blur-xl" />
                 <img
                   src="/sellers-checklist-cover.jpg"
@@ -138,123 +221,11 @@ export default function SellGuidePage() {
                   className="relative w-64 sm:w-72 lg:w-80 rounded-xl shadow-2xl border border-white/10"
                   style={{ transform: "perspective(800px) rotateY(-4deg) rotateX(2deg)" }}
                 />
-                {/* Free badge */}
                 <div className="absolute -top-3 -right-3 bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
                   FREE
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Form ── */}
-      <section className="bg-gray-50 py-16 border-y border-gray-100">
-        <div className="max-w-2xl mx-auto px-6">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-950 mb-2">
-              Get Your Free Copy
-            </h2>
-            <p className="text-gray-500 text-sm">
-              Enter your info below and we&apos;ll send your download instantly.
-              No spam — ever.
-            </p>
-          </div>
-
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 space-y-5"
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  First Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={form.firstName}
-                  onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
-                  placeholder="Jane"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  value={form.lastName}
-                  onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
-                  placeholder="Smith"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Phone Number
-                <span className="text-gray-400 font-normal ml-1">(optional)</span>
-              </label>
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                placeholder="(805) 555-0100"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Email Address <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => handleEmailChange(e.target.value)}
-                placeholder="jane@example.com"
-                required
-                className={`w-full px-4 py-3 border rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 ${
-                  emailError ? "border-red-400" : "border-gray-300"
-                }`}
-              />
-              {emailError && (
-                <p className="text-red-500 text-xs mt-1">{emailError}</p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={!isValid() || isSubmitting}
-              className="w-full flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-lg transition-colors text-sm"
-            >
-              <ArrowDownTrayIcon className="w-4 h-4" />
-              {isSubmitting ? "Preparing your download…" : "Download the Seller's Prep Checklist — Free"}
-            </button>
-
-            <p className="text-xs text-gray-400 text-center leading-relaxed">
-              By submitting, you agree to receive communications from MasterKey Real Estate.
-              We will never sell your information.
-            </p>
-          </form>
-
-          {/* Trust signals */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-400">
-            <span className="flex items-center gap-1.5">
-              <ShieldCheckIcon className="w-4 h-4 text-orange-500" />
-              No spam, ever
-            </span>
-            <span className="flex items-center gap-1.5">
-              <ArrowDownTrayIcon className="w-4 h-4 text-orange-500" />
-              Instant PDF download
-            </span>
-            <span className="flex items-center gap-1.5">
-              <MapPinIcon className="w-4 h-4 text-orange-500" />
-              Conejo Valley–specific data
-            </span>
           </div>
         </div>
       </section>
@@ -295,6 +266,22 @@ export default function SellGuidePage() {
                 <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
               </div>
             ))}
+          </div>
+
+          {/* Trust signals */}
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-400">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheckIcon className="w-4 h-4 text-orange-500" />
+              No spam, ever
+            </span>
+            <span className="flex items-center gap-1.5">
+              <ArrowDownTrayIcon className="w-4 h-4 text-orange-500" />
+              Instant PDF download
+            </span>
+            <span className="flex items-center gap-1.5">
+              <MapPinIcon className="w-4 h-4 text-orange-500" />
+              Conejo Valley–specific data
+            </span>
           </div>
         </div>
       </section>
