@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar3 from "@/components/navbar3";
+import NavbarMinimal from "@/components/navbar-minimal";
 import { Footer } from "@/components/footer";
 import {
   CheckCircleIcon,
@@ -86,10 +86,9 @@ export default function BuyerGuidePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar3 />
-
-      {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-gray-950 pt-8 pb-0">
+      {/* ── Hero (NavbarMinimal lives inside the dark section) ── */}
+      <section className="relative overflow-hidden bg-gray-950 pb-0">
+        <NavbarMinimal theme="dark" />
         {/* Subtle green tint bg glow */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full bg-green-600/10 blur-3xl" />
