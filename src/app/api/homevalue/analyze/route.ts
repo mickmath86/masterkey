@@ -150,25 +150,40 @@ async function fetchRentcastAVM(
 
     if (!data.price) return null;
 
+    // Debug: log the raw status/listingType values Rentcast returns so we can
+    // see exactly what field values come back and tune the filter correctly.
+    if (data.comparables?.length) {
+      console.log(
+        "[Rentcast comps raw status sample]",
+        data.comparables.slice(0, 3).map((c: any) => ({
+          addr: c.formattedAddress,
+          status: c.status,
+          listingType: c.listingType,
+          daysOld: c.daysOld,
+        }))
+      );
+    }
+
     // Normalise comparables — add Street View thumbnail for each.
     // Filter to SOLD listings only (exclude Active / Pending / For Sale).
     // Sort by daysOld ascending so the most recently sold comps appear first.
+    //
+    // Rentcast AVM comparables filter logic:
+    //  - If `status` field is present AND is one of the known active/pending
+    //    values → exclude it. Accept everything else (including "Sold",
+    //    "sold", or any value we don't recognise — better to show a comp
+    //    than silently drop everything if Rentcast changes casing).
+    //  - If `status` field is absent → fall back to daysOld > 0 check.
+    const ACTIVE_STATUSES = new Set(["active", "pending", "for sale", "for_sale", "coming soon", "coming_soon"]);
+
     const rawComps: RentcastComp[] = (data.comparables ?? [])
       .filter((c: any) => {
-        // Rentcast now returns a `status` field on comparables.
-        // Accept a comp only when status is explicitly "Sold", OR when status
-        // is absent (older API response before the field was added) AND
-        // daysOld > 0 (daysOld === 0 can mean it's a live active listing).
         const status: string | undefined = c.status;
         if (status !== undefined) {
-          return status.toLowerCase() === "sold";
+          // Exclude only known active/non-sold statuses
+          return !ACTIVE_STATUSES.has(status.toLowerCase());
         }
-        // Fallback: no status field — exclude anything that looks active
-        // (listingType === 'sale' with daysOld === 0 is likely an active listing)
-        const listingType: string | undefined = c.listingType;
-        if (listingType !== undefined && listingType.toLowerCase() === "sale" && (c.daysOld ?? 0) === 0) {
-          return false;
-        }
+        // No status field: exclude anything with daysOld === 0 (likely active)
         return (c.daysOld ?? 0) > 0;
       })
       .map((c: any) => {
