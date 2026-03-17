@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/button";
 import type { ValuationResult } from "@/app/api/homevalue/analyze/route";
@@ -260,6 +260,93 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+// ─── Results webhook ─────────────────────────────────────────────────────────
+
+const RESULTS_WEBHOOK_URL =
+  "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/6be785bb-b2b7-49ed-9c03-efa9948a25ae";
+
+function buildResultsPayload(form: HomeValueFormData, val: ValuationResult) {
+  return {
+    // ── Contact info ──────────────────────────────────────────────────────────
+    firstName: form.firstName,
+    lastName: form.lastName,
+    phone: form.phone,
+    email: form.email,
+
+    // ── Property details (form answers) ──────────────────────────────────────
+    propertyAddress: form.propertyAddress,
+    propertyType: form.propertyType,
+    bedrooms: form.bedrooms,
+    bathrooms: form.bathrooms,
+    sqft: form.sqft,
+    yearBuilt: form.yearBuilt,
+    condition: form.condition,
+    garage: form.garage,
+    features: Array.isArray(form.features) ? form.features.join(", ") : form.features,
+
+    // ── Recent updates ────────────────────────────────────────────────────────
+    kitchenUpdate: form.kitchenUpdate,
+    bathroomUpdate: form.bathroomUpdate,
+    roofUpdate: form.roofUpdate,
+    hvacUpdate: form.hvacUpdate,
+
+    // ── Seller context ────────────────────────────────────────────────────────
+    sellingTimeline: form.timeline,
+    sellingReason: form.reason,
+
+    // ── Valuation results ─────────────────────────────────────────────────────
+    estimatedValue: val.estimatedValue,
+    valueLow: val.valueLow,
+    valueHigh: val.valueHigh,
+    valueSource: val.valueSource,
+    confidenceScore: val.confidenceScore,
+    confidenceRationale: val.confidenceRationale,
+    executiveSummary: val.executiveSummary,
+
+    // ── Seller strategy ───────────────────────────────────────────────────────
+    recommendedListPrice: val.sellerStrategy.recommendedListPrice,
+    estimatedNetProceeds: val.sellerStrategy.estimatedNetProceeds,
+    bestTimeToList: val.sellerStrategy.bestTimeToList,
+    pricingRationale: val.sellerStrategy.pricingRationale,
+    topSellingTips: val.sellerStrategy.topSellingTips.join(" | "),
+
+    // ── Market data ───────────────────────────────────────────────────────────
+    marketArea: val.market.area,
+    marketCondition: val.market.marketCondition,
+    marketSummary: val.market.marketSummary,
+    medianHomePrice: val.market.medianHomePrice,
+    medianPriceChangeYoY: val.market.medianPriceChangeYoY,
+    avgDaysOnMarket: val.market.avgDaysOnMarket,
+    listToSaleRatio: val.market.listToSaleRatio,
+    monthsOfSupply: val.market.monthsOfSupply,
+
+    // ── Value drivers ─────────────────────────────────────────────────────────
+    valueDrivers: val.valueDrivers
+      .map((d) => `${d.factor} (${d.impact}, ${d.estimatedImpact}): ${d.description}`)
+      .join(" | "),
+
+    // ── Neighborhood insights ─────────────────────────────────────────────────
+    neighborhoodInsights: val.neighborhoodInsights
+      .map((n) => `${n.category} [${n.rating}]: ${n.detail}`)
+      .join(" | "),
+
+    // ── Comparable sales (top 5) ──────────────────────────────────────────────
+    comparables: val.comparables
+      .map(
+        (c) =>
+          `${c.formattedAddress} — $${c.price.toLocaleString()}` +
+          (c.squareFootage > 0 ? ` ($${Math.round(c.price / c.squareFootage)}/sqft)` : "") +
+          `, ${c.bedrooms}bd/${c.bathrooms}ba, ${c.squareFootage > 0 ? c.squareFootage + " sqft" : ""}, ${c.daysOld}d ago, ${c.correlation}% match`
+      )
+      .join(" | "),
+
+    // ── Meta ──────────────────────────────────────────────────────────────────
+    formType: "home-value-results",
+    source: "homevalue-results-page",
+    submittedAt: new Date().toISOString(),
+  };
+}
+
 // ─── Main results page ────────────────────────────────────────────────────────
 
 export default function HomeValueResultsPage() {
@@ -267,6 +354,7 @@ export default function HomeValueResultsPage() {
   const [result, setResult] = useState<ValuationResult | null>(null);
   const [status, setStatus] = useState<"loading" | "done" | "error">("loading");
   const [visible, setVisible] = useState(false);
+  const webhookFiredRef = useRef(false);
 
   async function fetchValuation(data: HomeValueFormData) {
     setStatus("loading");
@@ -302,6 +390,18 @@ export default function HomeValueResultsPage() {
       setStatus("error");
     }
   }, []);
+
+  // Fire results webhook once — after both form data and valuation are available
+  useEffect(() => {
+    if (!result || !formData || webhookFiredRef.current) return;
+    webhookFiredRef.current = true;
+    const payload = buildResultsPayload(formData, result);
+    fetch(RESULTS_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).catch((err) => console.warn("Results webhook failed (non-blocking):", err));
+  }, [result, formData]);
 
   // ── States ───────────────────────────────────────────────────────────────────
 
