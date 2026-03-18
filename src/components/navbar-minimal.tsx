@@ -14,11 +14,11 @@
  *   theme="light" — default dark logo on white background
  */
 
-import { MasterKeyLogo } from "./logo";
+import { MasterKeyLogo, MasterKeyLogoInlineWhite } from "./logo";
 
 interface NavbarMinimalProps {
   /** "light" renders the standard dark logo on a white bar (default).
-   *  "dark"  renders a white-tinted logo on a transparent bar — use when
+   *  "dark"  renders a white inline logo on a transparent bar — use when
    *  the navbar sits directly over a dark hero section. */
   theme?: "light" | "dark";
 }
@@ -39,8 +39,8 @@ export default function NavbarMinimal({ theme = "light" }: NavbarMinimalProps) {
         className="mx-auto flex max-w-7xl items-center justify-center px-6 py-5 lg:px-8"
       >
         {/* Logo — no link, intentionally non-interactive on lead-capture pages */}
-        <span aria-label="MasterKey Real Estate" className={isDark ? "opacity-90" : ""}>
-          <MasterKeyLogo />
+        <span aria-label="MasterKey Real Estate">
+          {isDark ? <MasterKeyLogoInlineWhite /> : <MasterKeyLogo />}
         </span>
       </nav>
     </header>
