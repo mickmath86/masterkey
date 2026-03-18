@@ -366,6 +366,7 @@ function buildResultsPayload(form: HomeValueFormData, val: ValuationResult) {
       .join(" | "),
 
     // ── Asset / revisit URL ───────────────────────────────────────────────────
+    // assetUrl is overwritten with the real signed token URL by the webhook useEffect
     assetUrl: `https://www.usemasterkey.com/homevalue/results`,
     resultsPageAddress: form.propertyAddress,
 
@@ -553,14 +554,13 @@ function HomeValueResultsInner() {
     }
   }
 
-  // Fire results webhook once — after both form data, valuation, and share URL are ready
+  // Fire results webhook once — wait for shareUrl so the signed token link is included
   useEffect(() => {
-    if (!result || !formData || webhookFiredRef.current) return;
+    if (!result || !formData || !shareUrl || webhookFiredRef.current) return;
     webhookFiredRef.current = true;
     const payload = {
       ...buildResultsPayload(formData, result),
-      // Overwrite assetUrl with the real signed link once available
-      assetUrl: shareUrl ?? `https://www.usemasterkey.com/homevalue/results`,
+      assetUrl: shareUrl,
     };
     fetch(RESULTS_WEBHOOK_URL, {
       method: "POST",
