@@ -34,6 +34,17 @@ const WHAT_INSIDE = [
   "Current market stats: sale-to-list ratio, DOM, and inventory",
 ];
 
+// Layer 1: client-side phone format check
+function validatePhoneFormat(phone: string): string | null {
+  if (!phone.trim()) return null; // phone is optional — only validate if provided
+  const digits = phone.replace(/\D/g, "");
+  const local = digits.startsWith("1") && digits.length === 11 ? digits.slice(1) : digits;
+  if (local.length !== 10) return "Please enter a valid 10-digit phone number.";
+  if (local[0] === "0" || local[0] === "1") return "Please enter a valid phone number.";
+  if (/^(\d)\1{9}$/.test(local) || local === "1234567890") return "Please enter a valid phone number.";
+  return null;
+}
+
 export default function SellGuidePage() {
   const [form, setForm] = useState({
     firstName: "",
@@ -43,6 +54,7 @@ export default function SellGuidePage() {
     market: "",
   });
   const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -52,7 +64,8 @@ export default function SellGuidePage() {
       form.firstName.trim() &&
       form.email.trim() &&
       emailRegex.test(form.email) &&
-      form.market !== ""
+      form.market !== "" &&
+      !phoneError
     );
   }
 
@@ -65,10 +78,37 @@ export default function SellGuidePage() {
     }
   }
 
+  function handlePhoneChange(v: string) {
+    setForm((f) => ({ ...f, phone: v }));
+    const err = validatePhoneFormat(v);
+    setPhoneError(err ?? "");
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isValid() || isSubmitting) return;
-    setIsSubmitting(true);
+
+    // Layer 2: carrier lookup (only if a phone was provided)
+    if (form.phone.trim()) {
+      setIsSubmitting(true);
+      try {
+        const res = await fetch("/api/validate-phone", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: form.phone }),
+        });
+        const result = await res.json();
+        if (!result.valid) {
+          setPhoneError(result.reason ?? "Please enter a valid phone number.");
+          setIsSubmitting(false);
+          return;
+        }
+      } catch {
+        // API unreachable — fail open, continue
+      }
+    } else {
+      setIsSubmitting(true);
+    }
 
     const selectedMarket = MARKETS.find((m) => m.value === form.market);
 
@@ -170,10 +210,17 @@ export default function SellGuidePage() {
                   <input
                     type="tel"
                     value={form.phone}
-                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
                     placeholder="(805) 555-0100"
-                    className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 focus:outline-none"
+                    className={`w-full px-3 py-2.5 bg-white/10 border rounded-lg text-sm text-white placeholder-white/30 focus:ring-2 focus:outline-none ${
+                      phoneError
+                        ? "border-red-400 focus:ring-red-400 focus:border-red-400"
+                        : "border-white/20 focus:ring-orange-400 focus:border-orange-400"
+                    }`}
                   />
+                  {phoneError && (
+                    <p className="mt-1.5 text-xs text-red-400">{phoneError}</p>
+                  )}
                 </div>
 
                 <div>
