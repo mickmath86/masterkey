@@ -122,6 +122,7 @@ export default function SellGuidePage() {
           phone: form.phone,
           email: form.email,
           market: form.market,
+          marketName: selectedMarket?.label ?? form.market,
           formType: "seller-guide",
           source: "sellguide-page",
           downloadable: `sellers-checklist-${form.market}`,

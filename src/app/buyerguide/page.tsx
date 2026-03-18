@@ -121,6 +121,7 @@ export default function BuyerGuidePage() {
           phone: form.phone,
           email: form.email,
           market: form.market,
+          marketName: selectedMarket?.label ?? form.market,
           formType: "buyer-guide",
           source: "buyerguide-page",
           downloadable: `buyers-playbook-${form.market}`,
