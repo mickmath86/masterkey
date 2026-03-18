@@ -355,8 +355,7 @@ function isStepValid(step: number, data: HomeValueFormData, addressConfirmed: bo
 // ─── Webhook URL ──────────────────────────────────────────────────────────────
 
 const WEBHOOK_URL =
-  process.env.NEXT_PUBLIC_FORM_WEBHOOK_URL ||
-  "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/63dbb140-9990-4cb4-8954-e6d59f3813ce";
+  "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/6be785bb-b2b7-49ed-9c03-efa9948a25ae";
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
