@@ -69,7 +69,7 @@ function HeroSectionContent() {
     setIsSubmitting(true)
 
     try {
-      const webhookUrl = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/94a71d44-448e-4e77-8d2b-3e4b6938ed29'
+      const webhookUrl = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/6b9c47d4-7a44-4e7f-a4b4-b00f0c57e649'
       
       const response = await fetch(webhookUrl, {
         method: 'POST',
