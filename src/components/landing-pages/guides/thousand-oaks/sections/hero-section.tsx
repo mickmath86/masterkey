@@ -121,6 +121,7 @@ function HeroSectionContent() {
           metadata: {
             leadSource: 'Thousand Oaks Neighborhood Guide',
             guide: 'Thousand Oaks',
+            assetUrl: 'https://www.usemasterkey.com/landing/guides/thousand-oaks-guide',
             submittedAt: new Date().toISOString(),
             ...utmParams
           }

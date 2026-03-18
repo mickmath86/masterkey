@@ -340,6 +340,12 @@ function buildResultsPayload(form: HomeValueFormData, val: ValuationResult) {
       )
       .join(" | "),
 
+    // ── Asset / revisit URL ───────────────────────────────────────────────────
+    // Full revisitable link will be added once the signed URL feature is built.
+    // For now this points to the results page with the property address as context.
+    assetUrl: `https://www.usemasterkey.com/homevalue/results`,
+    resultsPageAddress: form.propertyAddress,
+
     // ── Meta ──────────────────────────────────────────────────────────────────
     formType: "home-value-results",
     source: "homevalue-results-page",

@@ -124,6 +124,9 @@ export default function BuyerGuidePage() {
           formType: "buyer-guide",
           source: "buyerguide-page",
           downloadable: `buyers-playbook-${form.market}`,
+          assetUrl: selectedMarket
+            ? `https://www.usemasterkey.com${selectedMarket.file}`
+            : "",
           submittedAt: new Date().toISOString(),
         }),
       });

@@ -125,6 +125,9 @@ export default function SellGuidePage() {
           formType: "seller-guide",
           source: "sellguide-page",
           downloadable: `sellers-checklist-${form.market}`,
+          assetUrl: selectedMarket
+            ? `https://www.usemasterkey.com${selectedMarket.file}`
+            : "",
           submittedAt: new Date().toISOString(),
         }),
       });
