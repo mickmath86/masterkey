@@ -341,10 +341,69 @@ function buildResultsPayload(form: HomeValueFormData, val: ValuationResult) {
       .join(" | "),
 
     // ── Asset / revisit URL ───────────────────────────────────────────────────
-    // Full revisitable link will be added once the signed URL feature is built.
-    // For now this points to the results page with the property address as context.
     assetUrl: `https://www.usemasterkey.com/homevalue/results`,
     resultsPageAddress: form.propertyAddress,
+
+    // ── Full summary (CRM note-ready) ─────────────────────────────────────────
+    fullSummary: [
+      `HOME VALUATION REPORT — ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`,
+      ``,
+      `CONTACT`,
+      `  Name: ${form.firstName} ${form.lastName}`,
+      `  Email: ${form.email}`,
+      `  Phone: ${form.phone || "—"}`,
+      ``,
+      `PROPERTY`,
+      `  Address: ${form.propertyAddress}`,
+      `  Type: ${form.propertyType}`,
+      `  Beds/Baths: ${form.bedrooms}bd / ${form.bathrooms}ba`,
+      `  Living Area: ${form.sqft ? form.sqft + " sqft" : "—"}`,
+      `  Year Built: ${form.yearBuilt || "—"}`,
+      `  Condition: ${form.condition || "—"}`,
+      `  Garage: ${form.garage || "—"}`,
+      `  Features: ${Array.isArray(form.features) ? form.features.join(", ") : form.features || "—"}`,
+      ``,
+      `RECENT UPDATES`,
+      `  Kitchen: ${form.kitchenUpdate || "—"}`,
+      `  Bathrooms: ${form.bathroomUpdate || "—"}`,
+      `  Roof: ${form.roofUpdate || "—"}`,
+      `  HVAC: ${form.hvacUpdate || "—"}`,
+      ``,
+      `SELLER CONTEXT`,
+      `  Timeline: ${form.timeline || "—"}`,
+      `  Reason: ${form.reason || "—"}`,
+      ``,
+      `VALUATION`,
+      `  Estimated Value: $${val.estimatedValue.toLocaleString()}`,
+      `  Range: $${val.valueLow.toLocaleString()} – $${val.valueHigh.toLocaleString()}`,
+      `  Recommended List Price: $${val.sellerStrategy.recommendedListPrice.toLocaleString()}`,
+      `  Estimated Net Proceeds: ${val.sellerStrategy.estimatedNetProceeds}`,
+      `  Confidence: ${val.confidenceScore}% — ${val.confidenceRationale}`,
+      `  Best Time to List: ${val.sellerStrategy.bestTimeToList}`,
+      ``,
+      `MARKET — ${val.market.area}`,
+      `  Condition: ${val.market.marketCondition.replace("_", " ")}`,
+      `  Median Price: $${val.market.medianHomePrice.toLocaleString()} (${val.market.medianPriceChangeYoY > 0 ? "+" : ""}${val.market.medianPriceChangeYoY}% YoY)`,
+      `  Avg Days on Market: ${val.market.avgDaysOnMarket}`,
+      `  List-to-Sale Ratio: ${val.market.listToSaleRatio}%`,
+      `  Months of Supply: ${val.market.monthsOfSupply}`,
+      `  Summary: ${val.market.marketSummary}`,
+      ``,
+      `COMPARABLE SALES`,
+      ...val.comparables.map((c, i) =>
+        `  ${i + 1}. ${c.formattedAddress} — $${c.price.toLocaleString()}` +
+        (c.squareFootage > 0 ? ` ($${Math.round(c.price / c.squareFootage)}/sqft)` : "") +
+        `, ${c.bedrooms}bd/${c.bathrooms}ba, ${c.squareFootage > 0 ? c.squareFootage + " sqft" : ""}, sold ${c.daysOld}d ago, ${c.correlation}% match`
+      ),
+      ``,
+      `VALUE DRIVERS`,
+      ...val.valueDrivers.map((d) =>
+        `  • ${d.factor} (${d.impact}, ${d.estimatedImpact}): ${d.description}`
+      ),
+      ``,
+      `EXECUTIVE SUMMARY`,
+      `  ${val.executiveSummary}`,
+    ].join("\n"),
 
     // ── Meta ──────────────────────────────────────────────────────────────────
     formType: "home-value-results",
