@@ -469,9 +469,26 @@ function HomeValueQuestionnaireContent() {
     if (!isStepValid(6, formData, addressConfirmed)) return;
     setIsSubmitting(true);
     try {
+      // Sign a token now so we can include the revisitable URL in the webhook
+      let assetUrl = "https://www.usemasterkey.com/homevalue/results";
+      try {
+        const tokenRes = await fetch("/api/homevalue/sign-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        const tokenJson = await tokenRes.json();
+        if (tokenJson.token) {
+          assetUrl = `https://www.usemasterkey.com/homevalue/results?token=${tokenJson.token}`;
+        }
+      } catch {
+        // non-blocking — fall back to plain URL
+      }
+
       const payload = {
         ...formData,
         features: formData.features.join(", "),
+        assetUrl,
         submittedAt: new Date().toISOString(),
         formType: "home-value",
         source: "homevalue-questionnaire",
