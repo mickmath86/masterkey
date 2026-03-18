@@ -352,11 +352,6 @@ function isStepValid(step: number, data: HomeValueFormData, addressConfirmed: bo
   }
 }
 
-// ─── Webhook URL ──────────────────────────────────────────────────────────────
-
-const WEBHOOK_URL =
-  "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/6be785bb-b2b7-49ed-9c03-efa9948a25ae";
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 function HomeValueQuestionnaireContent() {
@@ -468,41 +463,10 @@ function HomeValueQuestionnaireContent() {
     if (!isStepValid(6, formData, addressConfirmed)) return;
     setIsSubmitting(true);
     try {
-      // Sign a token now so we can include the revisitable URL in the webhook
-      let assetUrl = "https://www.usemasterkey.com/homevalue/results";
-      try {
-        const tokenRes = await fetch("/api/homevalue/sign-token", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
-        const tokenJson = await tokenRes.json();
-        if (tokenJson.token) {
-          assetUrl = `https://www.usemasterkey.com/homevalue/results?token=${tokenJson.token}`;
-        }
-      } catch {
-        // non-blocking — fall back to plain URL
-      }
-
-      const payload = {
-        ...formData,
-        features: formData.features.join(", "),
-        assetUrl,
-        submittedAt: new Date().toISOString(),
-        formType: "home-value",
-        source: "homevalue-questionnaire",
-      };
-      await fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // continue to results regardless
-    } finally {
-      setIsSubmitting(false);
       sessionStorage.setItem("hv_form", JSON.stringify(formData));
       router.push("/homevalue/results");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
