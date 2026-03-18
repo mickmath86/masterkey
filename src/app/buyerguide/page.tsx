@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import NavbarMinimal from "@/components/navbar-minimal";
 import { Footer } from "@/components/footer";
 import {
@@ -11,28 +10,37 @@ import {
   BookOpenIcon,
   MapPinIcon,
   ChartBarIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/16/solid";
 
 const WEBHOOK_URL =
   process.env.NEXT_PUBLIC_FORM_WEBHOOK_URL ||
   "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/63dbb140-9990-4cb4-8954-e6d59f3813ce";
 
+const MARKETS = [
+  { label: "Thousand Oaks", value: "thousand-oaks", file: "/downloadables/buyerguides/thousand-oaks-buyers-playbook.pdf" },
+  { label: "Ventura", value: "ventura", file: "/downloadables/buyerguides/ventura-buyers-playbook.pdf" },
+  { label: "Camarillo", value: "camarillo", file: "/downloadables/buyerguides/camarillo-buyers-playbook.pdf" },
+  { label: "Westlake Village", value: "westlake-village", file: "/downloadables/buyerguides/westlake-buyers-playbook.pdf" },
+  { label: "Oxnard", value: "oxnard", file: "/downloadables/buyerguides/oxnard-buyers-playbook.pdf" },
+];
+
 const WHAT_INSIDE = [
-  "Step-by-step breakdown of the home buying process in Thousand Oaks",
+  "Step-by-step breakdown of the home buying process",
   "How to get pre-approved and what lenders look for in 2026",
-  "Neighborhood-by-neighborhood guide to the Conejo Valley",
+  "Neighborhood-by-neighborhood guide to the local market",
   "How to write a winning offer in a competitive market",
   "What to expect during escrow, inspections, and closing",
   "Current market stats: median prices, days on market, and trends",
 ];
 
 export default function BuyerGuidePage() {
-  const router = useRouter();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     phone: "",
     email: "",
+    market: "",
   });
   const [emailError, setEmailError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,7 +51,8 @@ export default function BuyerGuidePage() {
     return (
       form.firstName.trim() &&
       form.email.trim() &&
-      emailRegex.test(form.email)
+      emailRegex.test(form.email) &&
+      form.market !== ""
     );
   }
 
@@ -60,27 +69,32 @@ export default function BuyerGuidePage() {
     e.preventDefault();
     if (!isValid() || isSubmitting) return;
     setIsSubmitting(true);
+
+    const selectedMarket = MARKETS.find((m) => m.value === form.market);
+
     try {
       await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
+          firstName: form.firstName,
+          lastName: form.lastName,
+          phone: form.phone,
+          email: form.email,
+          market: form.market,
           formType: "buyer-guide",
           source: "buyerguide-page",
-          downloadable: "masterkey-buyers-playbook",
+          downloadable: `buyers-playbook-${form.market}`,
           submittedAt: new Date().toISOString(),
         }),
       });
     } catch {
-      // still redirect
+      // still redirect to the PDF
     } finally {
       setIsSubmitting(false);
-      const link = document.createElement("a");
-      link.href = "/downloadables/masterkey-buyers-playbook.pdf";
-      link.download = "Masterkey-Buyers-Playbook.pdf";
-      link.click();
-      router.push("/");
+      if (selectedMarket) {
+        window.location.href = selectedMarket.file;
+      }
     }
   }
 
@@ -107,12 +121,13 @@ export default function BuyerGuidePage() {
               </div>
 
               <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight mb-4">
-                The Thousand Oaks<br />
+                Your Local<br />
                 <span className="text-green-400">Buyer&apos;s Playbook</span>
               </h1>
               <p className="text-white/60 text-lg leading-relaxed mb-8 max-w-md">
-                Your step-by-step guide to buying a home in the Conejo Valley with
-                confidence — covering everything from pre-approval to closing day.
+                Your step-by-step guide to buying a home with confidence —
+                covering everything from pre-approval to closing day. Choose
+                your market below.
               </p>
 
               {/* ── Inline form (desktop: above checklist) ── */}
@@ -180,13 +195,38 @@ export default function BuyerGuidePage() {
                   )}
                 </div>
 
+                {/* ── Market dropdown ── */}
+                <div>
+                  <label className="block text-xs font-medium text-white/60 mb-1.5">
+                    Which market are you interested in? <span className="text-red-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={form.market}
+                      onChange={(e) => setForm((f) => ({ ...f, market: e.target.value }))}
+                      required
+                      className="w-full appearance-none px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white focus:ring-2 focus:ring-green-400 focus:border-green-400 focus:outline-none cursor-pointer"
+                    >
+                      <option value="" disabled className="bg-gray-900 text-white/50">
+                        Select a market…
+                      </option>
+                      {MARKETS.map((m) => (
+                        <option key={m.value} value={m.value} className="bg-gray-900 text-white">
+                          {m.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   disabled={!isValid() || isSubmitting}
                   className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors text-sm"
                 >
-                  <ArrowDownTrayIcon className="w-4 h-4" />
-                  {isSubmitting ? "Preparing your download…" : "Download the Buyer's Playbook — Free"}
+                  <BookOpenIcon className="w-4 h-4" />
+                  {isSubmitting ? "Opening your playbook…" : "Get the Buyer\u2019s Playbook — Free"}
                 </button>
 
                 <p className="text-xs text-white/30 text-center leading-relaxed">
@@ -215,7 +255,7 @@ export default function BuyerGuidePage() {
                 <div className="absolute -inset-1 rounded-xl bg-green-500/20 blur-xl" />
                 <img
                   src="/buyers-playbook-cover.jpg"
-                  alt="The Thousand Oaks Buyer's Playbook cover"
+                  alt="The Buyer's Playbook cover"
                   className="relative w-64 sm:w-72 lg:w-80 rounded-xl shadow-2xl border border-white/10"
                   style={{ transform: "perspective(800px) rotateY(-4deg) rotateX(2deg)" }}
                 />
@@ -232,18 +272,19 @@ export default function BuyerGuidePage() {
       <section className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <h2 className="text-2xl font-bold text-gray-950 mb-3">
-            Built for Conejo Valley buyers
+            Built for Ventura County buyers
           </h2>
           <p className="text-gray-500 text-sm mb-10 max-w-xl mx-auto">
             This isn&apos;t a generic guide. Every stat, tip, and strategy is tailored
-            to the Thousand Oaks, Westlake Village, and Newbury Park markets.
+            to your specific market — Thousand Oaks, Ventura, Camarillo,
+            Westlake Village, or Oxnard.
           </p>
           <div className="grid sm:grid-cols-3 gap-6">
             {[
               {
                 icon: ChartBarIcon,
                 title: "2026 Market Data",
-                desc: "Current median prices, inventory trends, and days-on-market stats for every Conejo Valley neighborhood.",
+                desc: "Current median prices, inventory trends, and days-on-market stats for your chosen market.",
               },
               {
                 icon: BookOpenIcon,
@@ -253,7 +294,7 @@ export default function BuyerGuidePage() {
               {
                 icon: MapPinIcon,
                 title: "Neighborhood Profiles",
-                desc: "School ratings, commute times, price ranges, and lifestyle notes for each city in the valley.",
+                desc: "School ratings, commute times, price ranges, and lifestyle notes for each neighborhood.",
               },
             ].map((item) => (
               <div key={item.title} className="bg-gray-50 rounded-2xl border border-gray-100 p-6 text-left">
@@ -273,12 +314,12 @@ export default function BuyerGuidePage() {
               No spam, ever
             </span>
             <span className="flex items-center gap-1.5">
-              <ArrowDownTrayIcon className="w-4 h-4 text-green-500" />
-              Instant PDF download
+              <BookOpenIcon className="w-4 h-4 text-green-500" />
+              View instantly in your browser
             </span>
             <span className="flex items-center gap-1.5">
               <MapPinIcon className="w-4 h-4 text-green-500" />
-              Conejo Valley–specific data
+              Market-specific data
             </span>
           </div>
         </div>

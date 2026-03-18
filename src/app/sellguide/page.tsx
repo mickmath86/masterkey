@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import NavbarMinimal from "@/components/navbar-minimal";
 import { Footer } from "@/components/footer";
 import {
@@ -12,11 +11,20 @@ import {
   CurrencyDollarIcon,
   MapPinIcon,
   ChartBarIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/16/solid";
 
 const WEBHOOK_URL =
   process.env.NEXT_PUBLIC_FORM_WEBHOOK_URL ||
   "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/63dbb140-9990-4cb4-8954-e6d59f3813ce";
+
+const MARKETS = [
+  { label: "Thousand Oaks", value: "thousand-oaks", file: "/downloadables/sellguides/thousand-oaks-sellers-checklist.pdf" },
+  { label: "Ventura", value: "ventura", file: "/downloadables/sellguides/ventura-sellers-checklist.pdf" },
+  { label: "Camarillo", value: "camarillo", file: "/downloadables/sellguides/camarillo-sellers-checklist.pdf" },
+  { label: "Westlake Village", value: "westlake-village", file: "/downloadables/sellguides/westlake-sellers-checklist.pdf" },
+  { label: "Oxnard", value: "oxnard", file: "/downloadables/sellguides/oxnard-sellers-checklist.pdf" },
+];
 
 const WHAT_INSIDE = [
   "Pre-listing prep checklist — what to fix, what to skip",
@@ -24,16 +32,16 @@ const WHAT_INSIDE = [
   "How to price your home to generate multiple offers",
   "Marketing your listing: photography, MLS timing, and social strategy",
   "Navigating offers, contingencies, and counter-offers",
-  "Current Thousand Oaks market stats: sale-to-list ratio, DOM, and inventory",
+  "Current market stats: sale-to-list ratio, DOM, and inventory",
 ];
 
 export default function SellGuidePage() {
-  const router = useRouter();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     phone: "",
     email: "",
+    market: "",
   });
   const [emailError, setEmailError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +52,8 @@ export default function SellGuidePage() {
     return (
       form.firstName.trim() &&
       form.email.trim() &&
-      emailRegex.test(form.email)
+      emailRegex.test(form.email) &&
+      form.market !== ""
     );
   }
 
@@ -61,27 +70,32 @@ export default function SellGuidePage() {
     e.preventDefault();
     if (!isValid() || isSubmitting) return;
     setIsSubmitting(true);
+
+    const selectedMarket = MARKETS.find((m) => m.value === form.market);
+
     try {
       await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
+          firstName: form.firstName,
+          lastName: form.lastName,
+          phone: form.phone,
+          email: form.email,
+          market: form.market,
           formType: "seller-guide",
           source: "sellguide-page",
-          downloadable: "masterkey-sellers-checklist",
+          downloadable: `sellers-checklist-${form.market}`,
           submittedAt: new Date().toISOString(),
         }),
       });
     } catch {
-      // still redirect
+      // still redirect to the PDF
     } finally {
       setIsSubmitting(false);
-      const link = document.createElement("a");
-      link.href = "/downloadables/masterkey-sellers-checklist.pdf";
-      link.download = "Masterkey-Sellers-Prep-Checklist.pdf";
-      link.click();
-      router.push("/");
+      if (selectedMarket) {
+        window.location.href = selectedMarket.file;
+      }
     }
   }
 
@@ -108,12 +122,13 @@ export default function SellGuidePage() {
               </div>
 
               <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight mb-4">
-                The Thousand Oaks<br />
+                Your Local<br />
                 <span className="text-orange-400">Seller&apos;s Prep Checklist</span>
               </h1>
               <p className="text-white/60 text-lg leading-relaxed mb-8 max-w-md">
-                Your complete guide to selling your home in the Conejo Valley for
-                top dollar — from prep and staging to closing with confidence.
+                Your complete guide to selling your home for top dollar — from
+                prep and staging to closing with confidence. Choose your market
+                below.
               </p>
 
               {/* ── Inline form (desktop: above checklist) ── */}
@@ -181,13 +196,38 @@ export default function SellGuidePage() {
                   )}
                 </div>
 
+                {/* ── Market dropdown ── */}
+                <div>
+                  <label className="block text-xs font-medium text-white/60 mb-1.5">
+                    Which market are you interested in? <span className="text-red-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={form.market}
+                      onChange={(e) => setForm((f) => ({ ...f, market: e.target.value }))}
+                      required
+                      className="w-full appearance-none px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-400 focus:border-orange-400 focus:outline-none cursor-pointer"
+                    >
+                      <option value="" disabled className="bg-gray-900 text-white/50">
+                        Select a market…
+                      </option>
+                      {MARKETS.map((m) => (
+                        <option key={m.value} value={m.value} className="bg-gray-900 text-white">
+                          {m.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   disabled={!isValid() || isSubmitting}
                   className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors text-sm"
                 >
-                  <ArrowDownTrayIcon className="w-4 h-4" />
-                  {isSubmitting ? "Preparing your download…" : "Download the Seller's Prep Checklist — Free"}
+                  <ClipboardDocumentListIcon className="w-4 h-4" />
+                  {isSubmitting ? "Opening your checklist…" : "Get the Seller\u2019s Prep Checklist — Free"}
                 </button>
 
                 <p className="text-xs text-white/30 text-center leading-relaxed">
@@ -216,7 +256,7 @@ export default function SellGuidePage() {
                 <div className="absolute -inset-1 rounded-xl bg-orange-500/20 blur-xl" />
                 <img
                   src="/sellers-checklist-cover.jpg"
-                  alt="The Thousand Oaks Seller's Prep Checklist cover"
+                  alt="The Seller's Prep Checklist cover"
                   className="relative w-64 sm:w-72 lg:w-80 rounded-xl shadow-2xl border border-white/10"
                   style={{ transform: "perspective(800px) rotateY(-4deg) rotateX(2deg)" }}
                 />
@@ -233,11 +273,12 @@ export default function SellGuidePage() {
       <section className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <h2 className="text-2xl font-bold text-gray-950 mb-3">
-            Built for Conejo Valley sellers
+            Built for Ventura County sellers
           </h2>
           <p className="text-gray-500 text-sm mb-10 max-w-xl mx-auto">
             Generic advice loses money. This checklist is built around what actually
-            moves homes in Thousand Oaks, Westlake Village, and Newbury Park.
+            moves homes in your specific market — Thousand Oaks, Ventura, Camarillo,
+            Westlake Village, or Oxnard.
           </p>
           <div className="grid sm:grid-cols-3 gap-6">
             {[
@@ -254,7 +295,7 @@ export default function SellGuidePage() {
               {
                 icon: ChartBarIcon,
                 title: "Live Market Context",
-                desc: "2026 sale-to-list ratios, days on market, and inventory data specific to the Conejo Valley.",
+                desc: "2026 sale-to-list ratios, days on market, and inventory data specific to your chosen market.",
               },
             ].map((item) => (
               <div key={item.title} className="bg-gray-50 rounded-2xl border border-gray-100 p-6 text-left">
@@ -274,12 +315,12 @@ export default function SellGuidePage() {
               No spam, ever
             </span>
             <span className="flex items-center gap-1.5">
-              <ArrowDownTrayIcon className="w-4 h-4 text-orange-500" />
-              Instant PDF download
+              <ClipboardDocumentListIcon className="w-4 h-4 text-orange-500" />
+              View instantly in your browser
             </span>
             <span className="flex items-center gap-1.5">
               <MapPinIcon className="w-4 h-4 text-orange-500" />
-              Conejo Valley–specific data
+              Market-specific data
             </span>
           </div>
         </div>
