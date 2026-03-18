@@ -1,50 +1,74 @@
 /**
  * POST /api/homevalue/sign-token
  *
- * Receives the home value form data after a successful valuation,
- * signs it with HMAC-SHA256 using HOMEVALUE_TOKEN_SECRET, and returns
- * a URL-safe token valid for 30 days.
+ * Saves form data to Supabase with a short UUID session ID,
+ * signs the ID with HMAC-SHA256, and returns a compact token.
  *
- * Token format: base64url(payload) + "." + base64url(signature)
+ * Token format: base64url(HMAC-SHA256(id)) + "." + id
+ * Example: xK9mP2qR_abc123  (~50 chars vs ~800 chars previously)
  *
- * The secret never leaves the server.
+ * The full form data lives in Supabase — the token just proves
+ * the ID hasn't been tampered with.
  */
 
-import { createHmac } from "crypto";
+import { createHmac, randomUUID } from "crypto";
 
 const TOKEN_TTL_DAYS = 30;
 
-function toBase64url(input: string): string {
-  return Buffer.from(input)
+function toBase64url(buf: Buffer): string {
+  return buf
     .toString("base64")
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/, "");
 }
 
+function signId(id: string, secret: string): string {
+  const sig = createHmac("sha256", secret).update(id).digest();
+  return toBase64url(sig);
+}
+
 export async function POST(request: Request) {
   const secret = process.env.HOMEVALUE_TOKEN_SECRET;
-  if (!secret) {
-    return Response.json({ error: "Token secret not configured" }, { status: 500 });
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!secret || !supabaseUrl || !supabaseKey) {
+    return Response.json({ error: "Server configuration error" }, { status: 500 });
   }
 
   try {
     const formData = await request.json();
 
+    const id = randomUUID(); // e.g. "550e8400-e29b-41d4-a716-446655440000"
     const now = Math.floor(Date.now() / 1000);
     const exp = now + TOKEN_TTL_DAYS * 24 * 60 * 60;
+    const expiresAt = new Date(exp * 1000).toISOString();
 
-    const payload = JSON.stringify({ iss: now, exp, d: formData });
-    const encodedPayload = toBase64url(payload);
+    // Save to Supabase
+    const dbRes = await fetch(
+      `${supabaseUrl}/rest/v1/homevalue_sessions`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": supabaseKey,
+          "Authorization": `Bearer ${supabaseKey}`,
+          "Prefer": "return=minimal",
+        },
+        body: JSON.stringify({ id, form_data: formData, expires_at: expiresAt }),
+      }
+    );
 
-    const sig = createHmac("sha256", secret).update(encodedPayload).digest();
-    const encodedSig = sig
-      .toString("base64")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
+    if (!dbRes.ok) {
+      const errText = await dbRes.text();
+      console.error("[sign-token] Supabase insert failed:", errText);
+      return Response.json({ error: "Failed to save session" }, { status: 500 });
+    }
 
-    const token = `${encodedPayload}.${encodedSig}`;
+    // Sign the ID — token = sig.id
+    const sig = signId(id, secret);
+    const token = `${sig}.${id}`;
 
     return Response.json({ token, exp });
   } catch (err) {

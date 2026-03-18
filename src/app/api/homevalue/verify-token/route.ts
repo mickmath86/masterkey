@@ -1,8 +1,8 @@
 /**
  * POST /api/homevalue/verify-token
  *
- * Receives a token string, verifies the HMAC-SHA256 signature using
- * HOMEVALUE_TOKEN_SECRET, checks expiry, and returns the decoded form data.
+ * Receives a short token (sig.id), verifies the HMAC signature,
+ * fetches form data from Supabase, and checks expiry.
  *
  * Returns:
  *   { valid: true, data: { ...formFields } }
@@ -11,15 +11,25 @@
 
 import { createHmac, timingSafeEqual } from "crypto";
 
-function fromBase64url(input: string): string {
-  const base64 = input.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
-  return Buffer.from(padded, "base64").toString("utf8");
+function toBase64url(buf: Buffer): string {
+  return buf
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+function signId(id: string, secret: string): string {
+  const sig = createHmac("sha256", secret).update(id).digest();
+  return toBase64url(sig);
 }
 
 export async function POST(request: Request) {
   const secret = process.env.HOMEVALUE_TOKEN_SECRET;
-  if (!secret) {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!secret || !supabaseUrl || !supabaseKey) {
     return Response.json({ valid: false, reason: "invalid" }, { status: 500 });
   }
 
@@ -30,25 +40,19 @@ export async function POST(request: Request) {
       return Response.json({ valid: false, reason: "invalid" });
     }
 
-    const dotIndex = token.lastIndexOf(".");
+    // Token format: sig.id (sig is base64url of HMAC, id is UUID)
+    const dotIndex = token.indexOf(".");
     if (dotIndex === -1) {
       return Response.json({ valid: false, reason: "invalid" });
     }
 
-    const encodedPayload = token.slice(0, dotIndex);
-    const encodedSig = token.slice(dotIndex + 1);
+    const receivedSig = token.slice(0, dotIndex);
+    const id = token.slice(dotIndex + 1);
 
-    // Re-compute expected signature
-    const expectedSigB64 = createHmac("sha256", secret)
-      .update(encodedPayload)
-      .digest("base64")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
-
-    // Constant-time comparison to prevent timing attacks
-    const expectedBuf = Buffer.from(expectedSigB64);
-    const receivedBuf = Buffer.from(encodedSig);
+    // Verify HMAC signature
+    const expectedSig = signId(id, secret);
+    const expectedBuf = Buffer.from(expectedSig);
+    const receivedBuf = Buffer.from(receivedSig);
 
     if (
       expectedBuf.length !== receivedBuf.length ||
@@ -57,21 +61,35 @@ export async function POST(request: Request) {
       return Response.json({ valid: false, reason: "invalid" });
     }
 
-    // Decode and parse payload
-    let parsed: { iss: number; exp: number; d: Record<string, unknown> };
-    try {
-      parsed = JSON.parse(fromBase64url(encodedPayload));
-    } catch {
+    // Fetch form data from Supabase
+    const dbRes = await fetch(
+      `${supabaseUrl}/rest/v1/homevalue_sessions?id=eq.${encodeURIComponent(id)}&select=form_data,expires_at`,
+      {
+        headers: {
+          "apikey": supabaseKey,
+          "Authorization": `Bearer ${supabaseKey}`,
+        },
+      }
+    );
+
+    if (!dbRes.ok) {
+      console.error("[verify-token] Supabase fetch failed:", await dbRes.text());
       return Response.json({ valid: false, reason: "invalid" });
     }
 
+    const rows = await dbRes.json();
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return Response.json({ valid: false, reason: "invalid" });
+    }
+
+    const { form_data, expires_at } = rows[0];
+
     // Check expiry
-    const now = Math.floor(Date.now() / 1000);
-    if (!parsed.exp || now > parsed.exp) {
+    if (!expires_at || Date.now() > new Date(expires_at).getTime()) {
       return Response.json({ valid: false, reason: "expired" });
     }
 
-    return Response.json({ valid: true, data: parsed.d, exp: parsed.exp });
+    return Response.json({ valid: true, data: form_data });
   } catch (err) {
     console.error("[verify-token] error:", err);
     return Response.json({ valid: false, reason: "invalid" });
