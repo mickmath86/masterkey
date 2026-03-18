@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/button";
 import type { ValuationResult } from "@/app/api/homevalue/analyze/route";
@@ -15,6 +16,8 @@ import {
   ExclamationCircleIcon,
   ShieldCheckIcon,
   SparklesIcon,
+  ClipboardDocumentIcon,
+  ClockIcon,
 } from "@heroicons/react/16/solid";
 
 // ─── Form data type (mirrors questionnaire) ───────────────────────────────────
@@ -260,6 +263,28 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+// ─── Expired state ───────────────────────────────────────────────────────────
+
+function ExpiredState() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
+      <div className="text-center max-w-md">
+        <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
+          <ClockIcon className="w-8 h-8 text-amber-400" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-950 mb-3">
+          This link has expired
+        </h2>
+        <p className="text-gray-500 mb-6 text-sm leading-relaxed">
+          Home valuation links are valid for 30 days. Market conditions change, so
+          we&apos;d recommend getting a fresh valuation with current data anyway.
+        </p>
+        <Button href="/homevalue/questionnaire">Get a new valuation</Button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Results webhook ─────────────────────────────────────────────────────────
 
 const RESULTS_WEBHOOK_URL =
@@ -414,12 +439,18 @@ function buildResultsPayload(form: HomeValueFormData, val: ValuationResult) {
 
 // ─── Main results page ────────────────────────────────────────────────────────
 
-export default function HomeValueResultsPage() {
+// ─── Inner component (needs useSearchParams) ──────────────────────────────────
+
+function HomeValueResultsInner() {
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState<HomeValueFormData | null>(null);
   const [result, setResult] = useState<ValuationResult | null>(null);
-  const [status, setStatus] = useState<"loading" | "done" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "done" | "error" | "expired">("loading");
   const [visible, setVisible] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const webhookFiredRef = useRef(false);
+  const tokenSignedRef = useRef(false);
 
   async function fetchValuation(data: HomeValueFormData) {
     setStatus("loading");
@@ -441,7 +472,34 @@ export default function HomeValueResultsPage() {
     }
   }
 
+  // Load form data — token path first, then sessionStorage fallback
   useEffect(() => {
+    const token = searchParams.get("token");
+
+    if (token) {
+      // Revisit via signed link
+      fetch("/api/homevalue/verify-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      })
+        .then((r) => r.json())
+        .then((res) => {
+          if (res.valid && res.data) {
+            const data = res.data as HomeValueFormData;
+            setFormData(data);
+            fetchValuation(data);
+          } else if (res.reason === "expired") {
+            setStatus("expired");
+          } else {
+            setStatus("error");
+          }
+        })
+        .catch(() => setStatus("error"));
+      return;
+    }
+
+    // No token — normal session path
     const raw = sessionStorage.getItem("hv_form");
     if (!raw) {
       setStatus("error");
@@ -456,21 +514,65 @@ export default function HomeValueResultsPage() {
     }
   }, []);
 
-  // Fire results webhook once — after both form data and valuation are available
+  // After valuation loads: sign a token and build the shareable URL
+  useEffect(() => {
+    if (!formData || status !== "done" || tokenSignedRef.current) return;
+    tokenSignedRef.current = true;
+
+    fetch("/api/homevalue/sign-token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    })
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.token) {
+          const url = `${window.location.origin}/homevalue/results?token=${res.token}`;
+          setShareUrl(url);
+        }
+      })
+      .catch(() => { /* non-blocking */ });
+  }, [formData, status]);
+
+  async function handleCopyLink() {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // fallback: select a temp input
+      const el = document.createElement("input");
+      el.value = shareUrl;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  }
+
+  // Fire results webhook once — after both form data, valuation, and share URL are ready
   useEffect(() => {
     if (!result || !formData || webhookFiredRef.current) return;
     webhookFiredRef.current = true;
-    const payload = buildResultsPayload(formData, result);
+    const payload = {
+      ...buildResultsPayload(formData, result),
+      // Overwrite assetUrl with the real signed link once available
+      assetUrl: shareUrl ?? `https://www.usemasterkey.com/homevalue/results`,
+    };
     fetch(RESULTS_WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     }).catch((err) => console.warn("Results webhook failed (non-blocking):", err));
-  }, [result, formData]);
+  }, [result, formData, shareUrl]);
 
   // ── States ───────────────────────────────────────────────────────────────────
 
   if (status === "loading") return <LoadingState address={formData?.propertyAddress} />;
+  if (status === "expired") return <ExpiredState />;
   if (status === "error" || !result || !formData) {
     return <ErrorState onRetry={() => formData && fetchValuation(formData)} />;
   }
@@ -582,6 +684,17 @@ export default function HomeValueResultsPage() {
                 </div>
                 <p className="text-xs text-white/40 mt-2">{result.confidenceRationale}</p>
               </div>
+
+              {/* Copy shareable link */}
+              {shareUrl && (
+                <button
+                  onClick={handleCopyLink}
+                  className="flex items-center gap-2 text-xs text-white/60 hover:text-white transition-colors mt-4 group"
+                >
+                  <ClipboardDocumentIcon className="w-4 h-4 flex-shrink-0 group-hover:text-blue-300 transition-colors" />
+                  {copied ? "Link copied!" : "Copy link to revisit these results"}
+                </button>
+              )}
             </div>
 
             {/* Right — executive summary */}
@@ -1005,5 +1118,15 @@ export default function HomeValueResultsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── Page export — Suspense boundary required for useSearchParams ─────────────
+
+export default function HomeValueResultsPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <HomeValueResultsInner />
+    </Suspense>
   );
 }
