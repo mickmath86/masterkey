@@ -14,8 +14,7 @@ import {
 } from "@heroicons/react/16/solid";
 
 const WEBHOOK_URL =
-  process.env.NEXT_PUBLIC_FORM_WEBHOOK_URL ||
-  "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/63dbb140-9990-4cb4-8954-e6d59f3813ce";
+  "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/5457cc0b-5390-40cf-bee9-871752c5f7a3";
 
 const MARKETS = [
   { label: "Thousand Oaks", value: "thousand-oaks", file: "/downloadables/buyerguides/thousand-oaks-buyers-playbook.pdf" },
