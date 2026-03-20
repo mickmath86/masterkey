@@ -44,7 +44,7 @@ export function HeroSection() {
                                             asChild
                                             size="lg"
                                             className="pl-4 pr-2.5">
-                                            <Link href="/questionnaire/listing-presentation">
+                                            <Link href="/homevalue">
                                                 <span className="text-nowrap">Get Seller's Report</span>
                                                 <ChevronRight className="opacity-50" />
                                             </Link>
