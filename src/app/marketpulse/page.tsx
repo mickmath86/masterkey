@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import MarketPulseWrapper from "@/components/marketpulse/MarketPulseWrapper";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "MarketPulse | MasterKey Real Estate",
   description:
