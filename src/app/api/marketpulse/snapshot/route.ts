@@ -11,15 +11,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import type { SubmarketKey, MarketSnapshotResponse } from "@/lib/types";
 
 // ─── Submarket config ───────────────────────────────────────────────────────
-export type SubmarketKey =
-  | "thousand-oaks"
-  | "newbury-park"
-  | "ventura"
-  | "camarillo"
-  | "westlake"
-  | "oxnard";
 
 interface SubmarketConfig {
   label: string;
@@ -66,43 +60,6 @@ const SUBMARKETS: Record<SubmarketKey, SubmarketConfig> = {
     state: "CA",
   },
 };
-
-// ─── Response shape ─────────────────────────────────────────────────────────
-export interface MarketSnapshotResponse {
-  submarket: SubmarketKey;
-  label: string;
-  // Key metrics
-  medianPrice: number | null;
-  medianPriceChangePct: number | null;
-  avgDaysOnMarket: number | null;
-  activeListings: number | null;
-  pricePerSqft: number | null;
-  monthsOfSupply: number | null;
-  // Market balance: "buyers" | "balanced" | "sellers"
-  marketBalance: "buyers" | "balanced" | "sellers";
-  // AI summary text
-  aiSummary: string;
-  // Price history by property type
-  priceHistory: {
-    month: string;
-    sfr: number | null;
-    condo: number | null;
-    townhome: number | null;
-  }[];
-  // Recent comps
-  comps: {
-    address: string;
-    price: number;
-    sqft: number | null;
-    pricePerSqft: number | null;
-    bedrooms: number | null;
-    bathrooms: number | null;
-    daysOld: number | null;
-    status: "Active" | "Sold" | "Pending";
-    propertyType: string | null;
-  }[];
-  fetchedAt: string;
-}
 
 // ─── In-memory cache ─────────────────────────────────────────────────────────
 const cache = new Map<

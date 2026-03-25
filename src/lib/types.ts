@@ -121,6 +121,49 @@ export interface Neighborhood {
   sort_order: number;
 }
 
+/* ═══════════════════════════════════════════════════════
+   MarketPulse API types (shared between client + server)
+   ═══════════════════════════════════════════════════════ */
+
+export type SubmarketKey =
+  | "thousand-oaks"
+  | "newbury-park"
+  | "ventura"
+  | "camarillo"
+  | "westlake"
+  | "oxnard";
+
+export interface MarketSnapshotResponse {
+  submarket: SubmarketKey;
+  label: string;
+  medianPrice: number | null;
+  medianPriceChangePct: number | null;
+  avgDaysOnMarket: number | null;
+  activeListings: number | null;
+  pricePerSqft: number | null;
+  monthsOfSupply: number | null;
+  marketBalance: "buyers" | "balanced" | "sellers";
+  aiSummary: string;
+  priceHistory: {
+    month: string;
+    sfr: number | null;
+    condo: number | null;
+    townhome: number | null;
+  }[];
+  comps: {
+    address: string;
+    price: number;
+    sqft: number | null;
+    pricePerSqft: number | null;
+    bedrooms: number | null;
+    bathrooms: number | null;
+    daysOld: number | null;
+    status: "Active" | "Sold" | "Pending";
+    propertyType: string | null;
+  }[];
+  fetchedAt: string;
+}
+
 export interface Playbook {
   id: string;
   title: string;

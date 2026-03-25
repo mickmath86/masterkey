@@ -22,19 +22,11 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import type { MarketSnapshotResponse } from "@/app/api/marketpulse/snapshot/route";
+import type { MarketSnapshotResponse, SubmarketKey } from "@/lib/types";
 
 /* ═══════════════════════════════════════════════════════
    CONSTANTS
    ═══════════════════════════════════════════════════════ */
-type SubmarketKey =
-  | "thousand-oaks"
-  | "newbury-park"
-  | "ventura"
-  | "camarillo"
-  | "westlake"
-  | "oxnard";
-
 const SUBMARKETS: { key: SubmarketKey; label: string }[] = [
   { key: "thousand-oaks", label: "Thousand Oaks" },
   { key: "newbury-park", label: "Newbury Park" },
