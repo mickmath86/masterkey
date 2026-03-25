@@ -1,14 +1,17 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ArrowUpRight,
   ArrowDownRight,
   ChevronDown,
-  ExternalLink,
   Check,
+  TrendingUp,
+  Home,
   Clock,
-  Info,
+  BarChart2,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import {
   LineChart,
@@ -19,487 +22,543 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
-import type {
-  MarketKey,
-  Market,
-  MarketSnapshot,
-  Comp,
-  PriceHistoryRow,
-  TrendingNeighborhood,
-  RecentActivityItem,
-  CountyIndicator,
-  PropertyTypeBreakdown,
-  NewsArticle as DBNewsArticle,
-} from "@/lib/types";
-import {
-  getMarkets,
-  getAllLatestSnapshots,
-  getComps,
-  getPriceHistory,
-  getTrendingNeighborhoods,
-  getRecentActivity,
-  getCountyIndicators,
-  getPropertyTypeBreakdown,
-  getNewsArticles,
-} from "@/lib/queries";
+import type { MarketSnapshotResponse } from "@/app/api/marketpulse/snapshot/route";
 
 /* ═══════════════════════════════════════════════════════
-   LOCAL UI TYPES (used by sub-components)
+   CONSTANTS
    ═══════════════════════════════════════════════════════ */
-type PropertyType = "sfr" | "condo" | "townhome";
-type TimeframeKey = "1M" | "3M" | "6M" | "1Y" | "5Y" | "ALL";
+type SubmarketKey =
+  | "thousand-oaks"
+  | "newbury-park"
+  | "ventura"
+  | "camarillo"
+  | "westlake"
+  | "oxnard";
 
-interface MonthlyPriceData {
-  month: string;
-  sfr: number;
-  condo: number;
-  townhome: number;
-}
-
-/* ═══════════════════════════════════════════════════════
-   UI CONSTANTS (kept — not data)
-   ═══════════════════════════════════════════════════════ */
-const PROPERTY_TYPE_CONFIG: Record<PropertyType, { label: string; color: string }> = {
-  sfr: { label: "Single Family", color: "#1A4D4D" },
-  condo: { label: "Condo", color: "#2A7F7F" },
-  townhome: { label: "Townhome", color: "#5BA8A8" },
-};
-
-const TIMEFRAMES: { key: TimeframeKey; label: string; months: number | null }[] = [
-  { key: "1M", label: "1M", months: 1 },
-  { key: "3M", label: "3M", months: 3 },
-  { key: "6M", label: "6M", months: 6 },
-  { key: "1Y", label: "1Y", months: 12 },
-  { key: "5Y", label: "5Y", months: 60 },
-  { key: "ALL", label: "All", months: null },
+const SUBMARKETS: { key: SubmarketKey; label: string }[] = [
+  { key: "thousand-oaks", label: "Thousand Oaks" },
+  { key: "newbury-park", label: "Newbury Park" },
+  { key: "ventura", label: "Ventura" },
+  { key: "camarillo", label: "Camarillo" },
+  { key: "westlake", label: "Westlake Village" },
+  { key: "oxnard", label: "Oxnard" },
 ];
 
+type PropertyType = "sfr" | "condo" | "townhome";
+type TimeframeKey = "1M" | "3M" | "6M" | "1Y" | "ALL";
+
+const PROPERTY_TYPE_CONFIG: Record<
+  PropertyType,
+  { label: string; color: string }
+> = {
+  sfr: { label: "Single Family", color: "#5BA8A8" },
+  condo: { label: "Condo", color: "#2A7F7F" },
+  townhome: { label: "Townhome", color: "#1A4D4D" },
+};
+
+const TIMEFRAMES: { key: TimeframeKey; label: string; months: number | null }[] =
+  [
+    { key: "1M", label: "30D", months: 1 },
+    { key: "3M", label: "3M", months: 3 },
+    { key: "6M", label: "6M", months: 6 },
+    { key: "1Y", label: "1Y", months: 12 },
+    { key: "ALL", label: "All", months: null },
+  ];
+
+const COMP_STATUS_STYLES: Record<
+  "Active" | "Sold" | "Pending",
+  { bg: string; text: string; dot: string }
+> = {
+  Active: {
+    bg: "bg-emerald-900/30",
+    text: "text-emerald-400",
+    dot: "bg-emerald-400",
+  },
+  Sold: {
+    bg: "bg-blue-900/30",
+    text: "text-blue-400",
+    dot: "bg-blue-400",
+  },
+  Pending: {
+    bg: "bg-amber-900/30",
+    text: "text-amber-400",
+    dot: "bg-amber-400",
+  },
+};
+
 /* ═══════════════════════════════════════════════════════
-   HELPER: format dollars
+   HELPERS
    ═══════════════════════════════════════════════════════ */
-function formatPrice(n: number): string {
+function fmt$(n: number | null | undefined): string {
+  if (n == null) return "—";
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
   if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
   return `$${n}`;
 }
 
 /* ═══════════════════════════════════════════════════════
-   SENTIMENT GAUGE (arc)
+   HEAT BAR — Market Balance Indicator
    ═══════════════════════════════════════════════════════ */
-interface SentimentGaugeProps {
-  score: number; // 0–100
-  saleToListRatio?: number | null;
-  marketCompetitiveness?: string | null;
-}
-
-function SentimentGauge({ score, saleToListRatio, marketCompetitiveness }: SentimentGaugeProps) {
-  const clampedScore = Math.max(0, Math.min(100, score));
-
-  // Arc math
-  const cx = 80, cy = 80, r = 60;
-  const startAngle = 180;
-  const endAngle = 0;
-  const totalArcDeg = 180;
-  const fillDeg = (clampedScore / 100) * totalArcDeg;
-
-  function polarToXY(cx: number, cy: number, r: number, angleDeg: number) {
-    const rad = (angleDeg * Math.PI) / 180;
-    return { x: cx + r * Math.cos(rad), y: cy - r * Math.sin(rad) };
+function MarketHeatBar({
+  monthsOfSupply,
+  balance,
+}: {
+  monthsOfSupply: number | null;
+  balance: "buyers" | "balanced" | "sellers";
+}) {
+  // Position of needle: 0 = far left (buyers), 100 = far right (sellers)
+  // months < 4 → sellers (right), months > 6 → buyers (left), 4–6 → balanced (center)
+  let position = 50; // default balanced
+  if (monthsOfSupply !== null) {
+    if (monthsOfSupply <= 0) position = 98;
+    else if (monthsOfSupply >= 10) position = 2;
+    else {
+      // Linear interpolation: 0 mo → 100 (sellers), 10 mo → 0 (buyers)
+      position = Math.max(2, Math.min(98, 100 - (monthsOfSupply / 10) * 100));
+    }
   }
 
-  const bgStart = polarToXY(cx, cy, r, startAngle);
-  const bgEnd = polarToXY(cx, cy, r, endAngle);
-  const fillEnd = polarToXY(cx, cy, r, startAngle - fillDeg);
-  const largeArcBg = totalArcDeg > 180 ? 1 : 0;
-  const largeArcFill = fillDeg > 180 ? 1 : 0;
+  const balanceLabel =
+    balance === "sellers"
+      ? "Seller's Market"
+      : balance === "buyers"
+      ? "Buyer's Market"
+      : "Balanced Market";
 
-  const bgPath = `M ${bgStart.x} ${bgStart.y} A ${r} ${r} 0 ${largeArcBg} 1 ${bgEnd.x} ${bgEnd.y}`;
-  const fillPath = fillDeg > 0
-    ? `M ${bgStart.x} ${bgStart.y} A ${r} ${r} 0 ${largeArcFill} 1 ${fillEnd.x} ${fillEnd.y}`
-    : "";
-
-  const label =
-    clampedScore >= 70 ? "Seller's Market" :
-    clampedScore >= 55 ? "Slight Seller Advantage" :
-    clampedScore >= 45 ? "Balanced Market" :
-    clampedScore >= 30 ? "Slight Buyer Advantage" :
-    "Buyer's Market";
-
-  const color =
-    clampedScore >= 70 ? "#1A4D4D" :
-    clampedScore >= 55 ? "#2A7F7F" :
-    clampedScore >= 45 ? "#5BA8A8" :
-    clampedScore >= 30 ? "#E5A550" :
-    "#D97706";
-
-  // Tooltip details
-  const tooltipLines: string[] = [];
-  if (saleToListRatio != null) {
-    tooltipLines.push(`Sale-to-list: ${saleToListRatio.toFixed(1)}%`);
-  }
-  if (marketCompetitiveness) {
-    tooltipLines.push(`Competitiveness: ${marketCompetitiveness}`);
-  }
-  tooltipLines.push(`Score: ${clampedScore}/100`);
+  const balanceColor =
+    balance === "sellers"
+      ? "text-emerald-400"
+      : balance === "buyers"
+      ? "text-red-400"
+      : "text-amber-400";
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="relative group">
-        <svg width="160" height="90" viewBox="0 0 160 90">
-          {/* Background arc */}
-          <path d={bgPath} fill="none" stroke="#E5E7EB" strokeWidth="12" strokeLinecap="round" />
-          {/* Fill arc */}
-          {fillPath && (
-            <path d={fillPath} fill="none" stroke={color} strokeWidth="12" strokeLinecap="round" />
-          )}
-          {/* Score text */}
-          <text x={cx} y={cy - 8} textAnchor="middle" fontSize="22" fontWeight="700" fill={color}>
-            {clampedScore}
-          </text>
-          <text x={cx} y={cy + 10} textAnchor="middle" fontSize="10" fill="#6B7280">
-            / 100
-          </text>
-        </svg>
-        {/* Hover tooltip */}
-        {tooltipLines.length > 0 && (
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
-            <div className="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-              {tooltipLines.map((line, i) => (
-                <div key={i}>{line}</div>
-              ))}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0"
-                style={{ borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '5px solid #111827' }} />
-            </div>
-          </div>
-        )}
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between text-[11px] font-medium">
+        <span className="text-red-400">Buyer's</span>
+        <span className={`font-semibold ${balanceColor}`}>
+          {monthsOfSupply !== null
+            ? `${monthsOfSupply} mos supply`
+            : balanceLabel}
+        </span>
+        <span className="text-emerald-400">Seller's</span>
       </div>
-      <p className="text-sm font-semibold mt-1" style={{ color }}>{label}</p>
+      <div className="relative h-3 rounded-full overflow-hidden">
+        {/* Gradient bar: red (buyers left) → amber (balanced center) → green (sellers right) */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background:
+              "linear-gradient(to right, #ef4444, #f59e0b 50%, #10b981)",
+          }}
+        />
+        {/* Frosted overlay for depth */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(255,255,255,0.15), transparent)",
+          }}
+        />
+        {/* Needle */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-md border border-white/60 transition-all duration-700"
+          style={{ left: `calc(${position}% - 4px)` }}
+        />
+      </div>
+      <div className="flex items-center justify-between text-[10px] text-white/30">
+        <span>{"< 4 mos"}</span>
+        <span>4–6 mos</span>
+        <span>{"> 6 mos"}</span>
+      </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════
-   SPARKLINE (tiny inline chart)
+   AI SUMMARY — renders inline % codeblock + arrows
    ═══════════════════════════════════════════════════════ */
-function Sparkline({ data, positive }: { data: number[]; positive: boolean }) {
-  if (!data || data.length < 2) return null;
-  const w = 64, h = 24;
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  const pts = data
-    .map((v, i) => {
-      const x = (i / (data.length - 1)) * w;
-      const y = h - ((v - min) / range) * h;
-      return `${x},${y}`;
-    })
-    .join(" ");
+function AISummaryText({ text }: { text: string }) {
+  // Parse backtick-wrapped % changes: `+4.2%` ↑ or `-1.8%` ↓
+  const parts = text.split(/(`[^`]+`\s*[↑↓]?)/g);
   return (
-    <svg width={w} height={h} className="inline-block">
-      <polyline
-        points={pts}
-        fill="none"
-        stroke={positive ? "#16A34A" : "#DC2626"}
-        strokeWidth="1.5"
-      />
-    </svg>
+    <p className="text-[13px] text-white/70 leading-relaxed">
+      {parts.map((part, i) => {
+        const match = part.match(/^`([^`]+)`\s*([↑↓]?)$/);
+        if (match) {
+          const val = match[1];
+          const arrow = match[2];
+          const isUp = arrow === "↑" || val.startsWith("+");
+          const isDown = arrow === "↓" || val.startsWith("-");
+          return (
+            <span key={i} className="inline-flex items-baseline gap-0.5">
+              <code
+                className={`text-[12px] font-mono px-1.5 py-0.5 rounded font-semibold ${
+                  isUp
+                    ? "bg-emerald-900/40 text-emerald-400"
+                    : isDown
+                    ? "bg-red-900/40 text-red-400"
+                    : "bg-white/10 text-white/80"
+                }`}
+              >
+                {val}
+              </code>
+              {arrow && (
+                <span
+                  className={`text-[11px] ${
+                    isUp ? "text-emerald-400" : "text-red-400"
+                  }`}
+                >
+                  {arrow}
+                </span>
+              )}
+            </span>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </p>
   );
 }
 
 /* ═══════════════════════════════════════════════════════
-   CUSTOM RECHARTS TOOLTIP
+   METRIC CARD
    ═══════════════════════════════════════════════════════ */
-function CustomTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null;
+interface MetricCardProps {
+  label: string;
+  value: string;
+  changePct?: number | null;
+  changePositive?: boolean;
+  changeLabel?: string;
+  icon: React.ReactNode;
+}
+function MetricCard({
+  label,
+  value,
+  changePct,
+  changePositive,
+  changeLabel,
+  icon,
+}: MetricCardProps) {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-xs">
-      <p className="font-semibold text-gray-700 mb-1">{label}</p>
-      {payload.map((entry: any) => (
-        <div key={entry.dataKey} className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full inline-block" style={{ background: entry.color }} />
-          <span className="text-gray-600">{entry.name}:</span>
-          <span className="font-medium">{formatPrice(entry.value)}</span>
+    <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-medium text-white/40 uppercase tracking-widest">
+          {label}
+        </p>
+        <div className="w-7 h-7 rounded-lg bg-white/[0.06] flex items-center justify-center text-white/30">
+          {icon}
         </div>
-      ))}
+      </div>
+      <p className="text-2xl font-bold text-white tracking-tight">{value}</p>
+      {changePct != null && (
+        <div
+          className={`flex items-center gap-1 text-xs font-medium ${
+            changePositive ? "text-emerald-400" : "text-red-400"
+          }`}
+        >
+          {changePositive ? (
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          ) : (
+            <ArrowDownRight className="w-3.5 h-3.5" />
+          )}
+          {Math.abs(changePct)}%{changeLabel ? ` ${changeLabel}` : ""}
+        </div>
+      )}
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════
-   MAIN DASHBOARD COMPONENT
+   RECHARTS TOOLTIP
+   ═══════════════════════════════════════════════════════ */
+function CustomTooltip({ active, payload, label }: Record<string, unknown>) {
+  if (!active || !Array.isArray(payload) || !payload.length) return null;
+  return (
+    <div className="bg-[#1a1f2e] border border-white/10 rounded-lg px-3 py-2 text-xs shadow-xl">
+      <p className="font-semibold text-white/60 mb-1.5">{label as string}</p>
+      {(payload as Array<{ dataKey: string; name: string; value: number; color: string }>).map(
+        (entry) => (
+          <div key={entry.dataKey} className="flex items-center gap-1.5 mb-0.5">
+            <span
+              className="w-2 h-2 rounded-full inline-block flex-shrink-0"
+              style={{ background: entry.color }}
+            />
+            <span className="text-white/50">{entry.name}:</span>
+            <span className="font-semibold text-white">{fmt$(entry.value)}</span>
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   SKELETON
+   ═══════════════════════════════════════════════════════ */
+function Skeleton({ className }: { className?: string }) {
+  return (
+    <div
+      className={`animate-pulse rounded-lg bg-white/[0.05] ${className ?? ""}`}
+    />
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   MAIN DASHBOARD
    ═══════════════════════════════════════════════════════ */
 export default function MarketPulseDashboard() {
-  /* ── State ── */
-  const [markets, setMarkets] = useState<Market[]>([]);
-  const [snapshots, setSnapshots] = useState<Record<string, MarketSnapshot>>({});
-  const [selectedMarket, setSelectedMarket] = useState<MarketKey>("thousand-oaks");
-  const [activePropertyTypes, setActivePropertyTypes] = useState<Set<PropertyType>>(
-    new Set(["sfr", "condo", "townhome"])
-  );
+  const [selectedSubmarket, setSelectedSubmarket] =
+    useState<SubmarketKey>("thousand-oaks");
+  const [countyDropdownOpen, setCountyDropdownOpen] = useState(false);
+  const [activePropertyTypes, setActivePropertyTypes] = useState<
+    Set<PropertyType>
+  >(new Set(["sfr", "condo", "townhome"]));
   const [timeframe, setTimeframe] = useState<TimeframeKey>("1Y");
-  const [priceHistory, setPriceHistory] = useState<MonthlyPriceData[]>([]);
-  const [comps, setComps] = useState<Comp[]>([]);
-  const [trendingNeighborhoods, setTrendingNeighborhoods] = useState<TrendingNeighborhood[]>([]);
-  const [recentActivity, setRecentActivity] = useState<RecentActivityItem[]>([]);
-  const [countyIndicators, setCountyIndicators] = useState<CountyIndicator[]>([]);
-  const [propertyTypeBreakdown, setPropertyTypeBreakdown] = useState<PropertyTypeBreakdown[]>([]);
-  const [newsArticles, setNewsArticles] = useState<DBNewsArticle[]>([]);
+  const [data, setData] = useState<MarketSnapshotResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [marketDropdownOpen, setMarketDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const countyDropdownRef = useRef<HTMLDivElement>(null);
 
-  /* ── Effects ── */
-  // Close dropdown on outside click
+  // Close county dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setMarketDropdownOpen(false);
+      if (
+        countyDropdownRef.current &&
+        !countyDropdownRef.current.contains(e.target as Node)
+      ) {
+        setCountyDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Initial data load
-  useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      try {
-        const [mkts, snaps, trending, activity, indicators, propTypes, news] = await Promise.all([
-          getMarkets(),
-          getAllLatestSnapshots(),
-          getTrendingNeighborhoods(),
-          getRecentActivity(),
-          getCountyIndicators(),
-          getPropertyTypeBreakdown(),
-          getNewsArticles(),
-        ]);
-        setMarkets(mkts);
-        setSnapshots(snaps);
-        setTrendingNeighborhoods(trending);
-        setRecentActivity(activity);
-        setCountyIndicators(indicators);
-        setPropertyTypeBreakdown(propTypes);
-        setNewsArticles(news);
-      } finally {
-        setLoading(false);
-      }
+  // Fetch data when submarket changes
+  const fetchSnapshot = useCallback(async (submarket: SubmarketKey) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/marketpulse/snapshot?submarket=${submarket}`
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json: MarketSnapshotResponse = await res.json();
+      setData(json);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load market data");
+    } finally {
+      setLoading(false);
     }
-    loadData();
   }, []);
 
-  // Market-specific data (comps + price history)
   useEffect(() => {
-    async function loadMarketData() {
-      const [history, compsData] = await Promise.all([
-        getPriceHistory(selectedMarket),
-        getComps(selectedMarket),
-      ]);
-      setPriceHistory(
-        history.map((row: PriceHistoryRow) => ({
-          month: row.month_label,
-          sfr: row.sfr,
-          condo: row.condo,
-          townhome: row.townhome,
-        }))
-      );
-      setComps(compsData);
-    }
-    loadMarketData();
-  }, [selectedMarket]);
+    fetchSnapshot(selectedSubmarket);
+  }, [selectedSubmarket, fetchSnapshot]);
 
-  /* ── Derived data ── */
-  const snap = snapshots[selectedMarket];
-  const selectedMarketLabel =
-    markets.find((m) => m.id === selectedMarket)?.label ?? "Thousand Oaks";
-
-  // Filter price history by timeframe
-  const filteredPriceHistory = (() => {
+  // Filtered price history by timeframe
+  const filteredHistory = (() => {
+    if (!data?.priceHistory?.length) return [];
     const tf = TIMEFRAMES.find((t) => t.key === timeframe);
-    if (!tf || tf.months === null) return priceHistory;
-    return priceHistory.slice(-tf.months);
+    if (!tf || tf.months === null) return data.priceHistory;
+    return data.priceHistory.slice(-tf.months);
   })();
 
-  /* ── Loading skeleton ── */
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-10 h-10 border-2 border-[#1A4D4D] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500 text-sm">Loading market data…</p>
-        </div>
-      </div>
-    );
-  }
+  const submarketLabel =
+    SUBMARKETS.find((s) => s.key === selectedSubmarket)?.label ??
+    "Thousand Oaks";
 
-  /* ════════════════════════════════════════════════════════
-     RENDER
-     ════════════════════════════════════════════════════════ */
+  /* ── Render ── */
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0D1117] text-white">
       {/* ── Top Bar ── */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">MarketPulse</h1>
-            <p className="text-xs text-gray-500 mt-0.5">Ventura County Real Estate Intelligence</p>
+      <div className="border-b border-white/[0.06] px-6 py-4 bg-[#0D1117]/80 backdrop-blur-sm sticky top-0 z-20">
+        <div className="flex items-center justify-between gap-4">
+          {/* Left: County selector + submarket tabs */}
+          <div className="flex items-center gap-4 min-w-0">
+            {/* County dropdown */}
+            <div className="relative" ref={countyDropdownRef}>
+              <button
+                onClick={() => setCountyDropdownOpen((o) => !o)}
+                className="flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.09] border border-white/[0.08] rounded-lg px-3.5 py-2 text-[13px] font-medium text-white transition-colors flex-shrink-0"
+              >
+                <span>Ventura</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-white/40 transition-transform ${
+                    countyDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {countyDropdownOpen && (
+                <div className="absolute left-0 top-full mt-1.5 bg-[#1a1f2e] border border-white/10 rounded-xl shadow-2xl z-50 min-w-[180px] py-1.5">
+                  <div className="flex items-center gap-2 px-3.5 py-2.5">
+                    <Check className="w-3.5 h-3.5 text-[#5BA8A8]" />
+                    <span className="text-[13px] font-semibold text-white">
+                      Ventura
+                    </span>
+                  </div>
+                  <div className="mx-3 mt-1 pt-1 border-t border-white/[0.06]">
+                    <p className="text-[11px] text-white/25 italic px-0.5 py-1">
+                      More coming soon
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Submarket tabs */}
+            <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+              {SUBMARKETS.map((s) => (
+                <button
+                  key={s.key}
+                  onClick={() => setSelectedSubmarket(s.key)}
+                  className={`flex-shrink-0 px-3.5 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-150 ${
+                    selectedSubmarket === s.key
+                      ? "bg-[#1A4D4D] text-white shadow-sm"
+                      : "text-white/40 hover:text-white/70 hover:bg-white/[0.04]"
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Market selector dropdown */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setMarketDropdownOpen((o) => !o)}
-              className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:border-[#1A4D4D] transition-colors"
-            >
-              {selectedMarketLabel}
-              <ChevronDown className={`w-4 h-4 transition-transform ${marketDropdownOpen ? "rotate-180" : ""}`} />
-            </button>
-            {marketDropdownOpen && (
-              <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[180px]">
-                {markets.map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => { setSelectedMarket(m.id as MarketKey); setMarketDropdownOpen(false); }}
-                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg flex items-center justify-between ${
-                      selectedMarket === m.id ? "text-[#1A4D4D] font-semibold" : "text-gray-700"
-                    }`}
-                  >
-                    {m.label}
-                    {selectedMarket === m.id && <Check className="w-3.5 h-3.5 text-[#1A4D4D]" />}
-                  </button>
-                ))}
-              </div>
+          {/* Right: refresh + last updated */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {data?.fetchedAt && (
+              <p className="text-[11px] text-white/25 hidden xl:block">
+                Updated {new Date(data.fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </p>
             )}
+            <button
+              onClick={() => fetchSnapshot(selectedSubmarket)}
+              disabled={loading}
+              className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/[0.04] border border-white/[0.06] text-white/30 hover:text-white/60 hover:bg-white/[0.08] transition-all disabled:opacity-40"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ── Main layout ── */}
-      <div className="max-w-7xl mx-auto px-6 py-6 flex gap-6">
+      {/* ── Main content ── */}
+      <div className="px-6 py-6 max-w-7xl mx-auto">
+        {/* ── Error state ── */}
+        {error && (
+          <div className="mb-6 flex items-center gap-3 bg-red-900/20 border border-red-800/40 rounded-xl px-4 py-3 text-sm text-red-400">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            {error}
+          </div>
+        )}
 
-        {/* ── LEFT / CENTER column ── */}
-        <div className="flex-1 min-w-0 space-y-6">
-
-          {/* ── Key Metrics ── */}
-          <div className="grid grid-cols-2 gap-4">
-
-            {/* Median Price */}
-            {snap && (
-              <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Median Sale Price</p>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {snap.median_price ? formatPrice(snap.median_price) : "—"}
-                    </p>
-                    {snap.median_change_pct != null && (
-                      <div className={`flex items-center gap-1 mt-1 text-sm font-medium ${
-                        snap.median_change_positive ? "text-green-600" : "text-red-500"
-                      }`}>
-                        {snap.median_change_positive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                        {Math.abs(snap.median_change_pct)}% YoY
-                      </div>
-                    )}
-                  </div>
-                  {snap.sparkline && (
-                    <Sparkline data={snap.sparkline} positive={snap.median_change_positive ?? true} />
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Active Listings */}
-            {snap && (
-              <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Active Listings</p>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {snap.active_listings?.toLocaleString() ?? "—"}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">homes for sale</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Avg Days on Market */}
-            {snap && (
-              <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Avg Days on Market</p>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{snap.avg_dom ?? "—"}</p>
-                  {snap.avg_dom_change && (
-                    <div className={`flex items-center gap-1 mt-1 text-sm font-medium ${
-                      snap.avg_dom_change_positive ? "text-green-600" : "text-red-500"
-                    }`}>
-                      {snap.avg_dom_change_positive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                      {snap.avg_dom_change} vs last year
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Price per Sqft */}
-            {snap && (
-              <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Price / Sqft</p>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {snap.price_per_sqft ? `$${snap.price_per_sqft}` : "—"}
-                  </p>
-                  {snap.price_per_sqft_change_pct != null && (
-                    <div className={`flex items-center gap-1 mt-1 text-sm font-medium ${
-                      snap.price_per_sqft_change_positive ? "text-green-600" : "text-red-500"
-                    }`}>
-                      {snap.price_per_sqft_change_positive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                      {Math.abs(snap.price_per_sqft_change_pct)}% YoY
-                    </div>
-                  )}
-                </div>
-              </div>
+        {/* ── Top row: Metric cards + Market Balance Heat Bar ── */}
+        <div className="grid grid-cols-12 gap-4 mb-5">
+          {/* 4 metric cards — 8 cols */}
+          <div className="col-span-12 xl:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {loading ? (
+              <>
+                {[0, 1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-[110px]" />
+                ))}
+              </>
+            ) : (
+              <>
+                <MetricCard
+                  label="Median Price"
+                  value={fmt$(data?.medianPrice)}
+                  changePct={data?.medianPriceChangePct}
+                  changePositive={(data?.medianPriceChangePct ?? 0) >= 0}
+                  changeLabel="YoY"
+                  icon={<Home className="w-3.5 h-3.5" />}
+                />
+                <MetricCard
+                  label="Avg Days on Market"
+                  value={data?.avgDaysOnMarket != null ? `${data.avgDaysOnMarket}` : "—"}
+                  icon={<Clock className="w-3.5 h-3.5" />}
+                />
+                <MetricCard
+                  label="Active Listings"
+                  value={data?.activeListings?.toLocaleString() ?? "—"}
+                  icon={<TrendingUp className="w-3.5 h-3.5" />}
+                />
+                <MetricCard
+                  label="Price / Sqft"
+                  value={data?.pricePerSqft != null ? `$${data.pricePerSqft}` : "—"}
+                  icon={<BarChart2 className="w-3.5 h-3.5" />}
+                />
+              </>
             )}
           </div>
 
-          {/* ── Market Sentiment ── */}
-          {snap && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Market Sentiment</h3>
-                <div className="relative group">
-                  <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                  <div className="absolute right-0 top-full mt-1 hidden group-hover:block z-10 w-64">
-                    <div className="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg">
-                      Composite score based on price appreciation, days on market trend, and sale-to-list ratio.
-                    </div>
-                  </div>
-                </div>
+          {/* Heat Bar — 4 cols */}
+          <div className="col-span-12 xl:col-span-4">
+            <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 h-full flex flex-col justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1">
+                  Market Balance
+                </p>
+                <p className="text-sm font-semibold text-white">
+                  {loading
+                    ? "—"
+                    : data?.marketBalance === "sellers"
+                    ? "Seller's Market"
+                    : data?.marketBalance === "buyers"
+                    ? "Buyer's Market"
+                    : "Balanced Market"}
+                </p>
               </div>
-              <div className="flex items-center gap-8">
-                <SentimentGauge
-                  score={snap.sentiment_score ?? 50}
-                  saleToListRatio={snap.sale_to_list_ratio}
-                  marketCompetitiveness={snap.market_competitiveness}
+              {loading ? (
+                <Skeleton className="h-10" />
+              ) : (
+                <MarketHeatBar
+                  monthsOfSupply={data?.monthsOfSupply ?? null}
+                  balance={data?.marketBalance ?? "balanced"}
                 />
-                {snap.market_summary_text && (
-                  <p className="text-sm text-gray-600 leading-relaxed flex-1">
-                    {snap.market_summary_text}
-                  </p>
-                )}
-              </div>
+              )}
             </div>
-          )}
+          </div>
+        </div>
 
-          {/* ── Price History Chart ── */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Price History</h3>
-              <div className="flex items-center gap-4">
-                {/* Property type toggles */}
-                <div className="flex gap-2">
-                  {(Object.keys(PROPERTY_TYPE_CONFIG) as PropertyType[]).map((pt) => (
+        {/* ── AI Market Summary ── */}
+        <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-5 mb-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-5 h-5 rounded-md bg-[#1A4D4D]/60 flex items-center justify-center">
+              <BarChart2 className="w-3 h-3 text-[#5BA8A8]" />
+            </div>
+            <h3 className="text-[13px] font-semibold text-white">
+              AI Market Summary
+            </h3>
+            <span className="text-[10px] font-medium text-white/25 bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded-full ml-1">
+              {submarketLabel}
+            </span>
+          </div>
+          {loading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-3.5 w-full" />
+              <Skeleton className="h-3.5 w-5/6" />
+              <Skeleton className="h-3.5 w-4/5" />
+            </div>
+          ) : data?.aiSummary ? (
+            <AISummaryText text={data.aiSummary} />
+          ) : (
+            <p className="text-[13px] text-white/30 italic">
+              AI summary unavailable for this market.
+            </p>
+          )}
+        </div>
+
+        {/* ── Price History Chart ── */}
+        <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-5 mb-5">
+          <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
+            <h3 className="text-[13px] font-semibold text-white">
+              Median Price History
+            </h3>
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Property type toggles */}
+              <div className="flex gap-1.5">
+                {(Object.keys(PROPERTY_TYPE_CONFIG) as PropertyType[]).map(
+                  (pt) => (
                     <button
                       key={pt}
                       onClick={() => {
@@ -510,232 +569,197 @@ export default function MarketPulseDashboard() {
                           return next;
                         });
                       }}
-                      className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                      className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all border ${
                         activePropertyTypes.has(pt)
-                          ? "text-white"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                          ? "border-transparent text-white"
+                          : "bg-transparent border-white/10 text-white/30 hover:text-white/50"
                       }`}
-                      style={activePropertyTypes.has(pt) ? { backgroundColor: PROPERTY_TYPE_CONFIG[pt].color } : {}}
+                      style={
+                        activePropertyTypes.has(pt)
+                          ? {
+                              backgroundColor:
+                                PROPERTY_TYPE_CONFIG[pt].color + "33",
+                              color: PROPERTY_TYPE_CONFIG[pt].color,
+                              borderColor: PROPERTY_TYPE_CONFIG[pt].color + "66",
+                            }
+                          : {}
+                      }
                     >
                       {PROPERTY_TYPE_CONFIG[pt].label}
                     </button>
-                  ))}
-                </div>
-                {/* Timeframe selector */}
-                <div className="flex bg-gray-100 rounded-lg p-0.5">
-                  {TIMEFRAMES.map((tf) => (
-                    <button
-                      key={tf.key}
-                      onClick={() => setTimeframe(tf.key)}
-                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                        timeframe === tf.key
-                          ? "bg-white text-gray-900 shadow-sm"
-                          : "text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
-                      {tf.label}
-                    </button>
-                  ))}
-                </div>
+                  )
+                )}
+              </div>
+
+              {/* Timeframe selector */}
+              <div className="flex bg-white/[0.04] border border-white/[0.06] rounded-lg p-0.5 gap-0.5">
+                {TIMEFRAMES.map((tf) => (
+                  <button
+                    key={tf.key}
+                    onClick={() => setTimeframe(tf.key)}
+                    className={`px-3 py-1 rounded-md text-[11px] font-medium transition-all ${
+                      timeframe === tf.key
+                        ? "bg-white/[0.1] text-white"
+                        : "text-white/30 hover:text-white/60"
+                    }`}
+                  >
+                    {tf.label}
+                  </button>
+                ))}
               </div>
             </div>
+          </div>
+
+          {loading ? (
+            <Skeleton className="h-[220px] w-full" />
+          ) : filteredHistory.length === 0 ? (
+            <div className="h-[220px] flex items-center justify-center text-white/20 text-sm">
+              No price history data available
+            </div>
+          ) : (
             <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={filteredPriceHistory} margin={{ top: 5, right: 5, bottom: 5, left: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9CA3AF" }} />
-                <YAxis tickFormatter={(v) => formatPrice(v)} tick={{ fontSize: 11, fill: "#9CA3AF" }} width={65} />
+              <LineChart
+                data={filteredHistory}
+                margin={{ top: 5, right: 5, bottom: 5, left: 10 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)" }}
+                  axisLine={{ stroke: "rgba(255,255,255,0.05)" }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tickFormatter={(v) => fmt$(v)}
+                  tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)" }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={62}
+                />
                 <Tooltip content={<CustomTooltip />} />
-                {(Object.keys(PROPERTY_TYPE_CONFIG) as PropertyType[]).map((pt) =>
-                  activePropertyTypes.has(pt) ? (
-                    <Line
-                      key={pt}
-                      type="monotone"
-                      dataKey={pt}
-                      name={PROPERTY_TYPE_CONFIG[pt].label}
-                      stroke={PROPERTY_TYPE_CONFIG[pt].color}
-                      strokeWidth={2}
-                      dot={false}
-                      activeDot={{ r: 4 }}
-                    />
-                  ) : null
+                {(Object.keys(PROPERTY_TYPE_CONFIG) as PropertyType[]).map(
+                  (pt) =>
+                    activePropertyTypes.has(pt) ? (
+                      <Line
+                        key={pt}
+                        type="monotone"
+                        dataKey={pt}
+                        name={PROPERTY_TYPE_CONFIG[pt].label}
+                        stroke={PROPERTY_TYPE_CONFIG[pt].color}
+                        strokeWidth={2}
+                        dot={false}
+                        activeDot={{
+                          r: 4,
+                          strokeWidth: 0,
+                          fill: PROPERTY_TYPE_CONFIG[pt].color,
+                        }}
+                      />
+                    ) : null
                 )}
               </LineChart>
             </ResponsiveContainer>
-          </div>
+          )}
+        </div>
 
-          {/* ── Recent Comps ── */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Recent Comps</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="text-left text-xs font-medium text-gray-500 pb-2">Address</th>
-                    <th className="text-right text-xs font-medium text-gray-500 pb-2">Sold Price</th>
-                    <th className="text-right text-xs font-medium text-gray-500 pb-2">Sqft</th>
-                    <th className="text-right text-xs font-medium text-gray-500 pb-2">$/Sqft</th>
-                    <th className="text-right text-xs font-medium text-gray-500 pb-2">DOM</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {comps.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-8 text-center text-gray-400 text-sm">No comps available</td>
+        {/* ── Recent Comps ── */}
+        <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-5">
+          <h3 className="text-[13px] font-semibold text-white mb-4">
+            Recent Comps
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06]">
+                  {["Address", "Status", "Price", "Sqft", "$/Sqft", "Beds/Baths", "DOM"].map(
+                    (h) => (
+                      <th
+                        key={h}
+                        className={`text-[10px] font-semibold text-white/25 uppercase tracking-widest pb-3 ${
+                          h === "Address" ? "text-left" : "text-right"
+                        }`}
+                      >
+                        {h}
+                      </th>
+                    )
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="border-b border-white/[0.03]">
+                      {Array.from({ length: 7 }).map((_, j) => (
+                        <td key={j} className="py-3 pr-3">
+                          <Skeleton className="h-4 w-full" />
+                        </td>
+                      ))}
                     </tr>
-                  ) : (
-                    comps.map((comp, i) => (
-                      <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                        <td className="py-3 font-medium text-gray-900">{comp.address}</td>
-                        <td className="py-3 text-right text-gray-700">{formatPrice(comp.sold_price)}</td>
-                        <td className="py-3 text-right text-gray-500">{comp.sqft?.toLocaleString()}</td>
-                        <td className="py-3 text-right text-gray-500">${comp.price_per_sqft}</td>
-                        <td className="py-3 text-right">
-                          <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-                            comp.dom <= 7 ? "bg-green-50 text-green-700" :
-                            comp.dom <= 21 ? "bg-yellow-50 text-yellow-700" :
-                            "bg-red-50 text-red-600"
-                          }`}>
-                            <Clock className="w-3 h-3" />
-                            {comp.dom}d
+                  ))
+                ) : !data?.comps?.length ? (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="py-10 text-center text-white/20 text-sm"
+                    >
+                      No comps available for this submarket
+                    </td>
+                  </tr>
+                ) : (
+                  data.comps.map((comp, i) => {
+                    const status = comp.status ?? "Active";
+                    const statusStyle =
+                      COMP_STATUS_STYLES[status] ?? COMP_STATUS_STYLES.Active;
+                    return (
+                      <tr
+                        key={i}
+                        className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors group"
+                      >
+                        <td className="py-3 pr-4">
+                          <p className="text-[13px] font-medium text-white/80 group-hover:text-white transition-colors">
+                            {comp.address}
+                          </p>
+                          {comp.propertyType && (
+                            <p className="text-[10px] text-white/25 mt-0.5">
+                              {comp.propertyType}
+                            </p>
+                          )}
+                        </td>
+                        <td className="py-3 pr-4 text-right">
+                          <span
+                            className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full ${statusStyle.bg} ${statusStyle.text}`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`}
+                            />
+                            {status}
                           </span>
                         </td>
+                        <td className="py-3 pr-4 text-right text-[13px] font-semibold text-white/80">
+                          {fmt$(comp.price)}
+                        </td>
+                        <td className="py-3 pr-4 text-right text-[13px] text-white/40">
+                          {comp.sqft ? comp.sqft.toLocaleString() : "—"}
+                        </td>
+                        <td className="py-3 pr-4 text-right text-[13px] text-white/40">
+                          {comp.pricePerSqft ? `$${comp.pricePerSqft}` : "—"}
+                        </td>
+                        <td className="py-3 pr-4 text-right text-[13px] text-white/40">
+                          {comp.bedrooms != null && comp.bathrooms != null
+                            ? `${comp.bedrooms}bd / ${comp.bathrooms}ba`
+                            : "—"}
+                        </td>
+                        <td className="py-3 text-right text-[13px] text-white/40">
+                          {comp.daysOld != null ? `${comp.daysOld}d` : "—"}
+                        </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
-
-          {/* ── Market News ── */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Market News</h3>
-              <a href="/news" className="text-xs text-[#1A4D4D] hover:underline font-medium">View all</a>
-            </div>
-            <div className="space-y-4">
-              {newsArticles.slice(0, 3).map((article, i) => (
-                <a
-                  key={i}
-                  href={article.article_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex gap-3 group hover:bg-gray-50 rounded-lg p-2 -mx-2 transition-colors"
-                >
-                  {article.image_url && (
-                    <img
-                      src={article.image_url}
-                      alt=""
-                      className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium text-[#1A4D4D] bg-[#1A4D4D]/10 px-2 py-0.5 rounded-full">
-                        {article.category}
-                      </span>
-                      <span className="text-xs text-gray-400">{article.published_date}</span>
-                    </div>
-                    <p className="text-sm font-medium text-gray-900 group-hover:text-[#1A4D4D] transition-colors line-clamp-2">
-                      {article.title}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">{article.source}</p>
-                  </div>
-                  <ExternalLink className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-400 flex-shrink-0 mt-1" />
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── RIGHT Sidebar ── */}
-        <div className="w-72 flex-shrink-0 space-y-4">
-
-          {/* Trending Neighborhoods */}
-          <SidebarCard title="Trending Neighborhoods">
-            <div className="space-y-2">
-              {trendingNeighborhoods.map((n, i) => (
-                <div key={i} className="flex items-center justify-between py-1">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{n.name}</p>
-                    <p className="text-xs text-gray-500">{n.area}</p>
-                  </div>
-                  <span className={`text-sm font-semibold ${
-                    n.positive ? "text-green-600" : "text-red-500"
-                  }`}>{n.change_pct}</span>
-                </div>
-              ))}
-            </div>
-          </SidebarCard>
-
-          {/* Recent Activity */}
-          <SidebarCard title="Recent Activity">
-            <div className="space-y-3">
-              {recentActivity.map((item, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <span className={`mt-0.5 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
-                    item.activity_type === "New listing" ? "bg-blue-50 text-blue-700" :
-                    item.activity_type === "Price reduced" ? "bg-orange-50 text-orange-700" :
-                    "bg-green-50 text-green-700"
-                  }`}>
-                    {item.activity_type}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">{item.address}</p>
-                    <p className="text-xs text-gray-500">{item.price}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </SidebarCard>
-
-          {/* Ventura County Indicators */}
-          <SidebarCard title="Ventura County Indicators">
-            <div className="space-y-2">
-              {countyIndicators.map((ind, i) => (
-                <div key={i} className="flex items-center justify-between py-1">
-                  <div>
-                    <p className="text-xs text-gray-500">{ind.label}</p>
-                    <p className="text-sm font-semibold text-gray-900">{ind.value}</p>
-                  </div>
-                  <span className={`text-xs font-medium ${
-                    ind.positive ? "text-green-600" : "text-red-500"
-                  }`}>{ind.change}</span>
-                </div>
-              ))}
-            </div>
-          </SidebarCard>
-
-          {/* By Property Type */}
-          <SidebarCard title="By Property Type">
-            <div className="space-y-2">
-              {propertyTypeBreakdown.map((pt, i) => (
-                <div key={i} className="flex items-center justify-between py-1">
-                  <div>
-                    <p className="text-xs text-gray-500">{pt.label}</p>
-                    <p className="text-sm font-semibold text-gray-900">{pt.value}</p>
-                  </div>
-                  <span className={`text-xs font-medium ${
-                    pt.positive ? "text-green-600" : "text-red-500"
-                  }`}>{pt.change_pct}</span>
-                </div>
-              ))}
-            </div>
-          </SidebarCard>
         </div>
       </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════
-   SIDEBAR CARD WRAPPER
-   ═══════════════════════════════════════════════════════ */
-function SidebarCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4">
-      <h3 className="text-sm font-semibold text-gray-900 mb-3">{title}</h3>
-      {children}
     </div>
   );
 }

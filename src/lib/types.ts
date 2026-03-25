@@ -4,6 +4,7 @@
 
 export type MarketKey =
   | "thousand-oaks"
+  | "newbury-park"
   | "camarillo"
   | "westlake"
   | "oxnard"

@@ -3,33 +3,33 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3,
-  Home,
-  BookOpen,
-  MapPin,
+  LayoutDashboard,
   Newspaper,
+  BookOpen,
+  Map,
+  BarChart2,
 } from "lucide-react";
 
 const navItems = [
   {
-    label: "Home",
+    label: "Dashboard",
     href: "/marketpulse/dashboard",
-    icon: Home,
-  },
-  {
-    label: "Playbooks",
-    href: "/marketpulse/dashboard/playbooks",
-    icon: BookOpen,
-  },
-  {
-    label: "Neighborhood Guide",
-    href: "/marketpulse/dashboard/neighborhood-guide",
-    icon: MapPin,
+    icon: LayoutDashboard,
   },
   {
     label: "News",
     href: "/marketpulse/dashboard/news",
     icon: Newspaper,
+  },
+  {
+    label: "Resources",
+    href: "/marketpulse/dashboard/resources",
+    icon: BookOpen,
+  },
+  {
+    label: "Neighborhood Guides",
+    href: "/marketpulse/dashboard/neighborhood-guide",
+    icon: Map,
   },
 ];
 
@@ -37,34 +37,51 @@ export default function DashboardSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden lg:flex flex-col w-[220px] flex-shrink-0 bg-[#F5F3F0] border-r border-gray-200 py-5 px-3 overflow-y-auto">
+    <aside className="hidden lg:flex flex-col w-[220px] flex-shrink-0 bg-[#0D1117] border-r border-white/[0.06] py-5 px-3 overflow-y-auto">
       {/* Brand */}
       <Link
         href="/marketpulse/dashboard"
-        className="flex items-center gap-2 px-3 mb-6"
+        className="flex items-center gap-2.5 px-3 mb-8"
       >
-        <BarChart3 className="w-5 h-5 text-mk-teal" />
-        <span className="text-sm font-semibold text-gray-900">
-          MarketPulse
-        </span>
+        <div className="w-7 h-7 rounded-md bg-[#1A4D4D] flex items-center justify-center flex-shrink-0">
+          <BarChart2 className="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <span className="text-[13px] font-semibold text-white tracking-tight">
+            MarketPulse
+          </span>
+          <p className="text-[10px] text-white/40 leading-none mt-0.5">Ventura County</p>
+        </div>
       </Link>
+
+      {/* Section label */}
+      <p className="text-[10px] font-semibold text-white/30 uppercase tracking-widest px-3 mb-2">
+        Navigation
+      </p>
 
       {/* Nav items */}
       <nav className="flex flex-col gap-0.5">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
+          const isActive =
+            item.href === "/marketpulse/dashboard"
+              ? pathname === item.href
+              : pathname?.startsWith(item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg text-[13px] transition-all duration-150 ${
                 isActive
-                  ? "bg-white font-medium text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:bg-white/60 hover:text-gray-900"
+                  ? "bg-white/[0.08] text-white font-medium"
+                  : "text-white/50 hover:bg-white/[0.04] hover:text-white/80"
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon
+                className={`w-4 h-4 flex-shrink-0 ${
+                  isActive ? "text-[#5BA8A8]" : "text-white/30"
+                }`}
+              />
               {item.label}
             </Link>
           );
@@ -73,9 +90,11 @@ export default function DashboardSidebar() {
 
       {/* Bottom area */}
       <div className="mt-auto pt-6 px-3">
-        <p className="text-[11px] text-gray-400 leading-relaxed">
-          Data sourced from MLS, county records, and public feeds. Updated daily.
-        </p>
+        <div className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-3">
+          <p className="text-[10px] text-white/30 leading-relaxed">
+            Data sourced from Rentcast & AI analysis. Updated every 6 hours.
+          </p>
+        </div>
       </div>
     </aside>
   );
