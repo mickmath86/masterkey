@@ -1,16 +1,25 @@
 /**
- * POST /api/marketpulse/ingest
+ * GET  /api/marketpulse/ingest  — Vercel cron (runs all 6 submarkets nightly at 2am PT)
+ * POST /api/marketpulse/ingest  — Manual trigger or cold-start call from snapshot route
  *
- * Fetches fresh data from Rentcast + Perplexity for one or all submarkets
- * and writes it to Supabase. Called by:
- *   1. The Vercel cron job (nightly, all submarkets)
- *   2. The snapshot route (on-demand, single submarket, when Supabase is stale)
+ * Both handlers require: Authorization: Bearer <CRON_SECRET>
+ * POST additionally accepts body: { submarket?: SubmarketKey } to ingest a single market.
  *
- * Auth: requires CRON_SECRET header (set in Vercel env) so it can't be
- * triggered by random public requests.
+ * Data sources:
+ *  - Rentcast /v1/markets  → metrics, price history, property-type breakdowns
+ *  - Rentcast /v1/listings → active comps (top 10)
+ *  - Perplexity sonar      → AI market summary (uses real-time web search)
  *
- * Body: { submarket?: SubmarketKey }
- *   - If submarket is omitted, ingests ALL 6 submarkets sequentially.
+ * Rentcast field notes (confirmed from live API):
+ *  - saleData.totalListings    = active listings on market right now
+ *  - saleData.newListings      = new to market this period
+ *  - saleData.history          = keyed object { "2025-04": { newListings, totalListings, medianPrice, ... } }
+ *  - saleData.dataByPropertyType = array of { propertyType, averagePrice, medianPrice, ... }
+ *  - NO totalSales field exists — months of supply uses newListings as absorption proxy
+ *
+ * Months of supply formula:
+ *   activeListings / avg(newListings over last 3 history months)
+ *   <4 = sellers market | 4-6 = balanced | >6 = buyers market
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -27,7 +36,7 @@ const SUBMARKETS: Record<SubmarketKey, { label: string; zip: string }> = {
   oxnard:          { label: "Oxnard",         zip: "93030" },
 };
 
-// ─── Supabase service client (bypasses RLS) ───────────────────────────────────
+// ─── Supabase service client (bypasses RLS — write access) ───────────────────
 function getSupabase() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -35,8 +44,40 @@ function getSupabase() {
   return createClient(url, key);
 }
 
+// ─── Rentcast types ───────────────────────────────────────────────────────────
+interface RentcastHistoryMonth {
+  date: string;
+  averagePrice: number;
+  medianPrice: number;
+  newListings: number;
+  totalListings: number;
+  dataByPropertyType?: { propertyType: string; averagePrice: number; medianPrice: number }[];
+}
+
+interface RentcastPropertyType {
+  propertyType: string;
+  averagePrice: number;
+  medianPrice: number;
+}
+
+interface RentcastSaleData {
+  medianPrice?: number;
+  averagePrice?: number;
+  averagePricePerSquareFoot?: number;
+  medianPricePerSquareFoot?: number;
+  averageDaysOnMarket?: number;
+  medianDaysOnMarket?: number;
+  totalListings?: number;   // active listings right now
+  newListings?: number;     // new to market this period
+  history?: Record<string, RentcastHistoryMonth>;
+  dataByPropertyType?: RentcastPropertyType[];
+}
+
 // ─── Rentcast fetch ───────────────────────────────────────────────────────────
-async function fetchRentcast(zip: string) {
+async function fetchRentcast(zip: string): Promise<{
+  saleData: RentcastSaleData;
+  listingsData: Record<string, unknown>[];
+}> {
   const apiKey = process.env.RENTCAST_API_KEY;
   if (!apiKey) throw new Error("RENTCAST_API_KEY not configured");
 
@@ -51,25 +92,28 @@ async function fetchRentcast(zip: string) {
     ),
   ]);
 
-  let statsData: Record<string, unknown> = {};
-  let listingsData: unknown[] = [];
+  let saleData: RentcastSaleData = {};
+  let listingsData: Record<string, unknown>[] = [];
 
   if (statsRes.status === "fulfilled" && statsRes.value.ok) {
-    statsData = await statsRes.value.json();
+    const raw = await statsRes.value.json();
+    saleData = (raw?.saleData ?? {}) as RentcastSaleData;
   } else {
-    console.error(`[ingest] Rentcast stats failed for ${zip}:`,
-      statsRes.status === "fulfilled" ? statsRes.value.status : statsRes.reason);
+    console.error(
+      `[ingest] Rentcast stats failed for ${zip}:`,
+      statsRes.status === "fulfilled" ? statsRes.value.status : statsRes.reason
+    );
   }
 
   if (listingsRes.status === "fulfilled" && listingsRes.value.ok) {
     const raw = await listingsRes.value.json();
     listingsData = Array.isArray(raw) ? raw
       : Array.isArray((raw as Record<string, unknown>)?.listings)
-      ? (raw as Record<string, unknown[]>).listings
+      ? (raw as { listings: Record<string, unknown>[] }).listings
       : [];
   }
 
-  return { statsData, listingsData };
+  return { saleData, listingsData };
 }
 
 // ─── Perplexity AI summary ────────────────────────────────────────────────────
@@ -81,6 +125,7 @@ async function fetchAISummary(
     activeListings: number | null;
     pricePerSqft: number | null;
     monthsOfSupply: number | null;
+    priceChangePct: number | null;
   }
 ): Promise<string> {
   const apiKey = process.env.PERPLEXITY_API_KEY;
@@ -90,6 +135,7 @@ async function fetchAISummary(
 
 Current data:
 - Median sale price: ${metrics.medianPrice ? `$${metrics.medianPrice.toLocaleString()}` : "N/A"}
+- Price change (12 months): ${metrics.priceChangePct !== null ? `${metrics.priceChangePct > 0 ? "+" : ""}${metrics.priceChangePct}%` : "N/A"}
 - Avg days on market: ${metrics.avgDom ?? "N/A"} days
 - Active listings: ${metrics.activeListings ?? "N/A"}
 - Price per sqft: ${metrics.pricePerSqft ? `$${metrics.pricePerSqft}` : "N/A"}
@@ -98,7 +144,8 @@ Current data:
 Rules:
 - When you cite a percentage change, wrap the number in backticks like: \`+4.2%\` or \`-1.8%\`. Add a ↑ or ↓ arrow immediately after based on direction.
 - Keep it factual, data-driven, and professional.
-- Do NOT include a title or header.`;
+- Do NOT include a title or header.
+- Do NOT hallucinate — only use the data provided above.`;
 
   try {
     const res = await fetch("https://api.perplexity.ai/chat/completions", {
@@ -111,7 +158,7 @@ Rules:
         model: "sonar",
         messages: [{ role: "user", content: prompt }],
         max_tokens: 300,
-        temperature: 0.3,
+        temperature: 0.2,
       }),
     });
     if (!res.ok) return "AI summary temporarily unavailable.";
@@ -122,29 +169,40 @@ Rules:
   }
 }
 
-// ─── Core ingest function for a single submarket ─────────────────────────────
+// ─── Core ingest for a single submarket ──────────────────────────────────────
 export async function ingestSubmarket(submarket: SubmarketKey): Promise<void> {
   const config = SUBMARKETS[submarket];
   const supabase = getSupabase();
 
   console.log(`[ingest] Starting ${submarket} (${config.zip})`);
 
-  const { statsData, listingsData } = await fetchRentcast(config.zip);
-  const sale = (statsData?.saleData ?? {}) as Record<string, unknown>;
+  const { saleData, listingsData } = await fetchRentcast(config.zip);
 
-  // ── Parse core metrics ────────────────────────────────────────────────────
-  const medianPrice        = typeof sale.medianPrice === "number" ? sale.medianPrice : null;
-  const avgDom             = typeof sale.averageDaysOnMarket === "number" ? Math.round(sale.averageDaysOnMarket) : null;
-  const activeListings     = typeof sale.totalListings === "number" ? sale.totalListings : null;
-  const pricePerSqft       = typeof sale.averagePricePerSquareFoot === "number" ? Math.round(sale.averagePricePerSquareFoot) : null;
-  const totalSales         = typeof sale.totalSales === "number" ? sale.totalSales : null;
+  // ── Core metrics ─────────────────────────────────────────────────────────
+  const medianPrice    = saleData.medianPrice    ?? null;
+  const avgDom         = saleData.averageDaysOnMarket != null
+    ? Math.round(saleData.averageDaysOnMarket) : null;
+  const activeListings = saleData.totalListings  ?? null;
+  const pricePerSqft   = saleData.averagePricePerSquareFoot != null
+    ? Math.round(saleData.averagePricePerSquareFoot) : null;
 
-  // Months of supply: active ÷ (total sold last month)
-  // Rentcast totalSales = cumulative over historyRange (12 months) → divide by 12 for monthly rate
+  // ── History: normalize keyed-object → sorted array ───────────────────────
+  const rawHistory = saleData.history ?? {};
+  const historyArr = Object.entries(rawHistory)
+    .map(([month, val]) => ({ month, ...val }))
+    .sort((a, b) => a.month.localeCompare(b.month));
+
+  // ── Months of supply ─────────────────────────────────────────────────────
+  // Formula: activeListings / avg(newListings over last 3 months)
+  // newListings = homes newly listed each month ≈ monthly absorption rate
+  // Rentcast does NOT have a "totalSales" field — newListings is the best proxy
   let monthsOfSupply: number | null = null;
-  if (activeListings && totalSales && totalSales > 0) {
-    const monthlySalesRate = totalSales / 12;
-    monthsOfSupply = parseFloat((activeListings / monthlySalesRate).toFixed(1));
+  if (activeListings && historyArr.length > 0) {
+    const last3 = historyArr.slice(-3);
+    const avgNewListings = last3.reduce((sum, h) => sum + (h.newListings ?? 0), 0) / last3.length;
+    if (avgNewListings > 0) {
+      monthsOfSupply = parseFloat((activeListings / avgNewListings).toFixed(1));
+    }
   }
 
   const marketBalance: "buyers" | "balanced" | "sellers" =
@@ -153,46 +211,35 @@ export async function ingestSubmarket(submarket: SubmarketKey): Promise<void> {
     : monthsOfSupply > 6 ? "buyers"
     : "balanced";
 
-  // ── Median price change from history ────────────────────────────────────
-  const rawHistory = sale.history;
-  type HistoryEntry = { month: string; averagePrice: number };
-  let historyArr: HistoryEntry[] = [];
-
-  if (Array.isArray(rawHistory)) {
-    historyArr = rawHistory as HistoryEntry[];
-  } else if (rawHistory && typeof rawHistory === "object") {
-    historyArr = Object.entries(rawHistory as Record<string, { averagePrice?: number; average?: number }>)
-      .map(([month, val]) => ({ month, averagePrice: val?.averagePrice ?? val?.average ?? 0 }))
-      .sort((a, b) => a.month.localeCompare(b.month));
-  }
-
+  // ── Median price change % (oldest → newest history month) ────────────────
   let medianPriceChangePct: number | null = null;
   if (historyArr.length >= 2) {
-    const oldest = historyArr[0].averagePrice;
-    const newest = historyArr[historyArr.length - 1].averagePrice;
-    if (oldest > 0) medianPriceChangePct = parseFloat((((newest - oldest) / oldest) * 100).toFixed(2));
+    const oldest = historyArr[0].medianPrice ?? historyArr[0].averagePrice ?? 0;
+    const newest = historyArr[historyArr.length - 1].medianPrice ?? historyArr[historyArr.length - 1].averagePrice ?? 0;
+    if (oldest > 0) {
+      medianPriceChangePct = parseFloat((((newest - oldest) / oldest) * 100).toFixed(2));
+    }
   }
 
-  // ── Property type ratios ─────────────────────────────────────────────────
-  const rawByType = sale.dataByPropertyType;
-  const dataByType = Array.isArray(rawByType)
-    ? (rawByType as { propertyType: string; averagePrice: number }[])
-    : [];
-
+  // ── Property type price ratios (for chart lines) ──────────────────────────
+  // Use top-level dataByPropertyType for current ratios vs median
+  const dataByType = saleData.dataByPropertyType ?? [];
   const sfrEntry   = dataByType.find((d) => d.propertyType?.toLowerCase().includes("single"));
   const condoEntry = dataByType.find((d) => d.propertyType?.toLowerCase().includes("condo"));
   const townEntry  = dataByType.find((d) => d.propertyType?.toLowerCase().includes("town"));
 
-  const sfrRatio   = sfrEntry   && medianPrice ? sfrEntry.averagePrice   / medianPrice : 1.05;
-  const condoRatio = condoEntry && medianPrice ? condoEntry.averagePrice  / medianPrice : 0.78;
-  const townRatio  = townEntry  && medianPrice ? townEntry.averagePrice   / medianPrice : 0.88;
+  // Ratio = property type median / overall median (used to scale history prices)
+  const base         = medianPrice ?? 1;
+  const sfrRatio     = sfrEntry   ? (sfrEntry.medianPrice   / base) : 1.13;
+  const condoRatio   = condoEntry ? (condoEntry.medianPrice  / base) : 0.45;
+  const townRatio    = townEntry  ? (townEntry.medianPrice   / base) : 0.85;
 
   // ── AI summary ───────────────────────────────────────────────────────────
   const aiSummary = await fetchAISummary(config.label, {
-    medianPrice, avgDom, activeListings, pricePerSqft, monthsOfSupply,
+    medianPrice, avgDom, activeListings, pricePerSqft, monthsOfSupply, priceChangePct: medianPriceChangePct,
   });
 
-  // ── Write snapshot to Supabase ───────────────────────────────────────────
+  // ── Upsert snapshot ───────────────────────────────────────────────────────
   const today = new Date().toISOString().slice(0, 10);
   const { error: snapError } = await supabase
     .from("marketpulse_snapshots")
@@ -205,7 +252,7 @@ export async function ingestSubmarket(submarket: SubmarketKey): Promise<void> {
         avg_days_on_market: avgDom,
         active_listings: activeListings,
         price_per_sqft: pricePerSqft,
-        total_sales: totalSales,
+        total_sales: null,          // field reserved; Rentcast doesn't provide closed sales count
         months_of_supply: monthsOfSupply,
         market_balance: marketBalance,
         ai_summary: aiSummary,
@@ -217,17 +264,17 @@ export async function ingestSubmarket(submarket: SubmarketKey): Promise<void> {
     );
 
   if (snapError) console.error(`[ingest] snapshot upsert error (${submarket}):`, snapError.message);
-  else console.log(`[ingest] ✓ snapshot saved for ${submarket} on ${today}`);
+  else console.log(`[ingest] ✓ snapshot saved for ${submarket} — medianPrice: ${medianPrice}, MOS: ${monthsOfSupply}, balance: ${marketBalance}`);
 
-  // ── Write price history to Supabase ─────────────────────────────────────
+  // ── Upsert price history ──────────────────────────────────────────────────
   if (historyArr.length > 0) {
     const historyRows = historyArr.map((h) => ({
       submarket,
       month: h.month,
-      avg_price: Math.round(h.averagePrice),
-      sfr_price: medianPrice ? Math.round(h.averagePrice * sfrRatio) : null,
-      condo_price: medianPrice ? Math.round(h.averagePrice * condoRatio) : null,
-      townhome_price: medianPrice ? Math.round(h.averagePrice * townRatio) : null,
+      avg_price: h.averagePrice ? Math.round(h.averagePrice) : null,
+      sfr_price: h.medianPrice ? Math.round(h.medianPrice * sfrRatio) : null,
+      condo_price: h.medianPrice ? Math.round(h.medianPrice * condoRatio) : null,
+      townhome_price: h.medianPrice ? Math.round(h.medianPrice * townRatio) : null,
       updated_at: new Date().toISOString(),
     }));
 
@@ -239,9 +286,8 @@ export async function ingestSubmarket(submarket: SubmarketKey): Promise<void> {
     else console.log(`[ingest] ✓ ${historyRows.length} history rows saved for ${submarket}`);
   }
 
-  // ── Replace comps in Supabase ────────────────────────────────────────────
-  // Delete old comps for this submarket, then insert fresh ones
-  const compsArr = (listingsData as Record<string, unknown>[]).slice(0, 10);
+  // ── Replace comps ─────────────────────────────────────────────────────────
+  const compsArr = listingsData.slice(0, 10);
   if (compsArr.length > 0) {
     await supabase.from("marketpulse_comps").delete().eq("submarket", submarket);
 
@@ -258,7 +304,7 @@ export async function ingestSubmarket(submarket: SubmarketKey): Promise<void> {
         bedrooms: typeof c.bedrooms === "number" ? c.bedrooms : null,
         bathrooms: typeof c.bathrooms === "number" ? c.bathrooms : null,
         days_on_market: typeof c.daysOnMarket === "number" ? c.daysOnMarket : null,
-        status: "Active",
+        status: "Active" as const,
         property_type: typeof c.propertyType === "string" ? c.propertyType : null,
         rentcast_zip: config.zip,
         fetched_at: new Date().toISOString(),
@@ -287,7 +333,7 @@ function isAuthorized(request: NextRequest): boolean {
   return false;
 }
 
-// ─── Shared ingest runner ─────────────────────────────────────────────────────
+// ─── Shared runner ────────────────────────────────────────────────────────────
 async function runIngest(submarkets: SubmarketKey[]) {
   const results: Record<string, string> = {};
   for (const submarket of submarkets) {
@@ -303,20 +349,17 @@ async function runIngest(submarkets: SubmarketKey[]) {
   return results;
 }
 
-// ─── GET handler (Vercel cron) ────────────────────────────────────────────────
-// Vercel cron jobs always call GET. Auth via: Authorization: Bearer <CRON_SECRET>
+// ─── GET (Vercel cron — ingests all 6 submarkets) ─────────────────────────────
 export async function GET(request: NextRequest) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  // Cron always ingests all 6 submarkets
   const allSubmarkets = Object.keys(SUBMARKETS) as SubmarketKey[];
   const results = await runIngest(allSubmarkets);
   return NextResponse.json({ results, ingestedAt: new Date().toISOString() });
 }
 
-// ─── POST handler (manual trigger / snapshot cold-start) ─────────────────────
+// ─── POST (manual trigger / cold-start from snapshot route) ──────────────────
 export async function POST(request: NextRequest) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
