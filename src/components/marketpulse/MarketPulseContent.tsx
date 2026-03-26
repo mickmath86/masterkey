@@ -22,6 +22,7 @@ import {
   Plus,
   Minus,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 
 /* ═══════════════════════════════════════════════
@@ -230,14 +231,13 @@ export default function MarketPulseContent({
       <DepartmentTabs />
       <TestimonialsSection />
       <FAQSection />
-      <FinalCTASection />
+      <FinalCTASection onGateCleared={onGateCleared} />
     </>
   );
 }
 
 /* ═══════════════════════════════════════════════
-   1. HERO — two-column: text + form left, visual right
-   Modeled after Perplexity Enterprise hero
+   1. HERO — dark theme matching buyerguide
    ═══════════════════════════════════════════════ */
 function HeroSection({ onGateCleared }: { onGateCleared?: () => void }) {
   const [form, setForm] = useState({
@@ -304,46 +304,60 @@ function HeroSection({ onGateCleared }: { onGateCleared?: () => void }) {
   }
 
   return (
-    <section className="relative pt-28 pb-16 lg:pt-36 lg:pb-24 bg-mk-cream overflow-hidden">
-      <div className="max-w-[1200px] mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* LEFT — text + form */}
-          <div>
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-[56px] xl:text-[64px] text-gray-900 leading-[1.1] mb-6">
-              AI-powered market data for your team
+    <section className="relative overflow-hidden bg-gray-950 pb-0 pt-0">
+      {/* Background glow blobs — matches buyerguide exactly */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full bg-green-600/10 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-teal-500/[0.08] blur-3xl" />
+      </div>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+
+          {/* LEFT — copy + form */}
+          <div className="py-12 lg:py-20">
+            {/* Pill badge */}
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-green-400 bg-green-400/10 border border-green-400/20 px-3 py-1.5 rounded-full mb-6">
+              <BarChart3 className="w-3.5 h-3.5" />
+              Live Market Intelligence — Conejo Valley
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight mb-4">
+              AI-powered data for<br />
+              <span className="text-green-400">smarter decisions</span>
             </h1>
-            <p className="text-lg text-gray-500 leading-relaxed mb-8 max-w-[520px]">
+            <p className="text-white/60 text-lg leading-relaxed mb-8 max-w-md">
               One platform that combines real-time MLS data, AI analysis, and
-              neighborhood intelligence to help you make smarter real estate
-              decisions across the Conejo Valley.
+              neighborhood intelligence to help you navigate the Conejo Valley
+              market with confidence.
             </p>
 
-            {/* email gate form */}
+            {/* Form */}
             {submitted ? (
-              <div className="bg-white rounded-2xl shadow-md border border-gray-100 px-6 py-8 max-w-[480px]">
-                <CheckCircle2 className="w-10 h-10 text-mk-green mb-3" />
-                <h2 className="font-display text-xl text-gray-900 mb-2">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 max-w-[480px]">
+                <CheckCircle2 className="w-10 h-10 text-green-400 mb-3" />
+                <h2 className="text-xl font-bold text-white mb-2">
                   You&apos;re in
                 </h2>
-                <p className="text-sm text-gray-500 leading-relaxed">
-                  Welcome to MarketPulse, {form.firstName}. Check your inbox for
-                  your first market report.
+                <p className="text-sm text-white/60 leading-relaxed">
+                  Welcome to MarketPulse, {form.firstName}. Loading your
+                  dashboard now…
                 </p>
               </div>
             ) : (
               <form
                 onSubmit={handleSubmit}
                 noValidate
-                className="bg-white rounded-2xl shadow-md border border-gray-100 px-6 py-7 max-w-[480px]"
+                className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8 space-y-4 max-w-[480px]"
               >
-                <p className="text-xs font-semibold uppercase tracking-widest text-mk-teal mb-4">
+                <p className="text-xs font-semibold uppercase tracking-widest text-white/40">
                   Get free access
                 </p>
 
-                <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="firstName" className="sr-only">
-                      First name
+                    <label className="block text-xs font-medium text-white/60 mb-1.5">
+                      First Name <span className="text-red-400">*</span>
                     </label>
                     <input
                       id="firstName"
@@ -352,22 +366,22 @@ function HeroSection({ onGateCleared }: { onGateCleared?: () => void }) {
                       autoComplete="given-name"
                       value={form.firstName}
                       onChange={handleChange}
-                      placeholder="First name *"
-                      className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:ring-2 focus:ring-mk-teal/30 ${
+                      placeholder="Jane"
+                      className={`w-full px-3 py-2.5 bg-white/10 border rounded-lg text-sm text-white placeholder-white/30 focus:ring-2 focus:ring-green-400 focus:outline-none ${
                         errors.firstName
-                          ? "border-red-400 focus:ring-red-300"
-                          : "border-gray-200"
+                          ? "border-red-400 focus:ring-red-400"
+                          : "border-white/20 focus:border-green-400"
                       }`}
                     />
                     {errors.firstName && (
-                      <p className="text-[11px] text-red-500 mt-1">
+                      <p className="text-[11px] text-red-400 mt-1">
                         {errors.firstName}
                       </p>
                     )}
                   </div>
                   <div>
-                    <label htmlFor="lastName" className="sr-only">
-                      Last name
+                    <label className="block text-xs font-medium text-white/60 mb-1.5">
+                      Last Name <span className="text-red-400">*</span>
                     </label>
                     <input
                       id="lastName"
@@ -376,24 +390,25 @@ function HeroSection({ onGateCleared }: { onGateCleared?: () => void }) {
                       autoComplete="family-name"
                       value={form.lastName}
                       onChange={handleChange}
-                      placeholder="Last name *"
-                      className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:ring-2 focus:ring-mk-teal/30 ${
+                      placeholder="Smith"
+                      className={`w-full px-3 py-2.5 bg-white/10 border rounded-lg text-sm text-white placeholder-white/30 focus:ring-2 focus:ring-green-400 focus:outline-none ${
                         errors.lastName
-                          ? "border-red-400 focus:ring-red-300"
-                          : "border-gray-200"
+                          ? "border-red-400 focus:ring-red-400"
+                          : "border-white/20 focus:border-green-400"
                       }`}
                     />
                     {errors.lastName && (
-                      <p className="text-[11px] text-red-500 mt-1">
+                      <p className="text-[11px] text-red-400 mt-1">
                         {errors.lastName}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="mb-3">
-                  <label htmlFor="phone" className="sr-only">
-                    Phone
+                <div>
+                  <label className="block text-xs font-medium text-white/60 mb-1.5">
+                    Phone{" "}
+                    <span className="text-white/30 font-normal">(optional)</span>
                   </label>
                   <input
                     id="phone"
@@ -402,23 +417,21 @@ function HeroSection({ onGateCleared }: { onGateCleared?: () => void }) {
                     autoComplete="tel"
                     value={form.phone}
                     onChange={handleChange}
-                    placeholder="Phone (optional)"
-                    className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:ring-2 focus:ring-mk-teal/30 ${
+                    placeholder="(805) 555-0100"
+                    className={`w-full px-3 py-2.5 bg-white/10 border rounded-lg text-sm text-white placeholder-white/30 focus:ring-2 focus:outline-none ${
                       errors.phone
-                        ? "border-red-400 focus:ring-red-300"
-                        : "border-gray-200"
+                        ? "border-red-400 focus:ring-red-400 focus:border-red-400"
+                        : "border-white/20 focus:ring-green-400 focus:border-green-400"
                     }`}
                   />
                   {errors.phone && (
-                    <p className="text-[11px] text-red-500 mt-1">
-                      {errors.phone}
-                    </p>
+                    <p className="mt-1.5 text-xs text-red-400">{errors.phone}</p>
                   )}
                 </div>
 
-                <div className="mb-4">
-                  <label htmlFor="email" className="sr-only">
-                    Email
+                <div>
+                  <label className="block text-xs font-medium text-white/60 mb-1.5">
+                    Email Address <span className="text-red-400">*</span>
                   </label>
                   <input
                     id="email"
@@ -427,126 +440,137 @@ function HeroSection({ onGateCleared }: { onGateCleared?: () => void }) {
                     autoComplete="email"
                     value={form.email}
                     onChange={handleChange}
-                    placeholder="Email *"
-                    className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:ring-2 focus:ring-mk-teal/30 ${
+                    placeholder="jane@example.com"
+                    className={`w-full px-3 py-2.5 bg-white/10 border rounded-lg text-sm text-white placeholder-white/30 focus:ring-2 focus:outline-none ${
                       errors.email
-                        ? "border-red-400 focus:ring-red-300"
-                        : "border-gray-200"
+                        ? "border-red-400 focus:ring-red-400 focus:border-red-400"
+                        : "border-white/20 focus:ring-green-400 focus:border-green-400"
                     }`}
                   />
                   {errors.email && (
-                    <p className="text-[11px] text-red-500 mt-1">
-                      {errors.email}
-                    </p>
+                    <p className="text-red-400 text-xs mt-1">{errors.email}</p>
                   )}
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <button
-                    type="submit"
-                    className="inline-flex items-center gap-2 rounded-full bg-mk-teal text-white text-sm font-medium px-7 py-2.5 hover:bg-mk-teal/90 transition-colors"
-                  >
-                    Get started
-                  </button>
-                  <a
-                    href="/#contact"
-                    className="inline-flex items-center gap-2 rounded-full border-2 border-mk-teal text-mk-teal text-sm font-medium px-7 py-2.5 hover:bg-mk-teal/5 transition-colors"
-                  >
-                    Request a demo
-                  </a>
-                </div>
+                <button
+                  type="submit"
+                  className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-400 text-white font-semibold py-3 rounded-lg transition-colors text-sm"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  View the Dashboard — Free
+                </button>
 
-                <p className="text-[11px] text-gray-400 mt-3">
-                  Free access · No credit card required
+                <p className="text-xs text-white/30 text-center leading-relaxed">
+                  No spam, ever. We will never sell your information.
                 </p>
               </form>
             )}
+
+            {/* What's inside checklist */}
+            <p className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-3">
+              What&apos;s inside
+            </p>
+            <ul className="space-y-2.5">
+              {[
+                "Live median prices across 6 Conejo Valley submarkets",
+                "Months of supply, active inventory & absorption rates",
+                "AI-generated market summaries updated daily",
+                "Recent comp sales with price-per-sqft analysis",
+                "Buyer vs. seller market signals at a glance",
+                "Historical price trends going back 12+ months",
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-2.5 text-sm text-white/70">
+                  <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* RIGHT — product visual */}
-          <div className="hidden lg:block relative">
-            <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-mk-teal via-mk-teal-light to-emerald-300 p-1">
-              <div className="rounded-xl bg-white/95 backdrop-blur-sm p-6 shadow-2xl">
+          {/* RIGHT — dashboard preview card */}
+          <div className="hidden lg:flex justify-end items-center pb-12 lg:pb-0">
+            <div className="relative">
+              <div className="absolute -inset-1 rounded-2xl bg-green-500/20 blur-xl" />
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-gray-900 shadow-2xl w-80">
                 {/* mock header */}
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-mk-mint text-xs font-medium text-mk-teal">
-                    <BarChart3 className="w-3.5 h-3.5" />
+                <div className="bg-gray-800/60 border-b border-white/10 px-4 py-3 flex items-center gap-3">
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-400/10 border border-green-400/20 text-xs font-medium text-green-400">
+                    <BarChart3 className="w-3 h-3" />
                     MarketPulse
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 text-xs text-gray-500">
-                    <Home className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 text-xs text-white/40">
+                    <Home className="w-3 h-3" />
                     Dashboard
                   </div>
                 </div>
 
-                {/* mock content */}
-                <div className="space-y-4">
-                  <div className="rounded-lg bg-gray-50 p-4">
-                    <p className="text-xs text-gray-400 mb-1">Median price</p>
-                    <p className="text-2xl font-semibold text-gray-900">
-                      $1,245,000
-                    </p>
-                    <p className="text-xs text-mk-green font-medium mt-1">
+                <div className="p-5 space-y-4">
+                  {/* Median price */}
+                  <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+                    <p className="text-[10px] text-white/40 mb-1">Median Price · Thousand Oaks</p>
+                    <p className="text-2xl font-bold text-white">$975,000</p>
+                    <p className="text-xs text-green-400 font-medium mt-1">
                       ↑ 4.2% vs last month
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="rounded-lg bg-gray-50 p-3">
-                      <p className="text-[10px] text-gray-400">Active</p>
-                      <p className="text-lg font-semibold text-gray-900">
-                        342
-                      </p>
-                    </div>
-                    <div className="rounded-lg bg-gray-50 p-3">
-                      <p className="text-[10px] text-gray-400">DOM</p>
-                      <p className="text-lg font-semibold text-gray-900">28</p>
-                    </div>
-                    <div className="rounded-lg bg-gray-50 p-3">
-                      <p className="text-[10px] text-gray-400">$/sqft</p>
-                      <p className="text-lg font-semibold text-gray-900">
-                        $587
-                      </p>
-                    </div>
+                  {/* Stats row */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { label: "Active", val: "103" },
+                      { label: "MOS", val: "3.4" },
+                      { label: "$/sqft", val: "$542" },
+                    ].map((s) => (
+                      <div key={s.label} className="rounded-lg bg-white/5 border border-white/[0.07] p-2.5">
+                        <p className="text-[9px] text-white/30">{s.label}</p>
+                        <p className="text-sm font-semibold text-white">{s.val}</p>
+                      </div>
+                    ))}
                   </div>
 
-                  {/* mock chart bars */}
-                  <div className="flex items-end gap-1.5 h-20 px-2">
-                    {[40, 52, 45, 58, 62, 55, 68, 72, 65, 78, 74, 82].map(
-                      (h, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 rounded-t bg-mk-teal/70"
-                          style={{ height: `${h}%` }}
-                        />
-                      )
-                    )}
+                  {/* Mini chart */}
+                  <div className="flex items-end gap-1 h-14 px-1">
+                    {[40, 52, 45, 58, 62, 55, 68, 72, 65, 78, 74, 82].map((h, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 rounded-t bg-green-500/60"
+                        style={{ height: `${h}%` }}
+                      />
+                    ))}
                   </div>
-                  <div className="flex justify-between text-[9px] text-gray-400 px-2">
+                  <div className="flex justify-between text-[9px] text-white/25 px-1">
                     <span>Jan</span>
                     <span>Mar</span>
                     <span>Jun</span>
                     <span>Sep</span>
                     <span>Dec</span>
                   </div>
-                </div>
-              </div>
-            </div>
 
-            {/* floating card */}
-            <div className="absolute -bottom-4 -left-6 bg-white rounded-xl shadow-xl border border-gray-100 p-4 w-56">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 rounded-full bg-mk-green/10 flex items-center justify-center">
-                  <TrendingUp className="w-3.5 h-3.5 text-mk-green" />
+                  {/* Market signal */}
+                  <div className="rounded-lg bg-green-500/10 border border-green-500/20 px-3 py-2 flex items-center gap-2">
+                    <TrendingUp className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
+                    <p className="text-[11px] text-green-400 font-medium">Seller&apos;s market — low supply</p>
+                  </div>
                 </div>
-                <span className="text-xs font-medium text-gray-900">
-                  Westlake Village
-                </span>
               </div>
-              <p className="text-[11px] text-gray-500 leading-relaxed">
-                Median up 6.8% YoY. Inventory down 12%. Seller&apos;s market
-                signal.
-              </p>
+
+              {/* Floating badge */}
+              <div className="absolute -top-3 -right-3 bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                FREE
+              </div>
+
+              {/* Floating insight card */}
+              <div className="absolute -bottom-4 -left-6 bg-gray-800 rounded-xl shadow-xl border border-white/10 p-3.5 w-52">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-6 h-6 rounded-full bg-green-400/10 flex items-center justify-center">
+                    <TrendingUp className="w-3 h-3 text-green-400" />
+                  </div>
+                  <span className="text-xs font-medium text-white">Westlake Village</span>
+                </div>
+                <p className="text-[11px] text-white/50 leading-relaxed">
+                  Median up 6.8% YoY. Inventory down 12%. Seller&apos;s market signal.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -560,19 +584,19 @@ function HeroSection({ onGateCleared }: { onGateCleared?: () => void }) {
    ═══════════════════════════════════════════════ */
 function LogoBar() {
   return (
-    <section className="py-12 bg-mk-cream border-t border-gray-100">
-      <div className="max-w-[1200px] mx-auto px-6">
-        <p className="text-center text-sm text-gray-400 mb-8">
+    <section className="py-10 bg-gray-950 border-t border-white/5">
+      <div className="max-w-6xl mx-auto px-6 lg:px-12">
+        <p className="text-center text-sm text-white/30 mb-6">
           Trusted by homeowners, investors, and agents across the Conejo Valley
         </p>
         <div className="overflow-hidden relative">
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-mk-cream to-transparent z-10" />
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-mk-cream to-transparent z-10" />
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-gray-950 to-transparent z-10" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-gray-950 to-transparent z-10" />
           <div className="flex gap-12 items-center logo-carousel">
             {[...logoNames, ...logoNames].map((name, i) => (
               <span
                 key={i}
-                className="flex-shrink-0 text-sm font-medium text-gray-300 tracking-wide whitespace-nowrap"
+                className="flex-shrink-0 text-sm font-medium text-white/20 tracking-wide whitespace-nowrap"
               >
                 {name}
               </span>
@@ -585,40 +609,37 @@ function LogoBar() {
 }
 
 /* ═══════════════════════════════════════════════
-   3. FEATURE ROWS — badge + two-column alternating
+   3. FEATURE ROWS — alternating two-column
    ═══════════════════════════════════════════════ */
 function FeatureRows() {
   return (
     <section className="py-20 lg:py-28 bg-white">
-      <div className="max-w-[1200px] mx-auto px-6">
-        {/* section badge + heading */}
+      <div className="max-w-6xl mx-auto px-6 lg:px-12">
+        {/* section heading */}
         <div className="text-center mb-16">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-mk-mint text-xs font-medium text-mk-teal mb-5">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-50 border border-green-100 text-xs font-medium text-green-700 mb-5">
             <BarChart3 className="w-3.5 h-3.5" />
             MasterKey MarketPulse
           </span>
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-[48px] text-gray-900 leading-tight max-w-[720px] mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-950 leading-tight max-w-2xl mx-auto">
             Accurate market data is just the start. What you do with it is
             everything.
           </h2>
         </div>
 
-        {/* alternating rows */}
         <div className="space-y-24">
           {featureRowsData.map((row, i) => (
             <div
               key={row.headline}
-              className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
-                i % 2 === 1 ? "lg:direction-rtl" : ""
-              }`}
+              className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center`}
             >
               {/* text */}
               <div className={i % 2 === 1 ? "lg:order-2" : ""}>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-mk-mint text-[11px] font-medium text-mk-teal mb-4">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 border border-green-100 text-[11px] font-medium text-green-700 mb-4">
                   {row.badgeIcon}
                   {row.badge}
                 </span>
-                <h3 className="font-display text-2xl sm:text-3xl lg:text-[36px] text-gray-900 leading-tight mb-4">
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-950 leading-tight mb-4">
                   {row.headline}
                 </h3>
                 <p className="text-base text-gray-500 leading-relaxed mb-6 max-w-[460px]">
@@ -626,7 +647,7 @@ function FeatureRows() {
                 </p>
                 <a
                   href="#top"
-                  className="inline-flex items-center gap-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 px-5 py-2.5 hover:border-mk-teal hover:text-mk-teal transition-colors"
+                  className="inline-flex items-center gap-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 px-5 py-2.5 hover:border-green-500 hover:text-green-600 transition-colors"
                 >
                   {row.cta}
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -648,20 +669,20 @@ function FeatureRows() {
 function FeatureVisual({ type }: { type: string }) {
   if (type === "pricing") {
     return (
-      <div className="rounded-2xl bg-gradient-to-br from-mk-mint to-mk-teal-light/30 p-6 lg:p-8">
+      <div className="rounded-2xl bg-gradient-to-br from-green-50 to-teal-50/60 p-6 lg:p-8">
         <div className="bg-white rounded-xl shadow-sm p-5 space-y-4">
           <div className="flex items-center gap-3 text-xs text-gray-500">
-            <span className="px-2 py-1 rounded bg-mk-teal text-white font-medium">
+            <span className="px-2 py-1 rounded bg-green-600 text-white font-medium">
               MLS
             </span>
             <span>Conejo Valley · Updated today</span>
           </div>
           <div className="space-y-3">
             {[
-              { area: "Thousand Oaks", price: "$1,245,000", change: "+4.2%" },
-              { area: "Westlake Village", price: "$1,890,000", change: "+6.8%" },
-              { area: "Newbury Park", price: "$985,000", change: "+3.1%" },
-              { area: "Agoura Hills", price: "$1,120,000", change: "+5.5%" },
+              { area: "Thousand Oaks", price: "$975,000", change: "+4.2%" },
+              { area: "Westlake Village", price: "$1,599,000", change: "+6.8%" },
+              { area: "Newbury Park", price: "$998,000", change: "+3.1%" },
+              { area: "Camarillo", price: "$899,000", change: "+5.5%" },
             ].map((r) => (
               <div
                 key={r.area}
@@ -672,7 +693,7 @@ function FeatureVisual({ type }: { type: string }) {
                   <span className="text-sm font-medium text-gray-900">
                     {r.price}
                   </span>
-                  <span className="text-xs font-medium text-mk-green">
+                  <span className="text-xs font-medium text-green-600">
                     {r.change}
                   </span>
                 </div>
@@ -685,7 +706,7 @@ function FeatureVisual({ type }: { type: string }) {
   }
 
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-mk-blue/10 to-mk-teal-light/20 p-6 lg:p-8">
+    <div className="rounded-2xl bg-gradient-to-br from-blue-50/40 to-teal-50/40 p-6 lg:p-8">
       <div className="bg-white rounded-xl shadow-sm p-5 space-y-4">
         <p className="text-sm text-gray-700 font-medium">
           &ldquo;Compare school ratings and walkability for Thousand Oaks vs
@@ -720,7 +741,7 @@ function FeatureVisual({ type }: { type: string }) {
 }
 
 /* ═══════════════════════════════════════════════
-   4. DARK SECTION — Conejo Valley data (like Comet)
+   4. DARK SECTION — full dark, accordion
    ═══════════════════════════════════════════════ */
 function DarkSection() {
   const [expanded, setExpanded] = useState(0);
@@ -740,17 +761,21 @@ function DarkSection() {
   ];
 
   return (
-    <section className="py-20 lg:py-28 bg-mk-dark text-white">
-      <div className="max-w-[1200px] mx-auto px-6">
+    <section className="relative py-20 lg:py-28 bg-gray-950 overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-green-600/8 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-teal-500/[0.06] blur-3xl" />
+      </div>
+      <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12">
         <div className="text-center mb-14">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-xs font-medium text-mk-teal-light mb-5">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-400/10 border border-green-400/20 text-xs font-medium text-green-400 mb-5">
             <Globe className="w-3.5 h-3.5" />
             Conejo Valley Intelligence
           </span>
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-[48px] text-white leading-tight max-w-[700px] mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight max-w-2xl mx-auto">
             Market intelligence at the speed of thought.
           </h2>
-          <p className="text-gray-400 mt-4 max-w-[540px] mx-auto">
+          <p className="text-white/40 mt-4 max-w-lg mx-auto">
             Instant answers across every neighborhood, price point, and property
             type.
           </p>
@@ -766,13 +791,15 @@ function DarkSection() {
                 className="w-full text-left"
               >
                 <div
-                  className={`rounded-xl px-6 py-5 transition-colors ${
-                    expanded === i ? "bg-white/10" : "bg-white/5 hover:bg-white/[0.07]"
+                  className={`rounded-xl px-6 py-5 transition-colors border ${
+                    expanded === i
+                      ? "bg-white/10 border-white/10"
+                      : "bg-white/5 border-white/[0.05] hover:bg-white/[0.07]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-medium">{item.title}</span>
-                    <span className="text-white/50">
+                    <span className="text-lg font-medium text-white">{item.title}</span>
+                    <span className="text-white/30">
                       {expanded === i ? (
                         <Minus className="w-4 h-4" />
                       ) : (
@@ -781,7 +808,7 @@ function DarkSection() {
                     </span>
                   </div>
                   {expanded === i && (
-                    <p className="text-sm text-gray-400 mt-3 leading-relaxed">
+                    <p className="mt-3 text-sm text-white/50 leading-relaxed">
                       {item.body}
                     </p>
                   )}
@@ -790,52 +817,39 @@ function DarkSection() {
             ))}
           </div>
 
-          {/* visual */}
-          <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 rounded-full bg-mk-green" />
-              <span className="text-xs text-gray-400">Live data feed</span>
-            </div>
-            <div className="space-y-3">
-              {[
-                {
-                  neighborhood: "Thousand Oaks - Lynn Ranch",
-                  event: "New listing · $1,350,000",
-                },
-                {
-                  neighborhood: "Westlake Village - North Ranch",
-                  event: "Price reduced · $2,100,000 → $1,975,000",
-                },
-                {
-                  neighborhood: "Newbury Park - Dos Vientos",
-                  event: "Sold · $1,050,000 · 8 DOM",
-                },
-                {
-                  neighborhood: "Oak Park",
-                  event: "New listing · $875,000",
-                },
-              ].map((item) => (
-                <div
-                  key={item.neighborhood}
-                  className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0"
-                >
-                  <span className="text-sm text-white/80">
-                    {item.neighborhood}
+          {/* stats visual */}
+          <div className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-white/30">
+              Conejo Valley Snapshot
+            </p>
+            {[
+              { area: "Thousand Oaks", mos: "3.4 mo", signal: "Seller's" },
+              { area: "Westlake Village", mos: "4.3 mo", signal: "Balanced" },
+              { area: "Ventura", mos: "4.9 mo", signal: "Balanced" },
+              { area: "Camarillo", mos: "4.1 mo", signal: "Balanced" },
+              { area: "Newbury Park", mos: "3.5 mo", signal: "Seller's" },
+              { area: "Oxnard", mos: "4.9 mo", signal: "Balanced" },
+            ].map((r) => (
+              <div
+                key={r.area}
+                className="flex items-center justify-between py-2 border-b border-white/5 last:border-0"
+              >
+                <span className="text-sm text-white/70">{r.area}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-white/30">{r.mos}</span>
+                  <span
+                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      r.signal === "Seller's"
+                        ? "bg-green-400/10 text-green-400"
+                        : "bg-white/10 text-white/50"
+                    }`}
+                  >
+                    {r.signal}
                   </span>
-                  <span className="text-xs text-gray-500">{item.event}</span>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        </div>
-
-        <div className="text-center mt-14">
-          <a
-            href="#top"
-            className="inline-flex items-center gap-2 rounded-full bg-white text-mk-dark text-sm font-medium px-7 py-2.5 hover:bg-white/90 transition-colors"
-          >
-            Learn more
-          </a>
         </div>
       </div>
     </section>
@@ -843,35 +857,36 @@ function DarkSection() {
 }
 
 /* ═══════════════════════════════════════════════
-   5. BENEFITS — three columns
+   5. BENEFITS — 3-up cards
    ═══════════════════════════════════════════════ */
 function BenefitsSection() {
   return (
-    <section className="py-20 lg:py-28 bg-mk-cream">
-      <div className="max-w-[1200px] mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
+    <section className="py-20 lg:py-28 bg-white">
+      <div className="max-w-6xl mx-auto px-6 lg:px-12">
+        <div className="text-center mb-14">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-950 leading-tight">
+            Built for real estate professionals
+          </h2>
+          <p className="text-gray-500 mt-3 max-w-lg mx-auto">
+            Whether you&apos;re a buyer, agent, or investor — MarketPulse gives
+            you an edge.
+          </p>
+        </div>
+        <div className="grid sm:grid-cols-3 gap-6">
           {benefitsData.map((b) => (
-            <div key={b.title} className="text-center">
-              <div className="w-12 h-12 rounded-xl bg-mk-mint flex items-center justify-center mx-auto mb-5">
-                <b.icon className="w-5 h-5 text-mk-teal" />
+            <div
+              key={b.title}
+              className="bg-gray-50 rounded-2xl border border-gray-100 p-6"
+            >
+              <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center mb-4">
+                <b.icon className="w-5 h-5 text-green-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              <p className="font-semibold text-gray-950 text-sm mb-2">
                 {b.title}
-              </h3>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                {b.body}
               </p>
+              <p className="text-xs text-gray-500 leading-relaxed">{b.body}</p>
             </div>
           ))}
-        </div>
-
-        <div className="text-center mt-14">
-          <a
-            href="#top"
-            className="inline-flex items-center px-7 py-2.5 rounded-full bg-mk-teal text-white text-sm font-medium hover:bg-mk-teal/90 transition-colors"
-          >
-            Get started
-          </a>
         </div>
       </div>
     </section>
@@ -879,46 +894,36 @@ function BenefitsSection() {
 }
 
 /* ═══════════════════════════════════════════════
-   6. SECURITY — 3×2 card grid on mint bg
+   6. SECURITY — 6-card grid
    ═══════════════════════════════════════════════ */
 function SecuritySection() {
   return (
-    <section className="py-20 lg:py-28 bg-mk-mint">
-      <div className="max-w-[1200px] mx-auto px-6">
+    <section className="py-20 lg:py-28 bg-gray-950">
+      <div className="max-w-6xl mx-auto px-6 lg:px-12">
         <div className="text-center mb-14">
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-[48px] text-gray-900 leading-tight mb-4">
-            Keep your clients&apos; data airtight.
+          <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
+            Data you can rely on
           </h2>
-          <p className="text-gray-500 max-w-[520px] mx-auto">
-            MasterKey manages client data with the highest standards of privacy
-            and security.
+          <p className="text-white/40 mt-3 max-w-lg mx-auto">
+            Built with integrity at every layer — from data sourcing to access
+            controls.
           </p>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {securityCards.map((card) => (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {securityCards.map((c) => (
             <div
-              key={card.title}
-              className="bg-white rounded-xl border border-gray-100 p-6"
+              key={c.title}
+              className="rounded-2xl bg-white/5 border border-white/10 p-6"
             >
-              <card.icon className="w-5 h-5 text-mk-teal mb-4" />
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                {card.title}
-              </h3>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                {card.body}
+              <div className="w-9 h-9 rounded-xl bg-green-400/10 flex items-center justify-center mb-4">
+                <c.icon className="w-5 h-5 text-green-400" />
+              </div>
+              <p className="font-semibold text-white text-sm mb-1.5">
+                {c.title}
               </p>
+              <p className="text-xs text-white/40 leading-relaxed">{c.body}</p>
             </div>
           ))}
-        </div>
-
-        <div className="text-center mt-12">
-          <a
-            href="#"
-            className="inline-flex items-center gap-2 rounded-full border border-gray-300 text-sm font-medium text-gray-700 px-6 py-2.5 hover:border-mk-teal hover:text-mk-teal transition-colors"
-          >
-            Learn more about our data practices
-          </a>
         </div>
       </div>
     </section>
@@ -926,52 +931,62 @@ function SecuritySection() {
 }
 
 /* ═══════════════════════════════════════════════
-   7. DEPARTMENT TABS — horizontal tabs
+   7. DEPARTMENT TABS
    ═══════════════════════════════════════════════ */
 function DepartmentTabs() {
   const [active, setActive] = useState(0);
-  const current = departmentTabs[active];
+  const tab = departmentTabs[active];
 
   return (
     <section className="py-20 lg:py-28 bg-white">
-      <div className="max-w-[1200px] mx-auto px-6">
-        <h2 className="font-display text-3xl sm:text-4xl lg:text-[48px] text-gray-900 text-center leading-tight mb-12">
-          Supercharge productivity for every role.
-        </h2>
+      <div className="max-w-6xl mx-auto px-6 lg:px-12">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-950 leading-tight">
+            Designed for every role
+          </h2>
+        </div>
 
-        {/* tabs */}
-        <div className="flex flex-wrap justify-center gap-2 mb-12">
-          {departmentTabs.map((tab, i) => (
+        {/* tab bar */}
+        <div className="flex flex-wrap justify-center gap-2 mb-10">
+          {departmentTabs.map((t, i) => (
             <button
-              key={tab.label}
+              key={t.label}
               onClick={() => setActive(i)}
               className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
-                active === i
-                  ? "bg-mk-teal text-white"
+                i === active
+                  ? "bg-green-500 text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              {tab.label}
+              {t.label}
             </button>
           ))}
         </div>
 
-        {/* content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        {/* tab content */}
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h3 className="font-display text-2xl sm:text-3xl text-gray-900 leading-tight mb-4">
-              {current.headline}
+            <h3 className="text-2xl font-bold text-gray-950 mb-4">
+              {tab.headline}
             </h3>
-            <p className="text-base text-gray-500 leading-relaxed">
-              {current.body}
-            </p>
+            <p className="text-gray-500 leading-relaxed mb-6">{tab.body}</p>
+            <a
+              href="#top"
+              className="inline-flex items-center gap-2 text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
+            >
+              Learn more
+              <ChevronRight className="w-4 h-4" />
+            </a>
           </div>
-          <div className="rounded-2xl bg-gray-50 p-8 min-h-[240px] flex items-center justify-center">
+
+          {/* placeholder visual */}
+          <div className="rounded-2xl bg-gradient-to-br from-green-50 to-teal-50/60 border border-green-100 p-8 flex items-center justify-center min-h-[200px]">
             <div className="text-center">
-              <BarChart3 className="w-10 h-10 text-mk-teal/30 mx-auto mb-3" />
-              <p className="text-sm text-gray-400">
-                {current.label} dashboard preview
-              </p>
+              <div className="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center mx-auto mb-3">
+                <TrendingUp className="w-7 h-7 text-green-600" />
+              </div>
+              <p className="text-sm font-medium text-gray-700">{tab.label} Dashboard</p>
+              <p className="text-xs text-gray-400 mt-1">Live data · Updated daily</p>
             </div>
           </div>
         </div>
@@ -981,34 +996,33 @@ function DepartmentTabs() {
 }
 
 /* ═══════════════════════════════════════════════
-   8. TESTIMONIALS — stats + quote grid
+   8. TESTIMONIALS
    ═══════════════════════════════════════════════ */
 function TestimonialsSection() {
   return (
-    <section className="py-20 lg:py-28 bg-mk-cream">
-      <div className="max-w-[1200px] mx-auto px-6">
-        <h2 className="font-display text-3xl sm:text-4xl lg:text-[48px] text-gray-900 text-center leading-tight mb-14">
-          Make more time for the work that matters.
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <section className="py-20 lg:py-28 bg-gray-950">
+      <div className="max-w-6xl mx-auto px-6 lg:px-12">
+        <div className="text-center mb-14">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
+            Results that speak for themselves
+          </h2>
+        </div>
+        <div className="grid sm:grid-cols-3 gap-6">
           {testimonials.map((t) => (
             <div
               key={t.name}
-              className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col"
+              className="rounded-2xl bg-white/5 border border-white/10 p-6 flex flex-col"
             >
               <div className="mb-4">
-                <span className="text-4xl font-bold text-mk-teal">
-                  {t.stat}
-                </span>
-                <p className="text-xs text-gray-400 mt-1">{t.statLabel}</p>
+                <p className="text-3xl font-bold text-green-400">{t.stat}</p>
+                <p className="text-xs text-white/40 mt-0.5">{t.statLabel}</p>
               </div>
-              <blockquote className="text-sm text-gray-600 leading-relaxed flex-1">
+              <p className="text-sm text-white/60 leading-relaxed flex-1 mb-6">
                 &ldquo;{t.quote}&rdquo;
-              </blockquote>
-              <div className="mt-4 pt-4 border-t border-gray-50">
-                <p className="text-sm font-medium text-gray-900">{t.name}</p>
-                <p className="text-xs text-gray-400">{t.role}</p>
+              </p>
+              <div>
+                <p className="text-sm font-medium text-white">{t.name}</p>
+                <p className="text-xs text-white/30">{t.role}</p>
               </div>
             </div>
           ))}
@@ -1019,40 +1033,44 @@ function TestimonialsSection() {
 }
 
 /* ═══════════════════════════════════════════════
-   9. FAQ — accordion
+   9. FAQ
    ═══════════════════════════════════════════════ */
 function FAQSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [open, setOpen] = useState<number | null>(null);
 
   return (
     <section className="py-20 lg:py-28 bg-white">
-      <div className="max-w-[760px] mx-auto px-6">
-        <h2 className="font-display text-3xl sm:text-4xl text-gray-900 text-center mb-12">
-          FAQs
-        </h2>
-
-        <div className="divide-y divide-gray-100">
+      <div className="max-w-3xl mx-auto px-6 lg:px-12">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-950 leading-tight">
+            Frequently asked questions
+          </h2>
+        </div>
+        <div className="space-y-3">
           {faqItems.map((item, i) => (
-            <div key={i}>
+            <div
+              key={item.q}
+              className="rounded-xl border border-gray-100 overflow-hidden"
+            >
               <button
-                onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                className="w-full flex items-center justify-between py-5 text-left group"
+                onClick={() => setOpen(open === i ? null : i)}
+                className="w-full flex items-center justify-between px-6 py-4 text-left"
               >
-                <span className="text-sm font-medium text-gray-900 pr-8 group-hover:text-mk-teal transition-colors">
+                <span className="text-sm font-medium text-gray-950">
                   {item.q}
                 </span>
-                <span className="flex-shrink-0 text-gray-400">
-                  {openIndex === i ? (
-                    <Minus className="w-4 h-4" />
-                  ) : (
-                    <Plus className="w-4 h-4" />
-                  )}
-                </span>
+                <ChevronDown
+                  className={`w-4 h-4 text-gray-400 flex-shrink-0 ml-4 transition-transform ${
+                    open === i ? "rotate-180" : ""
+                  }`}
+                />
               </button>
-              {openIndex === i && (
-                <p className="text-sm text-gray-500 leading-relaxed pb-5 pr-12">
-                  {item.a}
-                </p>
+              {open === i && (
+                <div className="px-6 pb-5">
+                  <p className="text-sm text-gray-500 leading-relaxed">
+                    {item.a}
+                  </p>
+                </div>
               )}
             </div>
           ))}
@@ -1063,35 +1081,52 @@ function FAQSection() {
 }
 
 /* ═══════════════════════════════════════════════
-   10. FINAL CTA — gradient bg with dual buttons
+   10. FINAL CTA — dark, full-width
    ═══════════════════════════════════════════════ */
-function FinalCTASection() {
+function FinalCTASection({
+  onGateCleared,
+}: {
+  onGateCleared?: () => void;
+}) {
   return (
-    <section className="relative py-24 lg:py-32 bg-gradient-to-br from-mk-teal via-mk-teal to-mk-teal-light overflow-hidden">
-      {/* decorative shapes */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full bg-white/20 -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-white/10 translate-x-1/3 translate-y-1/3" />
+    <section className="relative py-20 lg:py-28 bg-gray-950 overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-green-600/10 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-teal-500/[0.07] blur-3xl" />
       </div>
-
-      <div className="relative max-w-[800px] mx-auto px-6 text-center">
-        <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl text-white leading-tight mb-8">
-          Get started with MasterKey MarketPulse today
+      <div className="relative z-10 max-w-3xl mx-auto px-6 lg:px-12 text-center">
+        <div className="inline-flex items-center gap-2 text-xs font-semibold text-green-400 bg-green-400/10 border border-green-400/20 px-3 py-1.5 rounded-full mb-6">
+          <BarChart3 className="w-3.5 h-3.5" />
+          Free access — no credit card
+        </div>
+        <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight mb-4">
+          Ready to see the<br />
+          <span className="text-green-400">Conejo Valley market?</span>
         </h2>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a
-            href="#top"
-            className="inline-flex items-center px-8 py-3 rounded-full bg-white text-mk-teal text-sm font-medium hover:bg-white/90 transition-colors"
+        <p className="text-white/50 text-lg leading-relaxed mb-8 max-w-md mx-auto">
+          Get instant access to live pricing, inventory, and AI market summaries
+          across all 6 submarkets — completely free.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-semibold px-8 py-3.5 rounded-full transition-colors text-sm"
           >
-            Get started
-          </a>
+            <BarChart3 className="w-4 h-4" />
+            View the Dashboard — Free
+          </button>
           <a
             href="/#contact"
-            className="inline-flex items-center px-8 py-3 rounded-full border-2 border-white text-white text-sm font-medium hover:bg-white/10 transition-colors"
+            className="inline-flex items-center gap-2 border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-medium px-8 py-3.5 rounded-full transition-colors text-sm"
           >
-            Contact us
+            Request a demo
           </a>
         </div>
+        <p className="text-white/20 text-xs mt-6">
+          No spam, ever. We will never sell your information.
+        </p>
       </div>
     </section>
   );
