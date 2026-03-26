@@ -23,6 +23,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { MarketSnapshotResponse, SubmarketKey } from "@/lib/types";
+import SourceCitations, { type CitationSource } from "@/components/marketpulse/SourceCitations";
 
 /* ═══════════════════════════════════════════════════════
    CONSTANTS
@@ -56,6 +57,59 @@ const TIMEFRAMES: { key: TimeframeKey; label: string; months: number | null }[] 
     { key: "1Y", label: "1Y", months: 12 },
     { key: "ALL", label: "All", months: null },
   ];
+
+/* ═══════════════════════════════════════════════════════
+   CITATION SOURCES (per section)
+   ═══════════════════════════════════════════════════════ */
+const SOURCES_METRICS: CitationSource[] = [
+  {
+    name: "Rentcast",
+    url: "https://rentcast.io",
+    description: "Live market stats via Rentcast Markets API — median price, DOM, listings, $/sqft",
+  },
+];
+
+const SOURCES_AI_SUMMARY: CitationSource[] = [
+  {
+    name: "Perplexity AI",
+    url: "https://perplexity.ai",
+    description: "AI-generated narrative using Perplexity sonar model with real-time web search",
+  },
+  {
+    name: "Rentcast",
+    url: "https://rentcast.io",
+    description: "Market metrics used as ground truth for the AI prompt",
+  },
+  {
+    name: "Zillow Research",
+    url: "https://www.zillow.com/research/",
+    description: "Referenced by Perplexity sonar as a supporting data source",
+  },
+];
+
+const SOURCES_CHART: CitationSource[] = [
+  {
+    name: "Rentcast",
+    url: "https://rentcast.io",
+    description: "12-month price history from Rentcast Markets API. SFR is directly sourced; Condo & Townhome lines are ratio-estimated from aggregate history.",
+  },
+];
+
+const SOURCES_COMPS: CitationSource[] = [
+  {
+    name: "Rentcast",
+    url: "https://rentcast.io",
+    description: "Active listings pulled live from Rentcast Listings API by zip code",
+  },
+];
+
+const SOURCES_HEAT_BAR: CitationSource[] = [
+  {
+    name: "Rentcast",
+    url: "https://rentcast.io",
+    description: "Months of supply derived from active listings ÷ annualized sales rate",
+  },
+];
 
 const COMP_STATUS_STYLES: Record<
   "Active" | "Sold" | "Pending",
@@ -447,7 +501,12 @@ export default function MarketPulseDashboard() {
         {/* ── Top row: Metric cards + Market Balance Heat Bar ── */}
         <div className="grid grid-cols-12 gap-4 mb-5">
           {/* 4 metric cards — 8 cols */}
-          <div className="col-span-12 xl:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="col-span-12 xl:col-span-8 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-semibold text-white/25 uppercase tracking-widest">Market Metrics</p>
+              <SourceCitations sources={SOURCES_METRICS} />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {loading ? (
               <>
                 {[0, 1, 2, 3].map((i) => (
@@ -481,24 +540,28 @@ export default function MarketPulseDashboard() {
                 />
               </>
             )}
+            </div>
           </div>
 
           {/* Heat Bar — 4 cols */}
           <div className="col-span-12 xl:col-span-4">
             <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 h-full flex flex-col justify-between gap-4">
-              <div>
-                <p className="text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1">
-                  Market Balance
-                </p>
-                <p className="text-sm font-semibold text-white">
-                  {loading
-                    ? "—"
-                    : data?.marketBalance === "sellers"
-                    ? "Seller's Market"
-                    : data?.marketBalance === "buyers"
-                    ? "Buyer's Market"
-                    : "Balanced Market"}
-                </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-medium text-white/40 uppercase tracking-widest mb-1">
+                    Market Balance
+                  </p>
+                  <p className="text-sm font-semibold text-white">
+                    {loading
+                      ? "—"
+                      : data?.marketBalance === "sellers"
+                      ? "Seller's Market"
+                      : data?.marketBalance === "buyers"
+                      ? "Buyer's Market"
+                      : "Balanced Market"}
+                  </p>
+                </div>
+                <SourceCitations sources={SOURCES_HEAT_BAR} />
               </div>
               {loading ? (
                 <Skeleton className="h-10" />
@@ -514,16 +577,19 @@ export default function MarketPulseDashboard() {
 
         {/* ── AI Market Summary ── */}
         <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-5 mb-5">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-5 h-5 rounded-md bg-[#1A4D4D]/60 flex items-center justify-center">
-              <BarChart2 className="w-3 h-3 text-[#5BA8A8]" />
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-md bg-[#1A4D4D]/60 flex items-center justify-center">
+                <BarChart2 className="w-3 h-3 text-[#5BA8A8]" />
+              </div>
+              <h3 className="text-[13px] font-semibold text-white">
+                AI Market Summary
+              </h3>
+              <span className="text-[10px] font-medium text-white/25 bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded-full">
+                {submarketLabel}
+              </span>
             </div>
-            <h3 className="text-[13px] font-semibold text-white">
-              AI Market Summary
-            </h3>
-            <span className="text-[10px] font-medium text-white/25 bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded-full ml-1">
-              {submarketLabel}
-            </span>
+            <SourceCitations sources={SOURCES_AI_SUMMARY} />
           </div>
           {loading ? (
             <div className="space-y-2">
@@ -543,9 +609,12 @@ export default function MarketPulseDashboard() {
         {/* ── Price History Chart ── */}
         <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-5 mb-5">
           <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
-            <h3 className="text-[13px] font-semibold text-white">
-              Median Price History
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-[13px] font-semibold text-white">
+                Median Price History
+              </h3>
+              <SourceCitations sources={SOURCES_CHART} />
+            </div>
             <div className="flex items-center gap-3 flex-wrap">
               {/* Property type toggles */}
               <div className="flex gap-1.5">
@@ -655,9 +724,10 @@ export default function MarketPulseDashboard() {
 
         {/* ── Recent Comps ── */}
         <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-5">
-          <h3 className="text-[13px] font-semibold text-white mb-4">
-            Recent Comps
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[13px] font-semibold text-white">Recent Comps</h3>
+            <SourceCitations sources={SOURCES_COMPS} />
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
