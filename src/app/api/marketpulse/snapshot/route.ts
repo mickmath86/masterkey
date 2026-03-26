@@ -184,28 +184,47 @@ export async function GET(request: NextRequest) {
   try {
     const { statsData, compsData } = await fetchRentcastData(zipCode);
 
+    // Log raw shape in production for debugging
+    console.log("[snapshot] statsData keys:", Object.keys(statsData ?? {}));
+    console.log("[snapshot] saleData keys:", Object.keys((statsData?.saleData ?? {}) as object));
+    console.log("[snapshot] compsData type:", typeof compsData, Array.isArray(compsData) ? `array[${(compsData as unknown[]).length}]` : JSON.stringify(compsData)?.slice(0, 200));
+
     // Parse sale stats
     const sale = (statsData?.saleData ?? {}) as Record<string, unknown>;
-    const medianPrice = (sale?.medianPrice as number) ?? null;
-    const avgDom = (sale?.averageDaysOnMarket as number) ?? null;
-    const activeListings = (sale?.totalListings as number) ?? null;
-    const pricePerSqft = (sale?.averagePricePerSquareFoot as number)
-      ? Math.round(sale.averagePricePerSquareFoot as number)
+    const medianPrice = typeof sale?.medianPrice === "number" ? sale.medianPrice : null;
+    const avgDom = typeof sale?.averageDaysOnMarket === "number" ? Math.round(sale.averageDaysOnMarket) : null;
+    const activeListings = typeof sale?.totalListings === "number" ? sale.totalListings : null;
+    const pricePerSqft = typeof sale?.averagePricePerSquareFoot === "number"
+      ? Math.round(sale.averagePricePerSquareFoot)
       : null;
 
     // Months of supply = active listings / (monthly sales rate)
-    const totalSales = (sale?.totalSales as number) ?? null;
+    const totalSales = typeof sale?.totalSales === "number" ? sale.totalSales : null;
     let monthsOfSupply: number | null = null;
     if (activeListings && totalSales && totalSales > 0) {
       monthsOfSupply = parseFloat((activeListings / (totalSales / 12)).toFixed(1));
     }
 
+    // Safely extract history — Rentcast may return array OR object keyed by month
+    const rawHistory = sale?.history;
+    let historyArr: { month: string; averagePrice: number }[] = [];
+    if (Array.isArray(rawHistory)) {
+      historyArr = rawHistory as { month: string; averagePrice: number }[];
+    } else if (rawHistory && typeof rawHistory === "object") {
+      // Keyed object: { "2024-01": { averagePrice: 750000 }, ... }
+      historyArr = Object.entries(rawHistory as Record<string, { averagePrice?: number; average?: number }>)
+        .map(([month, val]) => ({
+          month,
+          averagePrice: val?.averagePrice ?? val?.average ?? 0,
+        }))
+        .sort((a, b) => a.month.localeCompare(b.month));
+    }
+
     // Median price change from history
     let medianPriceChangePct: number | null = null;
-    const history = (sale?.history as { month: string; averagePrice: number }[]) ?? [];
-    if (history.length >= 2) {
-      const oldest = history[0].averagePrice;
-      const newest = history[history.length - 1].averagePrice;
+    if (historyArr.length >= 2) {
+      const oldest = historyArr[0].averagePrice;
+      const newest = historyArr[historyArr.length - 1].averagePrice;
       if (oldest > 0) {
         medianPriceChangePct = parseFloat(
           (((newest - oldest) / oldest) * 100).toFixed(1)
@@ -213,9 +232,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Build price history (SFR from Rentcast history, condos/townhomes are proportional estimates)
-    // Rentcast returns aggregate history; we use it for SFR and apply property type breakdown ratios
-    const dataByType = (sale?.dataByPropertyType as { propertyType: string; averagePrice: number }[]) ?? [];
+    // Safely extract dataByPropertyType
+    const rawByType = sale?.dataByPropertyType;
+    const dataByType: { propertyType: string; averagePrice: number }[] = Array.isArray(rawByType)
+      ? (rawByType as { propertyType: string; averagePrice: number }[])
+      : [];
+
     const sfrEntry = dataByType.find((d) => d.propertyType?.toLowerCase().includes("single"));
     const condoEntry = dataByType.find((d) => d.propertyType?.toLowerCase().includes("condo"));
     const townEntry = dataByType.find((d) => d.propertyType?.toLowerCase().includes("town"));
@@ -224,27 +246,35 @@ export async function GET(request: NextRequest) {
     const condoRatio = condoEntry && medianPrice ? condoEntry.averagePrice / medianPrice : 0.78;
     const townRatio = townEntry && medianPrice ? townEntry.averagePrice / medianPrice : 0.88;
 
-    const priceHistory = history.map((h) => ({
+    const priceHistory = historyArr.map((h) => ({
       month: h.month,
       sfr: medianPrice ? Math.round(h.averagePrice * sfrRatio) : null,
       condo: medianPrice ? Math.round(h.averagePrice * condoRatio) : null,
       townhome: medianPrice ? Math.round(h.averagePrice * townRatio) : null,
     }));
 
-    // Build comps from listing data
-    const comps = (compsData as Record<string, unknown>[]).slice(0, 10).map((c) => {
-      const price = (c.price as number) ?? (c.listPrice as number) ?? 0;
-      const sqft = (c.squareFootage as number) ?? null;
+    // Safely extract comps — Rentcast listings may return array or { listings: [...] }
+    const rawComps = compsData;
+    const compsArr: Record<string, unknown>[] = Array.isArray(rawComps)
+      ? (rawComps as Record<string, unknown>[])
+      : Array.isArray((rawComps as Record<string, unknown>)?.listings)
+      ? ((rawComps as Record<string, unknown[]>).listings as Record<string, unknown>[])
+      : [];
+
+    const comps = compsArr.slice(0, 10).map((c) => {
+      const price = typeof c.price === "number" ? c.price
+        : typeof c.listPrice === "number" ? c.listPrice : 0;
+      const sqft = typeof c.squareFootage === "number" ? c.squareFootage : null;
       return {
         address: (c.formattedAddress as string) ?? (c.address as string) ?? "Unknown",
         price,
         sqft,
         pricePerSqft: sqft && price ? Math.round(price / sqft) : null,
-        bedrooms: (c.bedrooms as number) ?? null,
-        bathrooms: (c.bathrooms as number) ?? null,
-        daysOld: (c.daysOnMarket as number) ?? null,
+        bedrooms: typeof c.bedrooms === "number" ? c.bedrooms : null,
+        bathrooms: typeof c.bathrooms === "number" ? c.bathrooms : null,
+        daysOld: typeof c.daysOnMarket === "number" ? c.daysOnMarket : null,
         status: "Active" as const,
-        propertyType: (c.propertyType as string) ?? null,
+        propertyType: typeof c.propertyType === "string" ? c.propertyType : null,
       };
     });
 
