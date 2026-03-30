@@ -166,7 +166,7 @@ export default function SellGuidePage() {
 
               <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight mb-4">
                 Your Local<br />
-                <span className="text-orange-400">Seller&apos;s Prep Checklist</span>
+                <span className="text-orange-400">Sellers Market Report &amp; Checklist</span>
               </h1>
               <p className="text-white/60 text-lg leading-relaxed mb-8 max-w-md">
                 Your complete guide to selling your home for top dollar — from
