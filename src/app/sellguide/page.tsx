@@ -32,6 +32,7 @@ const WHAT_INSIDE = [
   "Marketing your listing: photography, MLS timing, and social strategy",
   "Navigating offers, contingencies, and counter-offers",
   "Current market stats: sale-to-list ratio, DOM, and inventory",
+  "Updated monthly so you always have the most current market data",
 ];
 
 // Layer 1: client-side phone format check

@@ -31,6 +31,7 @@ const WHAT_INSIDE = [
   "How to write a winning offer in a competitive market",
   "What to expect during escrow, inspections, and closing",
   "Current market stats: median prices, days on market, and trends",
+  "Updated monthly so you always have the most current market data",
 ];
 
 // Layer 1: client-side phone format check
