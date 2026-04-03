@@ -38,7 +38,7 @@ const WHAT_INSIDE = [
 
 // Layer 1: client-side phone format check
 function validatePhoneFormat(phone: string): string | null {
-  if (!phone.trim()) return null; // phone is optional — only validate if provided
+  if (!phone.trim()) return "Phone number is required.";
   const digits = phone.replace(/\D/g, "");
   const local = digits.startsWith("1") && digits.length === 11 ? digits.slice(1) : digits;
   if (local.length !== 10) return "Please enter a valid 10-digit phone number.";
@@ -70,6 +70,7 @@ export default function SellGuidePage() {
       emailRegex.test(form.email) &&
       form.market !== "" &&
       addressValid &&
+      form.phone.trim() !== "" &&
       !phoneError
     );
   }
@@ -93,26 +94,22 @@ export default function SellGuidePage() {
     e.preventDefault();
     if (!isValid() || isSubmitting) return;
 
-    // Layer 2: carrier lookup (only if a phone was provided)
-    if (form.phone.trim()) {
-      setIsSubmitting(true);
-      try {
-        const res = await fetch("/api/validate-phone", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: form.phone }),
-        });
-        const result = await res.json();
-        if (!result.valid) {
-          setPhoneError(result.reason ?? "Please enter a valid phone number.");
-          setIsSubmitting(false);
-          return;
-        }
-      } catch {
-        // API unreachable — fail open, continue
+    // Layer 2: carrier lookup
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/validate-phone", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: form.phone }),
+      });
+      const result = await res.json();
+      if (!result.valid) {
+        setPhoneError(result.reason ?? "Please enter a valid phone number.");
+        setIsSubmitting(false);
+        return;
       }
-    } else {
-      setIsSubmitting(true);
+    } catch {
+      // API unreachable — fail open, continue
     }
 
     const selectedMarket = MARKETS.find((m) => m.value === form.market);
@@ -215,7 +212,7 @@ export default function SellGuidePage() {
 
                 <div>
                   <label className="block text-xs font-medium text-white/60 mb-1.5">
-                    Phone <span className="text-white/30 font-normal">(optional)</span>
+                    Phone <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="tel"
