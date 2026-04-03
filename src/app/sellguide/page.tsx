@@ -114,6 +114,23 @@ export default function SellGuidePage() {
       // API unreachable — fail open, continue
     }
 
+    // Layer 3: email reputation check
+    try {
+      const emailRes = await fetch("/api/validate-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email }),
+      });
+      const emailResult = await emailRes.json();
+      if (!emailResult.valid) {
+        setEmailError(emailResult.reason ?? "Please enter a valid email address.");
+        setIsSubmitting(false);
+        return;
+      }
+    } catch {
+      // API unreachable — fail open, continue
+    }
+
     const selectedMarket = MARKETS.find((m) => m.value === form.market);
 
     try {
