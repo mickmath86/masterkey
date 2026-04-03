@@ -138,15 +138,15 @@ export default function SellGuidePage() {
         }),
       });
     } catch {
-      // still redirect to the PDF
-    } finally {
-      setIsSubmitting(false);
-      const params = new URLSearchParams({
-        market: form.market,
-        ...(form.firstName.trim() && { name: form.firstName.trim() }),
-      });
-      router.push(`/sellguide/confirmation?${params.toString()}`);
+      // webhook failed — still redirect, lead data already validated
     }
+
+    setIsSubmitting(false);
+    const params = new URLSearchParams({
+      market: form.market,
+      ...(form.firstName.trim() && { name: form.firstName.trim() }),
+    });
+    router.push(`/sellguide/confirmation?${params.toString()}`);
   }
 
   return (
