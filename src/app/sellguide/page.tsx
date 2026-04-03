@@ -222,6 +222,7 @@ export default function SellGuidePage() {
                 </div>
 
                 <button
+                  id="sell-submit"
                   type="submit"
                   disabled={!isValid() || isSubmitting}
                   className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors text-sm"
