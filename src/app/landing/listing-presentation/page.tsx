@@ -50,11 +50,11 @@ function AddressTest() {
       // Only navigate if we got valid property data
       if (result && !propertyTypeError) {
         // Navigate to questionnaire with pre-filled address, starting at step 2 (timeline)
-        router.push(`/questionnaire/listing-presentation?address=${encodeURIComponent(address)}&step=2`);
+        router.push(`/homevalue?address=${encodeURIComponent(address)}&step=2`);
       }
     } else {
       // Navigate to questionnaire without pre-filled address
-      router.push('/questionnaire/listing-presentation');
+      router.push('/homevalue');
     }
   };
   return (
@@ -69,7 +69,7 @@ function AddressTest() {
                 <MasterKeyLogoInlineBlack className="h-11  not-dark:hidden"/>
                 
                 {/* <div className="mt-24 sm:mt-32 lg:mt-16">
-                  <a href="/questionnaire/listing-presentation" className="inline-flex space-x-6">
+                  <a href="/homevalue" className="inline-flex space-x-6">
                     <span className="rounded-full bg-sky-50 px-3 py-1 text-sm/6 font-semibold text-sky-600 ring-1 ring-sky-600/20 ring-inset dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/25">
                       Selling Made Simple
                     </span>
@@ -192,7 +192,7 @@ function AddressTest() {
 const landingCards = [
   {
       title: "Property Valuation",
-      link:"/questionnaire/listing-presentation", 
+      link:"/homevalue", 
       slug: "property-valuation",
       icon: Home,
       excerpt: "Get an accurate market valuation of your property with comprehensive analysis of recent sales and current market trends."
@@ -206,7 +206,7 @@ const landingCards = [
   },
   {
       title: "Marketing Strategy",
-      link:"/questionnaire/listing-presentation", 
+      link:"/homevalue", 
       slug: "marketing-strategy",
       icon: DollarSign,
       excerpt: "Receive a detailed marketing plan designed to maximize your home's exposure and attract qualified buyers quickly."
@@ -257,7 +257,7 @@ function LandingHero() {
           <SparkleIcon className="w-12 h-12 text-sky-500 mb-4"/>  
           <h2 className="text-2xl font-medium tracking-tight">Ready to Get Started?</h2>
           <p className="my-2 text-sm text-gray-500">Start your journey to finding your dream home today.</p>
-          <Link  className="mx-auto flex items-center justify-center w-full bg-sky-500 text-white px-6 py-2 rounded-md" href="/questionnaire/listing-presentation">Get Started</Link>
+          <Link  className="mx-auto flex items-center justify-center w-full bg-sky-500 text-white px-6 py-2 rounded-md" href="/homevalue">Get Started</Link>
         </div>
         </div>
        
@@ -272,21 +272,21 @@ function LandingHero() {
 const testimonials = [
   {
       title: "Todd Shillington",
-      link:"/questionnaire/listing-presentation", 
+      link:"/homevalue", 
       slug: "seller-testimonial-1",
       icon: Home,
       quote: "MasterKey is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!"
   },
   {
       title: "Kevin Marsden",
-      link:"/questionnaire/listing-presentation", 
+      link:"/homevalue", 
       slug: "seller-testimonial-2",
       icon: Key,
       quote: "Professional and excellent service. I highly recommend. The Mathias team can help you out with all you real estate and management needs."
   },
   {
       title: "Javier Aguilera",
-      link:"/questionnaire/listing-presentation", 
+      link:"/homevalue", 
       slug: "seller-testimonial-3",
       icon: DollarSign,
       quote: "I highly recommend them not only as property managers but as brokers as well."
@@ -343,7 +343,7 @@ function Testimonials() {
           <SparkleIcon className="w-12 h-12 text-sky-500 mb-4"/>  
           <h2 className="text-2xl font-medium tracking-tight">Become a Future Success Story</h2>
           <p className="my-2 text-sm text-gray-500">Start your journey to finding your dream home today.</p>
-          <Link  className="mx-auto flex items-center justify-center w-full bg-sky-500 text-white px-6 py-2 rounded-md"href="/questionnaire/listing-presentation">Get Started</Link>
+          <Link  className="mx-auto flex items-center justify-center w-full bg-sky-500 text-white px-6 py-2 rounded-md"href="/homevalue">Get Started</Link>
         </div>
         </div>
        
@@ -434,7 +434,7 @@ const features = [
 const nextSteps = [
   {
       title: "Get Your Property Valued",
-      link:"/questionnaire/listing-presentation", 
+      link:"/homevalue", 
       slug: "property-valuation",
       stepElement: <div className="flex items-center justify-center w-12 h-12 bg-sky-300 rounded-lg"><span className="font-bold text-sky-600 text-lg">1</span></div>,
       excerpt: "Start with our comprehensive questionnaire to receive an accurate market valuation and personalized selling strategy for your home."
@@ -448,7 +448,7 @@ const nextSteps = [
   },
   {
       title: "List and Sell Successfully",
-      link:"/questionnaire/listing-presentation", 
+      link:"/homevalue", 
       slug: "successful-sale",
       stepElement: <div className="flex items-center justify-center w-12 h-12 bg-green-300 rounded-lg"><CheckBadgeIcon className="w-6 h-6 text-green-600" /></div>,
       excerpt: "Launch your listing with professional marketing, manage showings, and close the sale with our expert guidance every step of the way."
@@ -501,7 +501,7 @@ function NextSteps() {
           <p className="my-2 text-sm text-gray-500">Start your journey to finding your dream home today.</p>
           <Link  
             className="mx-auto font-semibold flex items-center justify-center w-full bg-sky-500 text-white px-6 py-2 rounded-md"
-            href="/questionnaire/listing-presentation"
+            href="/homevalue"
             onClick={() => trackEvent('cta_click', {
               button_text: 'Get Started',
               page: '/landing/listing-presentation',
@@ -537,7 +537,7 @@ function CallToAction() {
         personalized marketing approach.
       </p>
       <div className="mt-6">
-        <Button className="w-full sm:w-auto" href="/questionnaire/listing-presentation">
+        <Button className="w-full sm:w-auto" href="/homevalue">
           Get Free Market Analysis
         </Button>
       </div>

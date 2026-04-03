@@ -269,7 +269,7 @@ const steps = [
     // Only navigate if we got valid property data
     if (result && !propertyTypeError) {
       // Navigate to questionnaire with pre-filled address, starting at step 2 (timeline)
-      router.push(`/questionnaire/listing-presentation?address=${encodeURIComponent(address)}&step=2`);
+      router.push(`/homevalue?address=${encodeURIComponent(address)}&step=2`);
     }
   };
 
@@ -611,12 +611,12 @@ function CTA() {
           </p> */}
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Link
-              href="/questionnaire/listing-presentation"
+              href="/homevalue"
               className="rounded-md bg-sky-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-sky-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
             >
               Get Started Free
             </Link>
-            {/* <a href="/questionnaire/listing-presentation" className="text-sm/6 font-semibold text-white">
+            {/* <a href="/homevalue" className="text-sm/6 font-semibold text-white">
               Learn more
               <span aria-hidden="true">→</span>
             </a> */}
@@ -638,7 +638,7 @@ const data = [
     title: "Todd Shillington",
     description:
       "MasterKey is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!",
-    href: "/questionnaire/listing-presentation",
+    href: "/homevalue",
     image:
       "https://images.unsplash.com/photo-1560170412-0f7df0eb0fb1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2296",
   },
@@ -647,7 +647,7 @@ const data = [
     title: "Kevin Marsden",
     description:
       "Professional and excellent service. I highly recommend. The Mathias team can help you out with all you real estate and management needs.",
-    href: "/questionnaire/listing-presentation",
+    href: "/homevalue",
     image:
       "https://images.unsplash.com/photo-1526363269865-60998e11d82d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2370",
   },
@@ -656,7 +656,7 @@ const data = [
     title: "Javier Aguilera",
     description:
       "I highly recommend them not only as property managers but as brokers as well.",
-    href: "/questionnaire/listing-presentation",
+    href: "/homevalue",
     image:
       "https://images.unsplash.com/photo-1606788075819-9574a6edfab3?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2368",
   },
@@ -665,7 +665,7 @@ const data = [
     title: "Steve Scherer",
     description:
       "I always got the information I needed, and they were totally upfront about everything. Plus, their honesty and integrity made the whole process so much smoother. I highly recommend them!",
-    href: "/questionnaire/listing-presentation",
+    href: "/homevalue",
     image:
       "https://images.unsplash.com/photo-1542644425-bc949ec841a4?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1287",
   },
@@ -674,7 +674,7 @@ const data = [
     title: "Samir Akhter",
     description:
       "Mark was very professional to work with. Always responsive and straightforward. It was a pleasure working with the team. Would highly recommend.",
-    href: "/questionnaire/listing-presentation",
+    href: "/homevalue",
     image:
       "https://images.unsplash.com/photo-1584738766473-61c083514bf4?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2370",
   },
@@ -683,7 +683,7 @@ const data = [
     title: "Olivia Sellers",
     description:
       "The team was quick to respond and handle maintenance issues and kept the property in great shape.",
-    href: "/questionnaire/listing-presentation",
+    href: "/homevalue",
     image:
       "https://images.unsplash.com/photo-1601758003122-53c40e686a19?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2370",
   },

@@ -8,30 +8,24 @@ import {
   ArrowDownTrayIcon,
   ShieldCheckIcon,
   BookOpenIcon,
-  MapPinIcon,
+  WrenchScrewdriverIcon,
+  ScaleIcon,
   ChartBarIcon,
-  ChevronDownIcon,
 } from "@heroicons/react/16/solid";
 
 const WEBHOOK_URL =
-  "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/5457cc0b-5390-40cf-bee9-871752c5f7a3";
+  "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/90ef0486-6652-40d4-854f-7b73205ee1ac";
 
-const MARKETS = [
-  { label: "Thousand Oaks", value: "thousand-oaks", file: "/downloadables/buyerguides/thousand-oaks-buyers-playbook.pdf" },
-  { label: "Ventura", value: "ventura", file: "/downloadables/buyerguides/ventura-buyers-playbook.pdf" },
-  { label: "Camarillo", value: "camarillo", file: "/downloadables/buyerguides/camarillo-buyers-playbook.pdf" },
-  { label: "Westlake Village", value: "westlake-village", file: "/downloadables/buyerguides/westlake-buyers-playbook.pdf" },
-  { label: "Oxnard", value: "oxnard", file: "/downloadables/buyerguides/oxnard-buyers-playbook.pdf" },
-];
+const PM_GUIDE_PATH = "/downloadables/propertymanagement/masterkey-pm-guide.pdf";
 
 const WHAT_INSIDE = [
-  "Step-by-step breakdown of the home buying process",
-  "How to get pre-approved and what lenders look for in 2026",
-  "Neighborhood-by-neighborhood guide to the local market",
-  "How to write a winning offer in a competitive market",
-  "What to expect during escrow, inspections, and closing",
-  "Current market stats: median prices, days on market, and trends",
-  "Updated monthly so you always have the most current market data",
+  "Self-manage vs. hire a pro — an honest cost breakdown",
+  "Ventura County rental market data by city, with pricing insights",
+  "Tenant screening, lease compliance, and Fair Housing essentials",
+  "2026 California landlord-tenant law updates you need to know",
+  "Maintenance frameworks: preventative, reactive, and emergency",
+  "Rent collection, eviction process, and move-out documentation",
+  "Financial management, tax strategy, and 1031 exchange basics",
 ];
 
 // Layer 1: client-side phone format check
@@ -45,13 +39,12 @@ function validatePhoneFormat(phone: string): string | null {
   return null;
 }
 
-export default function BuyerGuidePage() {
+export default function PropertyManagementGuidePage() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     phone: "",
     email: "",
-    market: "",
   });
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
@@ -64,7 +57,6 @@ export default function BuyerGuidePage() {
       form.firstName.trim() &&
       form.email.trim() &&
       emailRegex.test(form.email) &&
-      form.market !== "" &&
       !phoneError
     );
   }
@@ -110,8 +102,6 @@ export default function BuyerGuidePage() {
       setIsSubmitting(true);
     }
 
-    const selectedMarket = MARKETS.find((m) => m.value === form.market);
-
     try {
       await fetch(WEBHOOK_URL, {
         method: "POST",
@@ -121,14 +111,10 @@ export default function BuyerGuidePage() {
           lastName: form.lastName,
           phone: form.phone,
           email: form.email,
-          market: form.market,
-          marketName: selectedMarket?.label ?? form.market,
-          formType: "buyer-guide",
-          source: "buyerguide-page",
-          downloadable: `buyers-playbook-${form.market}`,
-          assetUrl: selectedMarket
-            ? `https://www.usemasterkey.com${selectedMarket.file}`
-            : "",
+          formType: "property-management-guide",
+          source: "propertymanagement-page",
+          downloadable: "masterkey-pm-guide",
+          assetUrl: `https://www.usemasterkey.com${PM_GUIDE_PATH}`,
           submittedAt: new Date().toISOString(),
         }),
       });
@@ -136,9 +122,7 @@ export default function BuyerGuidePage() {
       // still redirect to the PDF
     } finally {
       setIsSubmitting(false);
-      if (selectedMarket) {
-        window.location.href = selectedMarket.file;
-      }
+      window.location.href = PM_GUIDE_PATH;
     }
   }
 
@@ -165,13 +149,13 @@ export default function BuyerGuidePage() {
               </div>
 
               <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight mb-4">
-                Your Local<br />
-                <span className="text-green-400">Buyer&apos;s Playbook</span>
+                The Intelligent Owner&apos;s Guide to<br />
+                <span className="text-green-400">Property Management</span>
               </h1>
               <p className="text-white/60 text-lg leading-relaxed mb-8 max-w-md">
-                Your step-by-step guide to buying a home with confidence —
-                covering everything from pre-approval to closing day. Choose
-                your market below.
+                A data-driven framework for protecting and growing your
+                rental investment in Ventura County — from tenant screening
+                to tax strategy.
               </p>
 
               {/* ── Inline form (desktop: above checklist) ── */}
@@ -246,38 +230,13 @@ export default function BuyerGuidePage() {
                   )}
                 </div>
 
-                {/* ── Market dropdown ── */}
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-1.5">
-                    Which market are you interested in? <span className="text-red-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={form.market}
-                      onChange={(e) => setForm((f) => ({ ...f, market: e.target.value }))}
-                      required
-                      className="w-full appearance-none px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white focus:ring-2 focus:ring-green-400 focus:border-green-400 focus:outline-none cursor-pointer"
-                    >
-                      <option value="" disabled className="bg-gray-900 text-white/50">
-                        Select a market…
-                      </option>
-                      {MARKETS.map((m) => (
-                        <option key={m.value} value={m.value} className="bg-gray-900 text-white">
-                          {m.label}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-                  </div>
-                </div>
-
                 <button
                   type="submit"
                   disabled={!isValid() || isSubmitting}
                   className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors text-sm"
                 >
                   <BookOpenIcon className="w-4 h-4" />
-                  {isSubmitting ? "Opening your playbook…" : "Get the Buyer\u2019s Playbook — Free"}
+                  {isSubmitting ? "Opening your guide…" : "Get the Property Management Guide — Free"}
                 </button>
 
                 <p className="text-xs text-white/30 text-center leading-relaxed">
@@ -305,8 +264,8 @@ export default function BuyerGuidePage() {
               <div className="relative">
                 <div className="absolute -inset-1 rounded-xl bg-green-500/20 blur-xl" />
                 <img
-                  src="/buyers-playbook-cover.jpg"
-                  alt="The Buyer's Playbook cover"
+                  src="/pm-guide-cover.jpg"
+                  alt="The Intelligent Owner's Guide to Property Management cover"
                   className="relative w-64 sm:w-72 lg:w-80 rounded-xl shadow-2xl border border-white/10"
                   style={{ transform: "perspective(800px) rotateY(-4deg) rotateX(2deg)" }}
                 />
@@ -323,29 +282,30 @@ export default function BuyerGuidePage() {
       <section className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <h2 className="text-2xl font-bold text-gray-950 mb-3">
-            Built for Ventura County buyers
+            Built for Ventura County property owners
           </h2>
           <p className="text-gray-500 text-sm mb-10 max-w-xl mx-auto">
-            This isn&apos;t a generic guide. Every stat, tip, and strategy is tailored
-            to your specific market — Thousand Oaks, Ventura, Camarillo,
-            Westlake Village, or Oxnard.
+            This isn&apos;t a generic landlord guide. Every regulation, cost
+            breakdown, and strategy is specific to Ventura County — covering
+            Thousand Oaks, Ventura, Camarillo, Westlake Village, Oxnard,
+            and Newbury Park.
           </p>
           <div className="grid sm:grid-cols-3 gap-6">
             {[
               {
+                icon: ScaleIcon,
+                title: "2026 Legal Compliance",
+                desc: "AB 1482, local rent control, security deposit changes, and every regulation that affects your bottom line.",
+              },
+              {
+                icon: WrenchScrewdriverIcon,
+                title: "Management Framework",
+                desc: "Tenant screening, lease compliance, maintenance systems, and rent collection — the full operational playbook.",
+              },
+              {
                 icon: ChartBarIcon,
-                title: "2026 Market Data",
-                desc: "Current median prices, inventory trends, and days-on-market stats for your chosen market.",
-              },
-              {
-                icon: BookOpenIcon,
-                title: "Step-by-Step Process",
-                desc: "From setting your budget to getting the keys — a clear, jargon-free walkthrough of every stage.",
-              },
-              {
-                icon: MapPinIcon,
-                title: "Neighborhood Profiles",
-                desc: "School ratings, commute times, price ranges, and lifestyle notes for each neighborhood.",
+                title: "Market-by-Market Data",
+                desc: "Rental rates, days on market, vacancy trends, and tenant demographics for each Ventura County city.",
               },
             ].map((item) => (
               <div key={item.title} className="bg-gray-50 rounded-2xl border border-gray-100 p-6 text-left">
@@ -369,8 +329,8 @@ export default function BuyerGuidePage() {
               View instantly in your browser
             </span>
             <span className="flex items-center gap-1.5">
-              <MapPinIcon className="w-4 h-4 text-green-500" />
-              Market-specific data
+              <ScaleIcon className="w-4 h-4 text-green-500" />
+              Ventura County specific
             </span>
           </div>
         </div>

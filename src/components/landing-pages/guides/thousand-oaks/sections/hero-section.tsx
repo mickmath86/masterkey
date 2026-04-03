@@ -12,6 +12,17 @@ interface HeroFormData {
   phone: string
 }
 
+// Layer 1: client-side phone format check
+function validatePhoneFormat(phone: string): string | null {
+  if (!phone.trim()) return null;
+  const digits = phone.replace(/\D/g, '');
+  const local = digits.startsWith('1') && digits.length === 11 ? digits.slice(1) : digits;
+  if (local.length !== 10) return 'Please enter a valid 10-digit phone number.';
+  if (local[0] === '0' || local[0] === '1') return 'Please enter a valid phone number.';
+  if (/^(\d)\1{9}$/.test(local) || local === '1234567890') return 'Please enter a valid phone number.';
+  return null;
+}
+
 function HeroSectionContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -24,6 +35,7 @@ function HeroSectionContent() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [phoneError, setPhoneError] = useState('')
   const [utmParams, setUtmParams] = useState<Record<string, string>>({})
 
   // Capture UTM parameters on component mount
@@ -66,10 +78,33 @@ function HeroSectionContent() {
       }
     }
 
-    setIsSubmitting(true)
+    // Layer 1 gate
+    if (phoneError) return;
+
+    // Layer 2: carrier lookup (only if phone provided)
+    if (formData.phone.trim()) {
+      setIsSubmitting(true)
+      try {
+        const valRes = await fetch('/api/validate-phone', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: formData.phone }),
+        })
+        const valResult = await valRes.json()
+        if (!valResult.valid) {
+          setPhoneError(valResult.reason ?? 'Please enter a valid phone number.')
+          setIsSubmitting(false)
+          return
+        }
+      } catch {
+        // API unreachable — fail open
+      }
+    } else {
+      setIsSubmitting(true)
+    }
 
     try {
-      const webhookUrl = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/94a71d44-448e-4e77-8d2b-3e4b6938ed29'
+      const webhookUrl = 'https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/6b9c47d4-7a44-4e7f-a4b4-b00f0c57e649'
       
       const response = await fetch(webhookUrl, {
         method: 'POST',
@@ -86,6 +121,7 @@ function HeroSectionContent() {
           metadata: {
             leadSource: 'Thousand Oaks Neighborhood Guide',
             guide: 'Thousand Oaks',
+            assetUrl: 'https://www.usemasterkey.com/landing/guides/thousand-oaks-guide',
             submittedAt: new Date().toISOString(),
             ...utmParams
           }
@@ -110,6 +146,9 @@ function HeroSectionContent() {
   const handleInputChange = (field: keyof HeroFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     setError('')
+    if (field === 'phone') {
+      setPhoneError(validatePhoneFormat(value) ?? '')
+    }
   }
 
   return (
@@ -204,9 +243,16 @@ function HeroSectionContent() {
                       id="phone"
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:border-transparent dark:bg-gray-800 dark:text-white ${
+                        phoneError
+                          ? 'border-red-400 focus:ring-red-400 dark:border-red-500'
+                          : 'border-gray-300 focus:ring-sky-500 dark:border-gray-600'
+                      }`}
                       placeholder="(805) 555-0123"
                     />
+                    {phoneError && (
+                      <p className="mt-1 text-xs text-red-600 dark:text-red-400">{phoneError}</p>
+                    )}
                   </div>
 
                   {error && (

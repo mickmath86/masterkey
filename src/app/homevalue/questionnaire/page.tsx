@@ -352,12 +352,6 @@ function isStepValid(step: number, data: HomeValueFormData, addressConfirmed: bo
   }
 }
 
-// ─── Webhook URL ──────────────────────────────────────────────────────────────
-
-const WEBHOOK_URL =
-  process.env.NEXT_PUBLIC_FORM_WEBHOOK_URL ||
-  "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/63dbb140-9990-4cb4-8954-e6d59f3813ce";
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 function HomeValueQuestionnaireContent() {
@@ -469,24 +463,10 @@ function HomeValueQuestionnaireContent() {
     if (!isStepValid(6, formData, addressConfirmed)) return;
     setIsSubmitting(true);
     try {
-      const payload = {
-        ...formData,
-        features: formData.features.join(", "),
-        submittedAt: new Date().toISOString(),
-        formType: "home-value",
-        source: "homevalue-questionnaire",
-      };
-      await fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // continue to results regardless
-    } finally {
-      setIsSubmitting(false);
       sessionStorage.setItem("hv_form", JSON.stringify(formData));
       router.push("/homevalue/results");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
