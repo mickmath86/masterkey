@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import NavbarMinimal from "@/components/navbar-minimal";
 import { Footer } from "@/components/footer";
 import { GooglePlacesInput } from "@/components/ui/google-places-input";
@@ -48,6 +49,7 @@ function validatePhoneFormat(phone: string): string | null {
 }
 
 export default function SellGuidePage() {
+  const router = useRouter();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -139,9 +141,11 @@ export default function SellGuidePage() {
       // still redirect to the PDF
     } finally {
       setIsSubmitting(false);
-      if (selectedMarket) {
-        window.location.href = selectedMarket.file;
-      }
+      const params = new URLSearchParams({
+        market: form.market,
+        ...(form.firstName.trim() && { name: form.firstName.trim() }),
+      });
+      router.push(`/sellguide/confirmation?${params.toString()}`);
     }
   }
 
