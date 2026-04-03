@@ -3,6 +3,7 @@
 import { useState } from "react";
 import NavbarMinimal from "@/components/navbar-minimal";
 import { Footer } from "@/components/footer";
+import { GooglePlacesInput } from "@/components/ui/google-places-input";
 import {
   CheckCircleIcon,
   ArrowDownTrayIcon,
@@ -53,9 +54,11 @@ export default function SellGuidePage() {
     phone: "",
     email: "",
     market: "",
+    propertyAddress: "",
   });
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [addressValid, setAddressValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -66,6 +69,7 @@ export default function SellGuidePage() {
       form.email.trim() &&
       emailRegex.test(form.email) &&
       form.market !== "" &&
+      addressValid &&
       !phoneError
     );
   }
@@ -124,6 +128,7 @@ export default function SellGuidePage() {
           email: form.email,
           market: form.market,
           marketName: selectedMarket?.label ?? form.market,
+          propertyAddress: form.propertyAddress,
           formType: "seller-guide",
           source: "sellguide-page",
           downloadable: `sellers-checklist-${form.market}`,
@@ -255,7 +260,10 @@ export default function SellGuidePage() {
                   <div className="relative">
                     <select
                       value={form.market}
-                      onChange={(e) => setForm((f) => ({ ...f, market: e.target.value }))}
+                      onChange={(e) => {
+                        setForm((f) => ({ ...f, market: e.target.value, propertyAddress: "" }));
+                        setAddressValid(false);
+                      }}
                       required
                       className="w-full appearance-none px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-400 focus:border-orange-400 focus:outline-none cursor-pointer"
                     >
@@ -271,6 +279,29 @@ export default function SellGuidePage() {
                     <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                   </div>
                 </div>
+
+                {/* ── Property address (revealed after market selected) ── */}
+                {form.market && (
+                  <div>
+                    <label className="block text-xs font-medium text-white/60 mb-1.5">
+                      Property Address <span className="text-red-400">*</span>
+                    </label>
+                    <GooglePlacesInput
+                      id="property-address"
+                      value={form.propertyAddress}
+                      onChange={(val) =>
+                        setForm((f) => ({ ...f, propertyAddress: val }))
+                      }
+                      onValidationChange={(valid) => setAddressValid(valid)}
+                      placeholder="Start typing your property address…"
+                      showValidation={true}
+                      className="bg-white/10 border-white/20 text-white placeholder-white/30 focus:ring-orange-400 focus:border-orange-400"
+                    />
+                    <p className="mt-1.5 text-[11px] text-white/30">
+                      Enter the address of the home you&apos;re thinking of selling.
+                    </p>
+                  </div>
+                )}
 
                 <button
                   id="sell-submit"

@@ -150,8 +150,8 @@ export function GooglePlacesInput({
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         placeholder={isLoaded ? placeholder : "Loading address validation..."}
-        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg ${
-          error ? 'border-red-500' : 'border-gray-300'
+        className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 text-sm ${
+          error ? 'border-red-500 focus:ring-red-400' : 'focus:ring-blue-500 focus:border-blue-500'
         } ${className}`}
         disabled={!isLoaded}
       />
@@ -174,9 +174,7 @@ export function GooglePlacesInput({
         </div>
       )}
       
-      <div className="mt-2 text-xs text-gray-500">
-        Start typing your property address for suggestions
-      </div>
+
     </div>
   );
 }
