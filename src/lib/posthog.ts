@@ -7,26 +7,37 @@ export const initPostHog = () => {
     const isDevelopment = process.env.NODE_ENV === "development"
     
     if (posthogKey && !isDevelopment) {
+      // Production: full PostHog init
       posthog.init(posthogKey, {
         api_host: "/ingest",
         ui_host: "https://us.posthog.com",
         person_profiles: 'identified_only',
-        capture_pageview: false, // We'll handle this manually
+        capture_pageview: false,
         capture_pageleave: true,
         debug: false,
-        loaded: (posthog) => {
-          // Disable feature flags and experiments to prevent errors
-          if (isDevelopment) {
-            posthog.opt_out_capturing()
-          }
-        },
         autocapture: false,
         disable_session_recording: true,
-        advanced_disable_decide: true, // Disable the /decide endpoint which loads experiments
+        advanced_disable_decide: true,
+      })
+    } else if (isDevelopment && posthogKey) {
+      // Development: init with opt-out so no data is sent,
+      // but featureFlags.overrideFeatureFlags() still works for local testing
+      posthog.init(posthogKey, {
+        api_host: "/ingest",
+        ui_host: "https://us.posthog.com",
+        person_profiles: 'identified_only',
+        capture_pageview: false,
+        capture_pageleave: false,
+        autocapture: false,
+        disable_session_recording: true,
+        advanced_disable_decide: true,
+        loaded: (ph) => {
+          ph.opt_out_capturing()
+          console.log('[PostHog] Dev mode — capturing disabled, overrideFeatureFlags() available')
+        },
       })
     } else if (isDevelopment) {
-      // In development, create a mock posthog object to prevent errors
-      console.log('PostHog disabled in development environment')
+      console.log('[PostHog] Dev mode — no key set, feature flag overrides unavailable')
     }
   }
   return posthog
