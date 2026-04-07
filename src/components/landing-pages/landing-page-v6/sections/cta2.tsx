@@ -31,10 +31,13 @@ export default function CTA2() {
                 {' '}
                 Call Now{' '}
               </a>
-              <a href="#" className="text-sm/6 font-semibold text-white hover:text-gray-100">
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('openCalendarModal'))}
+                className="text-sm/6 font-semibold text-white hover:text-gray-100"
+              >
                 Schedule an Appointment
                 <span aria-hidden="true">→</span>
-              </a>
+              </button>
             </div>
           </div>
           <div className="relative mt-16 h-80 lg:mt-8">

@@ -215,14 +215,11 @@ export function Header() {
                                     </Link>
                                 </Button>
                                 <Button
-                                    asChild
                                     size="sm"
-                                     variant="outline"
-                                     >
-                                       
-                                    <Link href="#">
+                                    variant="outline"
+                                    onClick={() => window.dispatchEvent(new CustomEvent('openCalendarModal'))}
+                                    >
                                         <span>Schedule Appointment</span>
-                                    </Link>
                                 </Button>
                             </div>
                         </div>
