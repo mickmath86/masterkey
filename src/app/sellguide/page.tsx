@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import NavbarMinimal from "@/components/navbar-minimal";
 import { Footer } from "@/components/footer";
 import { GooglePlacesInput } from "@/components/ui/google-places-input";
+import LandingPageV6 from "@/components/landing-pages/landing-page-v6/page";
 import {
   CheckCircleIcon,
   ArrowDownTrayIcon,
@@ -21,7 +22,7 @@ import posthog from "posthog-js";
 // DEV OVERRIDE — uncomment ONE line below to
 // force a specific variant in localhost:
 // ─────────────────────────────────────────────
-// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sell-guide-landing-page-campaign': 'test' } })
+posthog.featureFlags.overrideFeatureFlags({ flags: { 'sell-guide-landing-page-campaign': 'test' } })
 // posthog.featureFlags.overrideFeatureFlags({ flags: { 'sell-guide-landing-page-campaign': 'control' } })
 
 const WEBHOOK_URL =
@@ -370,7 +371,7 @@ export default function SellGuidePage() {
                   Free Download — 2026 Edition
                 </div>
                 <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight mb-4">
-                  Your Local<br />
+                  Your Ventura County<br />
                   <span className="text-orange-400">Sellers Market Report &amp; Checklist</span>
                 </h1>
                 <p className="text-white/60 text-lg leading-relaxed mb-8 max-w-md">
@@ -436,15 +437,45 @@ export default function SellGuidePage() {
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-amber-400/6 blur-3xl" />
         </div>
         <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="py-12 lg:py-20">
+          <div className="flex flex-col-reverse lg:flex-row lg:grid lg:grid-cols-2 gap-12 items-center">
+            <div className="py-1 lg:py-20">
               <div className="inline-flex items-center gap-2 text-xs font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full mb-6">
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Free Download — 2026 Edition
               </div>
               <h1 className="text-4xl sm:text-5xl font-bold text-gray-950 leading-tight mb-4">
-                Your Local<br />
-                <span className="text-orange-500">Sellers Market Report &amp; Checklist</span>
+                Your <br />
+                <span className="relative font-bold text-orange-400">
+                                    <svg
+                                        aria-hidden
+                                        className="pointer-events-none absolute inset-x-0 -bottom-3 w-full"
+                                        viewBox="0 0 283 22"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M1.24715 19.3744C72.4051 10.3594 228.122 -4.71194 281.724 7.12332"
+                                            stroke="url(#paint0_linear_pl)"
+                                            strokeWidth="4"
+                                        />
+                                        <defs>
+                                            <linearGradient
+                                                id="paint0_linear_pl"
+                                                x1="282"
+                                                y1="5.49999"
+                                                x2="40"
+                                                y2="13"
+                                                gradientUnits="userSpaceOnUse">
+                                                <stop stopColor="var(--color-orange-400)" />
+                                                <stop
+                                                    offset="1"
+                                                    stopColor="var(--color-amber-300)"
+                                                />
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                    <span className="relative">Ventura County</span>
+                                </span>{' '}
+                <span className="italic">Sellers Market Report <span className="text-3xl italic">&amp; Checklist</span></span>
               </h1>
               <p className="text-gray-500 text-lg leading-relaxed mb-8 max-w-md">
                 Your complete guide to selling your home for top dollar — from
@@ -478,21 +509,38 @@ export default function SellGuidePage() {
             <div className="flex justify-center lg:justify-end items-center pb-12 lg:pb-0">
               <div className="relative">
                 <div className="absolute -inset-1 rounded-xl bg-orange-400/15 blur-xl" />
-                <img
-                  src="/sellers-checklist-cover.jpg"
-                  alt="The Seller's Prep Checklist cover"
-                  className="relative w-64 sm:w-72 lg:w-80 rounded-xl shadow-xl border border-gray-200"
+                {/* Mobile video */}
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="relative w-full rounded-xl shadow-xl border border-gray-200 object-cover lg:hidden"
                   style={{ transform: "perspective(800px) rotateY(-4deg) rotateX(2deg)" }}
-                />
-                <div className="absolute -top-3 -right-3 bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                  FREE
-                </div>
+                >
+                  <source src="/video/sellers-checklist-cover.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+                {/* Large screen video */}
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="relative hidden lg:block w-96 h-[600px] rounded-xl shadow-xl border border-gray-200 object-cover"
+                  style={{ transform: "perspective(800px) rotateY(-4deg) rotateX(2deg)" }}
+                >
+                  <source src="/video/portrait-sellers-checklist-cover-lg.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+                
               </div>
             </div>
           </div>
         </div>
       </section>
       <BottomSection />
+      <LandingPageV6 />
       <Footer />
     </div>
   );
