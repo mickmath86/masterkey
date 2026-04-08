@@ -11,6 +11,8 @@ import {
   MapPinIcon,
   CalendarDaysIcon,
   XMarkIcon,
+  HomeModernIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/16/solid";
 
 const CALENDAR_SRC = "https://api.leadconnectorhq.com/widget/booking/dC0pazbNghUa1xKcbXiY";
@@ -76,6 +78,7 @@ function ConfirmationContent() {
   const searchParams = useSearchParams();
   const marketKey = searchParams.get("market") ?? "";
   const firstName = searchParams.get("name") ?? "";
+  const address = searchParams.get("address") ?? "";
   const market = MARKETS[marketKey];
   const [calendarOpen, setCalendarOpen] = useState(false);
 
@@ -157,8 +160,31 @@ function ConfirmationContent() {
             </p>
           )}
 
+          {/* Home valuation upsell */}
+          {(market || address) && (
+            <div className="mt-6 p-4 rounded-2xl bg-white/5 border border-white/10 text-left">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-orange-400/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <HomeModernIcon className="w-4 h-4 text-orange-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white mb-0.5">Want to know exactly what your home is worth?</p>
+                  <p className="text-xs text-white/40 mb-3 leading-relaxed">Get a free data-driven estimate powered by live MLS data and recent comps — takes 2 minutes.</p>
+                  <a
+                    href={`/homevalue/questionnaire${address ? `?address=${encodeURIComponent(address)}` : ""}`}
+                    className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-400 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors"
+                  >
+                    <HomeModernIcon className="w-3.5 h-3.5" />
+                    Get My Free Home Valuation
+                    <ArrowRightIcon className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Divider */}
-          <div className="mt-12 pt-8 border-t border-white/10">
+          <div className="mt-8 pt-8 border-t border-white/10">
             <p className="text-xs text-white/30 mb-4">
               Have questions about selling in {market?.label ?? "your market"}?
             </p>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, Suspense, useRef } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/button";
 import { Gradient } from "@/components/gradient";
 import { GooglePlacesInput } from "@/components/ui/google-places-input";
@@ -360,7 +361,16 @@ function HomeValueQuestionnaireContent() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState<HomeValueFormData>(INITIAL);
+
+  // Pre-fill address from URL param (e.g. coming from /sellguide/confirmation)
+  useEffect(() => {
+    const addressParam = searchParams.get("address");
+    if (addressParam) {
+      setFormData(d => ({ ...d, propertyAddress: addressParam }));
+    }
+  }, []);
 
   // Address confirmation state
   const [lookupStatus, setLookupStatus] = useState<LookupStatus>("idle");
