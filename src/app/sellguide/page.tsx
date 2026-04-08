@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import NavbarMinimal from "@/components/navbar-minimal";
 import { Footer } from "@/components/footer";
@@ -574,7 +574,7 @@ function SellGuideQuestionnaire({
 // ═══════════════════════════════════════════════════════
 // MAIN PAGE
 // ═══════════════════════════════════════════════════════
-export default function SellGuidePage() {
+function SellGuidePageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [variant, setVariant] = useState<"control" | "test" | null>(null);
@@ -942,5 +942,17 @@ function BottomSection() {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function SellGuidePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-orange-400/30 border-t-orange-400 animate-spin" />
+      </div>
+    }>
+      <SellGuidePageInner />
+    </Suspense>
   );
 }
