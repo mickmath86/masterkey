@@ -24,7 +24,7 @@ import posthog from "posthog-js";
 // DEV OVERRIDE — uncomment ONE line below to
 // force a specific variant in localhost:
 // ─────────────────────────────────────────────
-posthog.featureFlags.overrideFeatureFlags({ flags: { 'sell-guide-landing-page-campaign': 'test' } })
+// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sell-guide-landing-page-campaign': 'test' } })
 // posthog.featureFlags.overrideFeatureFlags({ flags: { 'sell-guide-landing-page-campaign': 'control' } })
 
 const WEBHOOK_URL =
