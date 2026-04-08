@@ -269,7 +269,7 @@ function SellGuideQuestionnaire({
               {MARKETS.map((m) => (
                 <button
                   key={m.value}
-                  onClick={() => { set("market", m.value); }}
+                  onClick={() => { set("market", m.value); setTimeout(() => setStep(s => s + 1), 160); }}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium text-left transition-colors ${
                     data.market === m.value
                       ? "border-orange-400 bg-orange-50 text-orange-700"
@@ -298,7 +298,13 @@ function SellGuideQuestionnaire({
               ].map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => set("intent", opt.value as "selling" | "exploring")}
+                  onClick={() => {
+                    const v = opt.value as "selling" | "exploring";
+                    set("intent", v);
+                    setTimeout(() => {
+                      if (v === "exploring") { setStep(7); } else { setStep(s => s + 1); }
+                    }, 160);
+                  }}
                   className={`w-full flex items-start gap-3 px-4 py-4 rounded-xl border text-left transition-colors ${
                     data.intent === opt.value
                       ? "border-orange-400 bg-orange-50"
@@ -345,7 +351,7 @@ function SellGuideQuestionnaire({
               {TIMELINE_OPTIONS.map((t) => (
                 <button
                   key={t.value}
-                  onClick={() => set("timeline", t.value)}
+                  onClick={() => { set("timeline", t.value); setTimeout(() => setStep(s => s + 1), 160); }}
                   className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
                     data.timeline === t.value
                       ? "border-orange-400 bg-orange-50 text-orange-700"
@@ -369,7 +375,7 @@ function SellGuideQuestionnaire({
               {REASON_OPTIONS.map((r) => (
                 <button
                   key={r.value}
-                  onClick={() => set("reason", r.value)}
+                  onClick={() => { set("reason", r.value); if (r.value !== "other") { setTimeout(() => setStep(s => s + 1), 160); } }}
                   className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
                     data.reason === r.value
                       ? "border-orange-400 bg-orange-50 text-orange-700"
