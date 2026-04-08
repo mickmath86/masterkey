@@ -356,78 +356,6 @@ export default function SellGuidePage() {
   // ─── CONTROL variant (dark — original) ────────────────────────────────────
   if (variant !== "test") {
     return (
-      <div className="min-h-screen bg-white">
-        <section className="relative overflow-hidden bg-gray-950 pb-0">
-          <NavbarMinimal theme="dark" />
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full bg-orange-600/12 blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-red-700/10 blur-3xl" />
-          </div>
-          <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="py-12 lg:py-20">
-                <div className="inline-flex items-center gap-2 text-xs font-semibold text-orange-400 bg-orange-400/10 border border-orange-400/20 px-3 py-1.5 rounded-full mb-6">
-                  <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                  Free Download — 2026 Edition
-                </div>
-                <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight mb-4">
-                  Your Ventura County<br />
-                  <span className="text-orange-400">Sellers Market Report &amp; Checklist</span>
-                </h1>
-                <p className="text-white/60 text-lg leading-relaxed mb-8 max-w-md">
-                  Your complete guide to selling your home for top dollar — from
-                  prep and staging to closing with confidence. Choose your market below.
-                </p>
-
-                {renderForm({
-                  cardCls: "bg-white/5 border border-white/10",
-                  labelCls: "text-white/60",
-                  inputCls: "bg-white/10 border-white/20 text-white placeholder-white/30 focus:border-orange-400",
-                  inputErrCls: "bg-white/10 border-red-400 text-white placeholder-white/30 focus:ring-red-400 focus:border-red-400",
-                  selectCls: "bg-white/10 border-white/20 text-white",
-                  btnCls: "bg-orange-500 hover:bg-orange-400 text-white",
-                  hintCls: "text-white/30",
-                  placeholderTheme: "bg-white/10 border-white/20 text-white placeholder-white/30",
-                })}
-
-                <p className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-3">
-                  What&apos;s inside
-                </p>
-                <ul className="space-y-2.5">
-                  {WHAT_INSIDE.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-sm text-white/70">
-                      <CheckCircleIcon className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="flex justify-center lg:justify-end items-center pb-12 lg:pb-0">
-                <div className="relative">
-                  <div className="absolute -inset-1 rounded-xl bg-orange-500/20 blur-xl" />
-                  <img
-                    src="/sellers-checklist-cover.jpg"
-                    alt="The Seller's Prep Checklist cover"
-                    className="relative w-64 sm:w-72 lg:w-80 rounded-xl shadow-2xl border border-white/10"
-                    style={{ transform: "perspective(800px) rotateY(-4deg) rotateX(2deg)" }}
-                  />
-                  <div className="absolute -top-3 -right-3 bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                    FREE
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        <BottomSection />
-        <Footer />
-      </div>
-    );
-  }
-
-  // ─── TEST variant (light mode, phone optional) ─────────────────────────────
-  return (
     <div className="min-h-screen bg-white">
       <section className="relative overflow-hidden bg-white pb-0 border-b border-gray-100">
         <NavbarMinimal theme="light" />
@@ -441,7 +369,7 @@ export default function SellGuidePage() {
             <div className="py-1 lg:py-20">
               <div className="inline-flex items-center gap-2 text-xs font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full mb-6">
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                Free Download — 2026 Edition
+                Free {new Date().toLocaleDateString('en-US', { month: 'long' })} Edition
               </div>
               <h1 className="text-4xl sm:text-5xl font-bold text-gray-950 leading-tight mb-4">
                 Your <br />
@@ -506,21 +434,131 @@ export default function SellGuidePage() {
               </ul>
             </div>
 
-            <div className="flex justify-center lg:justify-end items-center pb-12 lg:pb-0">
+            <div className="flex justify-center lg:justify-end items-center  lg:pb-0">
               <div className="relative">
                 <div className="absolute -inset-1 rounded-xl bg-orange-400/15 blur-xl" />
-                {/* Mobile video */}
+                {/* Mobile image */}
+                <img
+                  src="/images/sellguide-hero.png"
+                  alt="The Seller's Prep Checklist cover"
+                  className="relative w-full rounded-xl shadow-xl border border-gray-200 object-cover lg:hidden"
+                  style={{ transform: "perspective(800px) rotateY(-4deg) rotateX(2deg)" }}
+                />
+                {/* Large screen video */}
                 <video
                   autoPlay
                   loop
                   muted
                   playsInline
-                  className="relative w-full rounded-xl shadow-xl border border-gray-200 object-cover lg:hidden"
+                  className="relative hidden lg:block w-96 h-[600px] rounded-xl shadow-xl border border-gray-200 object-cover"
                   style={{ transform: "perspective(800px) rotateY(-4deg) rotateX(2deg)" }}
                 >
-                  <source src="/video/sellers-checklist-cover.mp4" type="video/mp4" />
+                  <source src="/video/portrait-sellers-checklist-cover-lg.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <BottomSection />
+      <LandingPageV6 />
+      <Footer />
+    </div>
+  );
+  }
+
+  // ─── TEST variant (light mode, phone optional) ─────────────────────────────
+  return (
+    <div className="min-h-screen bg-white">
+      <section className="relative overflow-hidden bg-white pb-0 border-b border-gray-100">
+        <NavbarMinimal theme="light" />
+        {/* Subtle warm glows on light bg */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full bg-orange-400/8 blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-amber-400/6 blur-3xl" />
+        </div>
+        <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12">
+          <div className="flex flex-col-reverse lg:flex-row lg:grid lg:grid-cols-2 gap-12 items-center">
+            <div className="py-1 lg:py-20">
+              <div className="inline-flex items-center gap-2 text-xs font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full mb-6">
+                <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+                Free {new Date().toLocaleDateString('en-US', { month: 'long' })} Edition
+              </div>
+              <h1 className="text-4xl sm:text-5xl font-bold text-gray-950 leading-tight mb-4">
+                Your <br />
+                <span className="relative font-bold text-orange-400">
+                                    <svg
+                                        aria-hidden
+                                        className="pointer-events-none absolute inset-x-0 -bottom-3 w-full"
+                                        viewBox="0 0 283 22"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M1.24715 19.3744C72.4051 10.3594 228.122 -4.71194 281.724 7.12332"
+                                            stroke="url(#paint0_linear_pl)"
+                                            strokeWidth="4"
+                                        />
+                                        <defs>
+                                            <linearGradient
+                                                id="paint0_linear_pl"
+                                                x1="282"
+                                                y1="5.49999"
+                                                x2="40"
+                                                y2="13"
+                                                gradientUnits="userSpaceOnUse">
+                                                <stop stopColor="var(--color-orange-400)" />
+                                                <stop
+                                                    offset="1"
+                                                    stopColor="var(--color-amber-300)"
+                                                />
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                    <span className="relative">Ventura County</span>
+                                </span>{' '}
+                <span className="italic">Sellers Market Report <span className="text-3xl italic">&amp; Checklist</span></span>
+              </h1>
+              <p className="text-gray-500 text-lg leading-relaxed mb-8 max-w-md">
+                Your complete guide to selling your home for top dollar — from
+                prep and staging to closing with confidence. Choose your market below.
+              </p>
+
+              {renderForm({
+                cardCls: "bg-gray-50 border border-gray-200",
+                labelCls: "text-gray-600",
+                inputCls: "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-orange-400",
+                inputErrCls: "bg-white border-red-400 text-gray-900 placeholder-gray-400 focus:ring-red-400 focus:border-red-400",
+                selectCls: "bg-white border-gray-300 text-gray-900",
+                btnCls: "bg-orange-500 hover:bg-orange-400 text-white shadow-sm shadow-orange-200",
+                hintCls: "text-gray-400",
+                placeholderTheme: "bg-white border-gray-300 text-gray-900 placeholder-gray-400",
+              })}
+
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+                What&apos;s inside
+              </p>
+              <ul className="space-y-2.5">
+                {WHAT_INSIDE.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-sm text-gray-600">
+                    <CheckCircleIcon className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex justify-center lg:justify-end items-center lg:pb-0">
+              <div className="relative">
+                <div className="absolute -inset-1 rounded-xl bg-orange-400/15 blur-xl" />
+                {/* Mobile image */}
+                <img
+                  src="/images/sellguide-hero.png"
+                  alt="The Seller's Prep Checklist cover"
+                  className="relative w-full rounded-xl shadow-xl border border-gray-200 object-cover lg:hidden"
+                  style={{ transform: "perspective(800px) rotateY(-4deg) rotateX(2deg)" }}
+                />
                 {/* Large screen video */}
                 <video
                   autoPlay
