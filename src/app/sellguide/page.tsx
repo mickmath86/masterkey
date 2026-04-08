@@ -23,6 +23,7 @@ import {
   ClockIcon,
 } from "@heroicons/react/16/solid";
 import posthog from "posthog-js";
+import { useSearchParams } from "next/navigation";
 
 // ─────────────────────────────────────────────
 // DEV OVERRIDE — uncomment ONE line below to
@@ -569,10 +570,17 @@ function SellGuideQuestionnaire({
 // ═══════════════════════════════════════════════════════
 export default function SellGuidePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [variant, setVariant] = useState<"control" | "test" | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   useEffect(() => {
+    // URL param override: ?__variant=test or ?__variant=control
+    const urlOverride = searchParams.get("__variant");
+    if (urlOverride === "test" || urlOverride === "control") {
+      setVariant(urlOverride);
+      return;
+    }
     const flag = posthog.getFeatureFlag("sell-guide-landing-page-campaign");
     setVariant(flag === "test" ? "test" : "control");
   }, []);
