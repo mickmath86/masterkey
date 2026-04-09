@@ -1,65 +1,59 @@
 'use client'
-
+import { GeminiFull } from '@/components/ui/svgs/gemini'
+import { Beacon } from '@/components/ui/svgs/beacon'
+import { Bolt } from '@/components/ui/svgs/bolt'
+import { Cisco } from '@/components/ui/svgs/cisco'
+import { Hulu } from '@/components/ui/svgs/hulu'
+import { OpenAIFull } from '@/components/ui/svgs/open-ai'
+import { Primevideo } from '@/components/ui/svgs/prime'
+import { Stripe } from '@/components/ui/svgs/stripe'
+import { Supabase } from '@/components/ui/svgs/supabase'
+import { Polars } from '@/components/ui/svgs/polars'
 import { AnimatePresence, motion } from 'motion/react'
 import React, { useEffect, useState } from 'react'
-
-import { Container } from '@/components/container'
-
-import { BeaconLogo as Beacon } from '@/components/ui/svgs/beaconLogo'
-import { BoltNew as Bolt } from '@/components/ui/svgs/boltNew'
-import { CiscoLight as Cisco } from '@/components/ui/svgs/ciscoLight'
-import { Hulu } from '@/components/ui/svgs/hulu'
-import { OpenaiWordmarkLight as OpenAIFull } from '@/components/ui/svgs/openaiWordmarkLight'
-import { PrimeVideo as Primevideo } from '@/components/ui/svgs/primeVideo'
-import { Stripe } from '@/components/ui/svgs/stripe'
-import { SupabaseWordmarkDark as Supabase } from '@/components/ui/svgs/supabaseWordmarkDark'
-import { PolarsLogo as Polars } from '@/components/ui/svgs/polarsLogo'
-import { VercelWordmark as VercelFull } from '@/components/ui/svgs/vercelWordmark'
-import { SpotifyWordmark as Spotify } from '@/components/ui/svgs/spotifyWordmark'
-import { PaypalWordmark as PayPal } from '@/components/ui/svgs/paypalWordmark'
+import { Cloudflare } from '@/components/ui/svgs/cloudflare'
+import { VercelFull } from '@/components/ui/svgs/vercel'
+import { Spotify } from '@/components/ui/svgs/spotify'
+import { PayPal } from '@/components/ui/svgs/paypal'
+import { LeapWallet } from '@/components/ui/svgs/leap-wallet'
+import { Linear } from '@/components/ui/svgs/linear'
+import { Slack } from '@/components/ui/svgs/slack'
+import { Twilio } from '@/components/ui/svgs/twilio'
+import { cn } from '@/lib/utils'
 
 const aiLogos: React.ReactNode[] = [
     <OpenAIFull
         key="openai"
-        height={22}
+        height={24}
         width="auto"
     />,
     <Bolt
         key="bolt"
-        height={18}
+        height={20}
         width="auto"
     />,
-    <Cisco
-        key="cisco"
-        height={30}
+    <GeminiFull
+        key="gemini"
+        height={24}
         width="auto"
-    />,
-    <Hulu
-        key="hulu"
-        height={18}
-        width="auto"
+        className="-translate-y-0.5"
     />,
 ]
 
 const hostingLogos: React.ReactNode[] = [
     <Supabase
         key="supabase"
-        height={22}
+        height={24}
         width="auto"
     />,
-    <Cisco
-        key="cisco"
-        height={30}
-        width="auto"
-    />,
-    <Hulu
-        key="hulu"
-        height={18}
+    <Cloudflare
+        key="cloudflare"
+        height={24}
         width="auto"
     />,
     <VercelFull
         key="vercel"
-        height={18}
+        height={20}
         width="auto"
     />,
 ]
@@ -67,22 +61,17 @@ const hostingLogos: React.ReactNode[] = [
 const paymentsLogos: React.ReactNode[] = [
     <Stripe
         key="stripe"
-        height={22}
+        height={24}
         width="auto"
     />,
     <PayPal
         key="paypal"
-        height={22}
+        height={24}
         width="auto"
     />,
-    <Beacon
-        key="beacon"
-        height={18}
-        width="auto"
-    />,
-    <Polars
-        key="polars"
-        height={22}
+    <LeapWallet
+        key="leapwallet"
+        height={24}
         width="auto"
     />,
 ]
@@ -90,78 +79,143 @@ const paymentsLogos: React.ReactNode[] = [
 const streamingLogos: React.ReactNode[] = [
     <Primevideo
         key="primevideo"
-        height={26}
+        height={28}
         width="auto"
     />,
     <Hulu
         key="hulu"
-        height={18}
+        height={22}
         width="auto"
     />,
     <Spotify
         key="spotify"
-        height={22}
-        width="auto"
-    />,
-    <Cisco
-        key="cisco"
-        height={30}
+        height={24}
         width="auto"
     />,
 ]
 
-const logos: Record<'ai' | 'hosting' | 'streaming' | 'payments', React.ReactNode[]> = {
-    ai: aiLogos,
-    hosting: hostingLogos,
-    payments: paymentsLogos,
-    streaming: streamingLogos,
-}
+const otherLogos: React.ReactNode[] = [
+    <Cisco
+        key="cisco"
+        height={32}
+        width="auto"
+    />,
+    <Beacon
+        key="beacon"
+        height={20}
+        width="auto"
+    />,
+    <Polars
+        key="polars"
+        height={24}
+        width="auto"
+    />,
+]
 
-type LogoGroup = keyof typeof logos
+const toolsLogos: React.ReactNode[] = [
+    <Linear
+        key="linear"
+        height={24}
+        width="auto"
+    />,
+    <Slack
+        key="slack"
+        height={24}
+        width="auto"
+    />,
+    <Twilio
+        key="twilio"
+        height={24}
+        width="auto"
+    />,
+]
 
-export function LogoCloud({ className }: { className?: string }) {
-    const [currentGroup, setCurrentGroup] = useState<LogoGroup>('ai')
+const logoGroups = [aiLogos, hostingLogos, paymentsLogos, streamingLogos, otherLogos, toolsLogos]
+
+export function LogoCloud() {
+    const [logoIndices, setLogoIndices] = useState([0, 0, 0, 0, 0, 0])
 
     useEffect(() => {
+        let wrapperIndex = 0
         const interval = setInterval(() => {
-            setCurrentGroup((prev) => {
-                const groups = Object.keys(logos) as LogoGroup[]
-                const currentIndex = groups.indexOf(prev)
-                const nextIndex = (currentIndex + 1) % groups.length
-                return groups[nextIndex]
+            setLogoIndices((prev) => {
+                const newIndices = [...prev]
+                const groupLogos = logoGroups[wrapperIndex]
+                newIndices[wrapperIndex] = (newIndices[wrapperIndex] + 1) % groupLogos.length
+                return newIndices
             })
-        }, 2500)
+            wrapperIndex = (wrapperIndex + 1) % logoGroups.length
+        }, 2000)
 
         return () => clearInterval(interval)
     }, [])
 
     return (
-        <Container className={`bg-background lg:**:data-[slot=content]:py-16 ${className || ''}`}>
-            <div className="mx-auto mb-12 max-w-xl text-balance text-center md:mb-16">
-                <p
-                    data-current={currentGroup}
-                    className="text-muted-foreground mt-4 md:text-lg">
-                    Tailark is trusted by leading teams from <span className="in-data-[current=ai]:text-foreground transition-colors duration-200">Generative AI Companies,</span> <span className="in-data-[current=hosting]:text-foreground transition-colors duration-200">Hosting Providers,</span> <span className="in-data-[current=payments]:text-foreground transition-colors duration-200">Payments Providers,</span>{' '}
-                    <span className="in-data-[current=streaming]:text-foreground transition-colors duration-200">Streaming Providers</span>
-                </p>
+        <section className="bg-background">
+            <div className="relative mx-auto max-w-6xl px-6 py-16">
+                <div
+                    aria-hidden
+                    className="*:corner-bevel absolute inset-0 grid grid-cols-3 gap-px *:border-x *:via-transparent *:first:border-l-0 *:last:rounded-r-[2rem] *:last:border-r-0 md:grid-cols-6">
+                    <div />
+                    <div className="max-md:hidden" />
+                    <div className="max-md:hidden" />
+                    <div className="max-md:hidden" />
+                    <div />
+                    <div />
+                </div>
+                <div className="grid grid-cols-3 gap-y-6 md:grid-cols-6">
+                    <LogoWrapper
+                        logos={aiLogos}
+                        group="ai"
+                        logoIndex={logoIndices[1]}
+                    />
+                    <LogoWrapper
+                        logos={hostingLogos}
+                        group="hosting"
+                        logoIndex={logoIndices[3]}
+                    />
+                    <LogoWrapper
+                        logos={paymentsLogos}
+                        group="payments"
+                        logoIndex={logoIndices[0]}
+                    />
+                    <LogoWrapper
+                        logos={streamingLogos}
+                        group="streaming"
+                        logoIndex={logoIndices[4]}
+                    />
+                    <LogoWrapper
+                        logos={otherLogos}
+                        group="other"
+                        logoIndex={logoIndices[2]}
+                    />
+                    <LogoWrapper
+                        logos={toolsLogos}
+                        group="tools"
+                        logoIndex={logoIndices[5]}
+                    />
+                </div>
             </div>
-            <div className="perspective-dramatic mx-auto grid max-w-5xl grid-cols-2 items-center gap-8 md:h-10 md:grid-cols-4">
-                <AnimatePresence
-                    initial={false}
-                    mode="popLayout">
-                    {logos[currentGroup].map((logo, i) => (
-                        <motion.div
-                            key={`${currentGroup}-${i}`}
-                            className="**:fill-foreground! flex items-center justify-center"
-                            initial={{ opacity: 0, y: 24, filter: 'blur(6px)' }}
-                            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                            exit={{ opacity: 0, y: -24, filter: 'blur(6px)', scale: 0.5 }}
-                            transition={{ delay: i * 0.05, duration: 0.4 }}>
-                            {logo}
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
-            </div>
-        </Container>
+        </section>
+    )
+}
+
+const LogoWrapper = ({ logos, group, logoIndex = 0, className }: { logos: React.ReactNode[]; group?: string; logoIndex?: number; className?: string }) => {
+    return (
+        <div className={cn('relative h-10', className)}>
+            <AnimatePresence
+                mode="popLayout"
+                initial={false}>
+                <motion.div
+                    key={`${group}-${logoIndex}`}
+                    initial={{ opacity: 0, scale: 0.75, y: -24, filter: 'blur(6px)' }}
+                    animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, scale: 0.75, y: 24, filter: 'blur(6px)' }}
+                    transition={{ duration: 0.5 }}
+                    className="**:fill-foreground/75! absolute inset-0 flex *:m-auto">
+                    {logos[logoIndex]}
+                </motion.div>
+            </AnimatePresence>
+        </div>
     )
 }

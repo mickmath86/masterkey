@@ -245,10 +245,13 @@ function RentVsSellPageInner() {
             </div>
 
             {/* Right — what you'll get card */}
-            <div className="flex justify-center lg:justify-end items-center">
-              <div className="relative w-full max-w-sm">
+            <div className="relative flex justify-center lg:justify-end items-center">
+              {/* Background image extending beyond the card */}
+              <div className="absolute inset-0 -inset-x-12 -inset-y-12 bg-cover bg-center rounded-3xl" style={{ backgroundImage: 'url(/images/ventura.png)' }} />
+              
+              <div className="relative w-full max-w-sm z-10">
                 <div className="absolute -inset-1 rounded-2xl bg-blue-400/10 blur-xl" />
-                <div className="relative bg-gray-50 border border-gray-100 rounded-2xl p-6 shadow-sm space-y-4">
+                <div className="relative bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 shadow-xl space-y-4">
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">What you'll get</p>
                   {[
                     { icon: CurrencyDollarIcon, color: "text-blue-600 bg-blue-50", label: "Sell scenario", sub: "Net cash after tax + 5 & 10-yr investment projection" },

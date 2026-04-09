@@ -153,14 +153,11 @@ export function MasterKeyLogoInlineBlack({ className }: { className?: string }) 
 export function MasterKeyLogoInlineWhite({ className }: { className?: string }) {
   return (
     <Image 
-        alt="MasterKey Real Estate"
+        alt=""
         src="/logos/masterkey-inline-white.png"
-        width={200}
-        height={50}
-        className={`h-8 w-auto ${className}`}
+        width={100}
+        height={100}
+        className={`w-auto ${className}`}
       />
   )
 }
-
-// Export LogoIcon as an alias for Mark component
-export { Mark as LogoIcon }
