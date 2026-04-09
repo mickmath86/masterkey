@@ -1,26 +1,20 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense } from "react";
 import NavbarMinimal from "@/components/navbar-minimal";
 import { Footer } from "@/components/footer";
 import LandingPageV6 from "@/components/landing-pages/landing-page-v6/page";
-import { GooglePlacesInput } from "@/components/ui/google-places-input";
+import Link from "next/link";
 import {
   CheckCircleIcon,
   ArrowRightIcon,
-  ArrowLeftIcon,
   HomeModernIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
   ShieldCheckIcon,
   ClipboardDocumentListIcon,
   MapPinIcon,
-  XMarkIcon,
   ScaleIcon,
-  UserIcon,
-  UsersIcon,
-  CalendarDaysIcon,
 } from "@heroicons/react/16/solid";
 
 // ─── Placeholder — swap in real URL when provided ───────────────────────────
@@ -211,321 +205,7 @@ export function validatePhoneFormat(phone: string): string | null {
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUESTIONNAIRE
 // ═══════════════════════════════════════════════════════════════════════════════
-function Questionnaire({ onComplete }: { onComplete: (data: RVSFormData) => void }) {
-  const [step, setStep] = useState(0);
-  const [data, setData] = useState<RVSFormData>({
-    address: "", addressValid: false, homeValue: "", purchasePrice: "",
-    purchaseYear: "", mortgageBalance: "", interestRate: "",
-    titleOwnership: "", phone: "", email: "", firstName: "", lastName: "",
-  });
-  const [phoneError, setPhoneError] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const TOTAL = 6;
-
-  function set<K extends keyof RVSFormData>(k: K, v: RVSFormData[K]) {
-    setData(d => ({ ...d, [k]: v }));
-  }
-
-  function canAdvance(): boolean {
-    switch (step) {
-      case 1: return data.addressValid;
-      case 2: return data.homeValue.trim() !== "" && data.purchasePrice.trim() !== "" && data.purchaseYear.trim() !== "";
-      case 3: return data.mortgageBalance.trim() !== "" && data.interestRate.trim() !== "";
-      case 4: return data.titleOwnership !== "";
-      case 5: return data.phone.trim() !== "" && !phoneError && data.email.trim() !== "" && emailRegex.test(data.email) && !emailError;
-      case 6: return data.firstName.trim() !== "";
-      default: return false;
-    }
-  }
-
-  async function handleSubmit() {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    try {
-      const res = await fetch("/api/validate-phone", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: data.phone }) });
-      const r = await res.json();
-      if (!r.valid) { setPhoneError(r.reason ?? "Please enter a valid phone number."); setIsSubmitting(false); return; }
-    } catch { /* fail open */ }
-    try {
-      const res = await fetch("/api/validate-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.email }) });
-      const r = await res.json();
-      if (!r.valid) { setEmailError(r.reason ?? "Please enter a valid email."); setIsSubmitting(false); return; }
-    } catch { /* fail open */ }
-    setIsSubmitting(false);
-    onComplete(data);
-  }
-
-  const progress = step === 0 ? 0 : Math.round((step / TOTAL) * 100);
-
-  if (step === 0) {
-    return (
-      <div className="flex flex-col items-start gap-4 w-full max-w-md">
-        <button
-          onClick={() => setStep(1)}
-          className="flex items-center gap-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg px-8 py-4 rounded-xl transition-colors shadow-md shadow-blue-200 w-full sm:w-auto justify-center"
-        >
-          <ScaleIcon className="w-5 h-5" />
-          Run My Free Analysis
-          <ArrowRightIcon className="w-5 h-5" />
-        </button>
-        <p className="text-xs text-gray-400">Free · Instant results · No obligation</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="w-full max-w-md">
-      <div className="mb-5">
-        <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
-          <span>Step {step} of {TOTAL}</span>
-          <span>{progress}%</span>
-        </div>
-        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-blue-500 to-green-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
-        </div>
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-5">
-
-        {step === 1 && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 mb-2">Step 1 of 6</p>
-            <h3 className="text-lg font-bold text-gray-950 mb-1">What's the property address?</h3>
-            <p className="text-sm text-gray-400 mb-4">We'll pull local comps and market data for your specific area.</p>
-            <GooglePlacesInput
-              id="rvs-address"
-              value={data.address}
-              onChange={v => set("address", v)}
-              onValidationChange={valid => set("addressValid", valid)}
-              placeholder="Start typing your address…"
-              showValidation={true}
-              className="bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-        )}
-
-        {step === 2 && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 mb-2">Step 2 of 6</p>
-            <h3 className="text-lg font-bold text-gray-950 mb-1">Tell us about the home's value</h3>
-            <p className="text-sm text-gray-400 mb-4">These numbers drive your sell vs. rent comparison.</p>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Estimated Current Value <span className="text-red-400">*</span></label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                  <input type="text" inputMode="numeric" value={data.homeValue} onChange={e => set("homeValue", e.target.value)} placeholder="950,000" className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none" />
-                </div>
-                <p className="text-[11px] text-gray-400 mt-1">Not sure? Use our <a href="/homevalue/questionnaire" className="text-blue-500 hover:underline">free valuation tool</a>.</p>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Original Purchase Price <span className="text-red-400">*</span></label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                  <input type="text" inputMode="numeric" value={data.purchasePrice} onChange={e => set("purchasePrice", e.target.value)} placeholder="600,000" className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Year Purchased <span className="text-red-400">*</span></label>
-                <input type="text" inputMode="numeric" value={data.purchaseYear} onChange={e => set("purchaseYear", e.target.value)} placeholder="2018" className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 mb-2">Step 3 of 6</p>
-            <h3 className="text-lg font-bold text-gray-950 mb-1">What are your mortgage details?</h3>
-            <p className="text-sm text-gray-400 mb-4">This determines your net proceeds and rental cash flow.</p>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Remaining Mortgage Balance <span className="text-red-400">*</span></label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                  <input type="text" inputMode="numeric" value={data.mortgageBalance} onChange={e => set("mortgageBalance", e.target.value)} placeholder="350,000" className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none" />
-                </div>
-                <p className="text-[11px] text-gray-400 mt-1">Enter 0 if you own free and clear.</p>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Current Interest Rate <span className="text-red-400">*</span></label>
-                <div className="relative">
-                  <input type="text" inputMode="decimal" value={data.interestRate} onChange={e => set("interestRate", e.target.value)} placeholder="6.5" className="w-full pr-8 pl-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none" />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 mb-2">Step 4 of 6</p>
-            <h3 className="text-lg font-bold text-gray-950 mb-1">How many people are on the title?</h3>
-            <p className="text-sm text-gray-400 mb-4">
-              This affects your capital gains tax exclusion. Single owner = $250K exclusion. Multiple owners (married/joint) = $500K exclusion under IRS Section 121.
-            </p>
-            <div className="space-y-3">
-              {[
-                { value: "single", label: "Just me", sub: "$250,000 capital gains exclusion", Icon: UserIcon },
-                { value: "multiple", label: "Multiple people (married/joint)", sub: "$500,000 capital gains exclusion", Icon: UsersIcon },
-              ].map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => { set("titleOwnership", opt.value as "single" | "multiple"); setTimeout(() => setStep(s => s + 1), 160); }}
-                  className={`w-full flex items-start gap-3 px-4 py-4 rounded-xl border text-left transition-colors ${
-                    data.titleOwnership === opt.value
-                      ? "border-blue-400 bg-blue-50"
-                      : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
-                  }`}
-                >
-                  <opt.Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${data.titleOwnership === opt.value ? "text-blue-500" : "text-gray-300"}`} />
-                  <div>
-                    <p className={`text-sm font-semibold ${data.titleOwnership === opt.value ? "text-blue-700" : "text-gray-800"}`}>{opt.label}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{opt.sub}</p>
-                  </div>
-                  {data.titleOwnership === opt.value && <CheckCircleIcon className="w-4 h-4 text-blue-500 ml-auto mt-1 flex-shrink-0" />}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {step === 5 && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 mb-2">Step 5 of 6</p>
-            <h3 className="text-lg font-bold text-gray-950 mb-1">Where should we send your results?</h3>
-            <p className="text-sm text-gray-400 mb-4">Your personalized sell vs. rent analysis is ready — we'll also email you a copy.</p>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Phone <span className="text-red-400">*</span></label>
-                <input type="tel" value={data.phone} onChange={e => { set("phone", e.target.value); setPhoneError(e.target.value.trim() ? (validatePhoneFormat(e.target.value) ?? "") : ""); }} placeholder="(805) 555-0100" className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:ring-2 focus:outline-none text-gray-900 ${phoneError ? "border-red-400 focus:ring-red-400" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`} />
-                {phoneError && <p className="mt-1 text-xs text-red-400">{phoneError}</p>}
-                <p className="mt-1 text-[11px] text-gray-400">We may reach out to walk through your results — no spam.</p>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Email <span className="text-red-400">*</span></label>
-                <input type="email" value={data.email} onChange={e => { set("email", e.target.value); setEmailError(e.target.value.trim() && !emailRegex.test(e.target.value) ? "Please enter a valid email" : ""); }} placeholder="jane@example.com" className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:ring-2 focus:outline-none text-gray-900 ${emailError ? "border-red-400 focus:ring-red-400" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`} />
-                {emailError && <p className="mt-1 text-xs text-red-400">{emailError}</p>}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 6 && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 mb-2">Step 6 of 6</p>
-            <h3 className="text-lg font-bold text-gray-950 mb-1">Last step — what's your name?</h3>
-            <p className="text-sm text-gray-400 mb-4">We'll personalize your analysis.</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">First Name <span className="text-red-400">*</span></label>
-                <input type="text" value={data.firstName} onChange={e => set("firstName", e.target.value)} placeholder="Jane" className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Last Name</label>
-                <input type="text" value={data.lastName} onChange={e => set("lastName", e.target.value)} placeholder="Smith" className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Navigation */}
-        <div className="flex items-center gap-3 pt-1">
-          <button onClick={() => setStep(s => s - 1)} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors">
-            <ArrowLeftIcon className="w-4 h-4" />Back
-          </button>
-          {/* Step 4 auto-advances on click — hide Continue for it */}
-          {step !== 4 && (step < 6 ? (
-            <button onClick={() => setStep(s => s + 1)} disabled={!canAdvance()} className="ml-auto flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition-colors">
-              Continue <ArrowRightIcon className="w-4 h-4" />
-            </button>
-          ) : (
-            <button onClick={handleSubmit} disabled={!canAdvance() || isSubmitting} className="ml-auto flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-500 hover:to-green-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition-all">
-              <ScaleIcon className="w-4 h-4" />
-              {isSubmitting ? "Calculating…" : "Show My Results →"}
-            </button>
-          ))}
-        </div>
-        {step === 6 && <p className="text-[11px] text-gray-400 text-center">No spam. Your data is never sold.</p>}
-      </div>
-    </div>
-  );
-}
-
-// ─── GHL Calendar Modal ───────────────────────────────────────────────────────
-function CalendarModal({ onClose }: { onClose: () => void }) {
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://link.msgsndr.com/js/form_embed.js";
-    script.type = "text/javascript";
-    document.body.appendChild(script);
-    return () => { const el = document.querySelector('script[src="https://link.msgsndr.com/js/form_embed.js"]'); if (el) document.body.removeChild(el); };
-  }, []);
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-scroll">
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-        <div className="relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
-            <div>
-              <h3 className="text-base font-semibold text-gray-900">Schedule a Consultation</h3>
-              <p className="text-xs text-gray-400 mt-0.5">Let's walk through your numbers together — no obligation.</p>
-            </div>
-            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-              <XMarkIcon className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-hidden p-4">
-            <iframe src={CALENDAR_SRC} style={{ width: "100%", height: "750px", border: "none" }} scrolling="yes" title="Schedule Appointment" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// MAIN PAGE
-// ═══════════════════════════════════════════════════════════════════════════════
 function RentVsSellPageInner() {
-  const router = useRouter();
-  const [calendarOpen, setCalendarOpen] = useState(false);
-
-  async function handleComplete(data: RVSFormData) {
-    const results = calculate(data);
-    if (!results) return;
-
-    // Fire webhook (placeholder until real URL provided)
-    if (RENT_VS_SELL_WEBHOOK !== "RENT_VS_SELL_WEBHOOK_PLACEHOLDER") {
-      try {
-        await fetch(RENT_VS_SELL_WEBHOOK, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            firstName: data.firstName, lastName: data.lastName,
-            phone: data.phone, email: data.email,
-            propertyAddress: data.address, homeValue: data.homeValue,
-            purchasePrice: data.purchasePrice, purchaseYear: data.purchaseYear,
-            mortgageBalance: data.mortgageBalance, interestRate: data.interestRate,
-            titleOwnership: data.titleOwnership,
-            verdict5yr: results.verdict5yr, verdict10yr: results.verdict10yr,
-            sellNetProceeds: Math.round(results.saleAfterTax),
-            rentWealth10yr: Math.round(results.rentTotalWealth10yr),
-            formType: "rent-vs-sell", source: "rent-vs-sell-page",
-            submittedAt: new Date().toISOString(),
-          }),
-        });
-      } catch { /* fail open */ }
-    }
-
-    // Encode results + form data into URL params for results page
-    const params = new URLSearchParams({
-      d: btoa(JSON.stringify({ form: data, results })),
-    });
-    router.push(`/rent-vs-sell/results?${params.toString()}`);
-  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -551,7 +231,17 @@ function RentVsSellPageInner() {
               <p className="text-gray-500 text-lg leading-relaxed mb-8 max-w-md">
                 Answer 6 quick questions and get an instant, personalized side-by-side comparison — including your capital gains tax exposure, monthly cash flow, and total wealth built over 5 and 10 years.
               </p>
-              <Questionnaire onComplete={handleComplete} />
+              <div className="flex flex-col items-start gap-4">
+                <Link
+                  href="/rent-vs-sell/quiz"
+                  className="flex items-center gap-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg px-8 py-4 rounded-xl transition-colors shadow-md shadow-blue-200 w-full sm:w-auto justify-center"
+                >
+                  <ScaleIcon className="w-5 h-5" />
+                  Run My Free Analysis
+                  <ArrowRightIcon className="w-5 h-5" />
+                </Link>
+                <p className="text-xs text-gray-400">Free · Instant results · No obligation · Takes 2 minutes</p>
+              </div>
             </div>
 
             {/* Right — what you'll get card */}
@@ -622,7 +312,6 @@ function RentVsSellPageInner() {
 
       <LandingPageV6 />
       <Footer />
-      {calendarOpen && <CalendarModal onClose={() => setCalendarOpen(false)} />}
     </div>
   );
 }
