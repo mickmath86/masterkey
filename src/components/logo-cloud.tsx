@@ -132,7 +132,7 @@ const toolsLogos: React.ReactNode[] = [
 
 const logoGroups = [aiLogos, hostingLogos, paymentsLogos, streamingLogos, otherLogos, toolsLogos]
 
-export function LogoCloud() {
+export function LogoCloud({ className }: { className?: string }) {
     const [logoIndices, setLogoIndices] = useState([0, 0, 0, 0, 0, 0])
 
     useEffect(() => {
@@ -151,7 +151,7 @@ export function LogoCloud() {
     }, [])
 
     return (
-        <section className="bg-background">
+        <section className={`bg-background ${className || ''}`}>
             <div className="relative mx-auto max-w-6xl px-6 py-16">
                 <div
                     aria-hidden
