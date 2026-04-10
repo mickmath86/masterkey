@@ -4,7 +4,7 @@ import { clsx } from 'clsx'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 
-export function Logo({ className }: { className?: string }) {
+export function Logo({ className, uniColor }: { className?: string; uniColor?: boolean }) {
   let transition = {
     duration: 0.5,
     ease: 'easeInOut' as const,
