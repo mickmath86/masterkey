@@ -468,7 +468,16 @@ function QuizInner() {
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">/mo</span>
                       </div>
-                      {!avm?.rent && <p className="text-[11px] text-gray-400 mt-1">Leave blank to use Ventura County avg ($3,950/mo).</p>}
+                      {/* Rent subcopy — always shown */}
+                      <div className="mt-2 p-3 bg-white/70 rounded-lg border border-blue-100">
+                        <p className="text-[11px] text-gray-500 leading-relaxed">
+                          {avm?.rent
+                            ? <>The <strong>{fmt(avm.rent)}/mo</strong> figure is based on local area averages. Your home&apos;s actual rental value may be higher depending on upgrades, lot size, location, and condition.</>
+                            : <>The <strong>$3,950/mo</strong> figure is based on Thousand Oaks averages. Your home&apos;s actual rental value may be higher depending on upgrades, lot size, location, and condition.</>
+                          }
+                          {" "}<a href="/contact" className="text-blue-500 hover:underline font-medium whitespace-nowrap">Contact MasterKey</a> for a free, personalized rental analysis.
+                        </p>
+                      </div>
                     </div>
                   </div>
 

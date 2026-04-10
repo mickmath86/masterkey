@@ -66,13 +66,30 @@ const VERDICT_CONFIG = {
 };
 
 function Row({ label, value, neg, bold, info }: { label: string; value: string; neg?: boolean; bold?: boolean; info?: string }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="flex items-start justify-between gap-2">
-      <span className={`text-xs leading-relaxed ${bold ? "font-semibold text-gray-900" : "text-gray-500"} flex items-center gap-1`}>
-        {label}
-        {info && <span title={info}><InformationCircleIcon className="w-3 h-3 text-gray-300 flex-shrink-0" /></span>}
-      </span>
-      <span className={`text-xs font-medium flex-shrink-0 ${bold ? "text-gray-900 font-bold" : neg ? "text-red-500" : "text-gray-700"}`}>{value}</span>
+    <div className="flex flex-col gap-1">
+      <div className="flex items-start justify-between gap-2">
+        <span className={`text-xs leading-relaxed ${bold ? "font-semibold text-gray-900" : "text-gray-500"} flex items-center gap-1 flex-wrap`}>
+          {label}
+          {info && (
+            <button
+              type="button"
+              onClick={() => setOpen(o => !o)}
+              className="flex-shrink-0 focus:outline-none"
+              aria-label="More information"
+            >
+              <InformationCircleIcon className={`w-3.5 h-3.5 flex-shrink-0 transition-colors ${open ? "text-blue-400" : "text-gray-300 hover:text-gray-400"}`} />
+            </button>
+          )}
+        </span>
+        <span className={`text-xs font-medium flex-shrink-0 ${bold ? "text-gray-900 font-bold" : neg ? "text-red-500" : "text-gray-700"}`}>{value}</span>
+      </div>
+      {info && open && (
+        <div className="text-[11px] text-gray-500 leading-relaxed bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 mt-0.5">
+          {info}
+        </div>
+      )}
     </div>
   );
 }
@@ -238,8 +255,8 @@ function ResultsInner() {
             </div>
             <div className="space-y-2.5">
               <Row label="Estimated sale price" value={fmt(results.salePrice)} />
-              <Row label="Agent commission (5.5%)" value={`−${fmt(results.agentFee)}`} neg info="Standard Ventura County listing commission" />
-              <Row label="Closing costs + staging" value={`−${fmt(results.closingAndStagingCosts)}`} neg info="~1% closing costs + $3,500 staging estimate" />
+              <Row label="Agent commission (5.5%)" value={`−${fmt(results.agentFee)}`} neg info="Typical seller-paid agent commission in Ventura County, covering both listing and buyer's agent fees. This is negotiable — MasterKey's commission structure may differ." />
+              <Row label="Closing costs + staging" value={`−${fmt(results.closingAndStagingCosts)}`} neg info="Closing costs include escrow fees, title insurance, transfer tax, and misc. seller costs (~1% of sale price). Staging is estimated at $3,500 — actual cost depends on home size and condition." />
               <Row label="Mortgage payoff" value={`−${fmt(results.mortgagePayoff)}`} neg />
               <div className="border-t border-blue-200 pt-2">
                 <Row label="Net proceeds (before tax)" value={fmt(results.saleNetProceeds)} bold />
@@ -250,7 +267,7 @@ function ResultsInner() {
                 <Row
                   label={`Exclusion (${form!.titleOwnership === "multiple" ? "joint — $500K" : "single — $250K"})`}
                   value={`−${fmt(results.exclusion)}`}
-                  info="IRS Section 121 primary residence exclusion"
+                  info="Under IRS Section 121, homeowners who lived in the home as their primary residence for 2 of the last 5 years can exclude up to $250,000 (single filer) or $500,000 (married/joint) of capital gains from federal tax. State taxes may still apply."
                 />
                 <Row label="Taxable gain" value={fmt(results.taxableGain)} />
                 <Row label="Cap gains tax (15%)" value={results.capitalGainsTax > 0 ? `−${fmt(results.capitalGainsTax)}` : "$0"} neg={results.capitalGainsTax > 0} />
@@ -275,13 +292,13 @@ function ResultsInner() {
               <p className="font-bold text-gray-900 text-sm">Rent Scenario</p>
             </div>
             <div className="space-y-2.5">
-              <Row label="Est. monthly rent (VC avg)" value={`${fmt(results.monthlyRent)}/mo`} info="Ventura County SFR average per Zillow" />
+              <Row label="Est. monthly rent (VC avg)" value={`${fmt(results.monthlyRent)}/mo`} info="Based on Thousand Oaks single-family rental averages. Your home's actual rent may be higher based on upgrades, lot size, and condition. Contact MasterKey for a personalized rental analysis." />
               <div className="bg-white/60 rounded-lg p-2.5 space-y-1.5">
                 <p className="text-[11px] text-gray-500 font-medium mb-1">Monthly expenses</p>
                 {results.monthlyMortgage > 0 && <Row label="Mortgage P&I" value={`−${fmt(results.monthlyMortgage)}/mo`} neg />}
                 <Row label="Property tax (0.7%)" value={`−${fmt(results.monthlyPropertyTax)}/mo`} neg />
                 <Row label="Insurance" value={`−${fmt(results.monthlyInsurance)}/mo`} neg />
-                <Row label="Mgmt fee (9%)" value={`−${fmt(results.monthlyMgmtFee)}/mo`} neg info="MasterKey Property Management rate" />
+                <Row label="Mgmt fee (9%)" value={`−${fmt(results.monthlyMgmtFee)}/mo`} neg info="MasterKey charges 8–10% of monthly rent for full-service property management, including tenant screening, maintenance coordination, and monthly reporting. We used 9% (midpoint) here." />
                 <Row label="Maintenance (1%/yr)" value={`−${fmt(results.monthlyMaintenance)}/mo`} neg />
                 <Row label="Vacancy reserve (5%)" value={`−${fmt(results.monthlyVacancy)}/mo`} neg />
               </div>

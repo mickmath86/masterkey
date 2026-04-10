@@ -258,7 +258,7 @@ function RentVsSellPageInner() {
             {/* Right — what you'll get card */}
             <div className="relative flex justify-center lg:justify-end items-center">
               {/* Background image extending beyond the card */}
-              <div className="absolute inset-0 -inset-x-12 -inset-y-12 bg-cover bg-center rounded-3xl" style={{ backgroundImage: 'url(/images/ventura.png)' }} />
+              <div className="absolute inset-0 -inset-x-12 -inset-y-12 bg-cover bg-center rounded-3xl" style={{ backgroundImage: 'url(/images/ventura.webp)' }} />
               
               <div className="relative w-full max-w-sm z-10">
                 <div className="absolute -inset-1 rounded-2xl bg-blue-400/10 blur-xl" />
