@@ -238,7 +238,7 @@ function ResultsInner() {
             </div>
             <div className="space-y-2.5">
               <Row label="Estimated sale price" value={fmt(results.salePrice)} />
-              <Row label="Agent commission (5.5%)" value={`−${fmt(results.agentFee)}`} neg info="Standard Conejo Valley listing commission" />
+              <Row label="Agent commission (5.5%)" value={`−${fmt(results.agentFee)}`} neg info="Standard Ventura County listing commission" />
               <Row label="Closing costs + staging" value={`−${fmt(results.closingAndStagingCosts)}`} neg info="~1% closing costs + $3,500 staging estimate" />
               <Row label="Mortgage payoff" value={`−${fmt(results.mortgagePayoff)}`} neg />
               <div className="border-t border-blue-200 pt-2">
@@ -275,7 +275,7 @@ function ResultsInner() {
               <p className="font-bold text-gray-900 text-sm">Rent Scenario</p>
             </div>
             <div className="space-y-2.5">
-              <Row label="Est. monthly rent (TO avg)" value={`${fmt(results.monthlyRent)}/mo`} info="Thousand Oaks SFR average per Zillow" />
+              <Row label="Est. monthly rent (VC avg)" value={`${fmt(results.monthlyRent)}/mo`} info="Ventura County SFR average per Zillow" />
               <div className="bg-white/60 rounded-lg p-2.5 space-y-1.5">
                 <p className="text-[11px] text-gray-500 font-medium mb-1">Monthly expenses</p>
                 {results.monthlyMortgage > 0 && <Row label="Mortgage P&I" value={`−${fmt(results.monthlyMortgage)}/mo`} neg />}
@@ -312,9 +312,9 @@ function ResultsInner() {
             Basis = original purchase price; improvements not factored in — actual tax may be lower.
           </p>
           <p className="mt-1.5">
-            <strong className="text-gray-600">Rent scenario:</strong> Monthly rent {fmt(DEFAULTS.monthlyRent)} (Thousand Oaks SFR avg) ·
+            <strong className="text-gray-600">Rent scenario:</strong> Monthly rent {fmt(DEFAULTS.monthlyRent)} (Ventura County SFR avg) ·
             Property tax 0.7% · Insurance {fmt(DEFAULTS.annualInsurance)}/yr · Management 9% · Maintenance 1%/yr ·
-            Vacancy 5% · Appreciation 4.5%/yr (historical TO average).
+            Vacancy 5% · Appreciation 4.5%/yr (historical Ventura County average).
           </p>
           <p className="mt-1.5 text-gray-300">
             This is an estimate for informational purposes only — not financial, tax, or legal advice.
@@ -330,7 +330,7 @@ function ResultsInner() {
             <CalendarDaysIcon className="w-4 h-4" />
             Schedule a Free Consultation
           </button>
-          <p className="text-[11px] text-gray-300 mt-3">No obligation · 15 minutes · Conejo Valley experts</p>
+          <p className="text-[11px] text-gray-300 mt-3">No obligation · 15 minutes · Ventura County experts</p>
         </div>
 
       </div>

@@ -114,11 +114,10 @@ export default function AboutUsSection() {
         <div className="mx-auto mt-32 max-w-7xl px-6 sm:mt-40 lg:px-8">
           <div className="mx-auto max-w-2xl lg:mx-0">
             <h2 className="text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl dark:text-white">
-              We approach work as a place to make the world better
+              We approach real estate as a partnership, not a transaction
             </h2>
             <p className="mt-6 text-base/7 text-gray-600 dark:text-gray-300">
-              Diam nunc lacus lacus aliquam turpis enim. Eget hac velit est euismod lacus. Est non placerat nam arcu.
-              Cras purus nibh cursus sit eu in id. Integer vel nibh.
+              Every homeowner's situation is unique. Whether you're deciding to sell or rent, relocating, or building your investment portfolio, we provide data-driven insights and personalized guidance to help you make the best decision for your financial future in Ventura County.
             </p>
           </div>
           <div className="mx-auto mt-16 flex max-w-2xl flex-col gap-8 lg:mx-0 lg:mt-20 lg:max-w-none lg:flex-row lg:items-end">

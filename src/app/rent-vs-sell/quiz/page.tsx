@@ -468,7 +468,7 @@ function QuizInner() {
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">/mo</span>
                       </div>
-                      {!avm?.rent && <p className="text-[11px] text-gray-400 mt-1">Leave blank to use Thousand Oaks avg ($3,950/mo).</p>}
+                      {!avm?.rent && <p className="text-[11px] text-gray-400 mt-1">Leave blank to use Ventura County avg ($3,950/mo).</p>}
                     </div>
                   </div>
 
@@ -662,7 +662,7 @@ function QuizInner() {
       {/* ── Footer strip ── */}
       <footer className="border-t border-gray-100 px-6 py-4">
         <div className="max-w-lg mx-auto flex items-center justify-between text-xs text-gray-300">
-          <span>MasterKey Real Estate · Thousand Oaks, CA</span>
+          <span>MasterKey Real Estate · Ventura County, CA</span>
           <span>DRE #01892427</span>
         </div>
       </footer>
