@@ -161,3 +161,6 @@ export function MasterKeyLogoInlineWhite({ className }: { className?: string }) 
       />
   )
 }
+
+// Alias for backwards compatibility
+export { Mark as LogoIcon }
