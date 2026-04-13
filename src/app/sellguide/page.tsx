@@ -779,7 +779,13 @@ function SellGuidePageInner() {
               <p className="text-gray-500 text-lg leading-relaxed mb-8 max-w-md">
                 Your complete guide to selling your home for top dollar — personalized for your market. Takes 2 minutes.
               </p>
-              <SellGuideQuestionnaire onComplete={handleQComplete} initialStep={variant === "test" ? 1 : 0} />
+              {variant !== null && (
+                <SellGuideQuestionnaire
+                  key={variant}
+                  onComplete={handleQComplete}
+                  initialStep={variant === "test" ? 1 : 0}
+                />
+              )}
             </div>
             {/* Image below CTA on mobile, right column on desktop */}
             <HeroMedia />
