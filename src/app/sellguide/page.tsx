@@ -29,8 +29,8 @@ import { useSearchParams } from "next/navigation";
 // DEV OVERRIDE — uncomment ONE line below to
 // force a specific variant in localhost:
 // ─────────────────────────────────────────────
-// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sell-guide-landing-page-campaign': 'control' } })   // control: questionnaire, CTA button first
-// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sell-guide-landing-page-campaign': 'test-v2' } })  // test: questionnaire, market shown immediately
+// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sellguide-version-2': 'control' } })  // control: questionnaire, CTA button first
+// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sellguide-version-2': 'test' } })   // test: questionnaire, market shown immediately
 
 const WEBHOOK_URL =
   "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/wi5kuxoR9mbMghJUaVMm";
@@ -589,10 +589,8 @@ function SellGuidePageInner() {
       setVariant(urlOverride);
       return;
     }
-    const flag = posthog.getFeatureFlag("sell-guide-landing-page-campaign");
-    if (flag === "test-v2") setVariant("test");
-    else if (flag === "test" || flag === "control") setVariant("control");
-    else setVariant("control");
+    const flag = posthog.getFeatureFlag("sellguide-version-2");
+    setVariant(flag === "test" ? "test" : "control");
   }, []);
 
   useEffect(() => {
@@ -694,7 +692,7 @@ function SellGuidePageInner() {
           idealPrice: data.idealPrice,
           formType: "seller-guide",
           source: "sellguide-page",
-          variant: variant === "test" ? "test-v2" : "test-v1",
+          variant: variant ?? "control",
           downloadable: `sellers-checklist-${data.market}`,
           assetUrl: selectedMarket ? `https://www.usemasterkey.com${selectedMarket.file}` : "",
           submittedAt: new Date().toISOString(),
