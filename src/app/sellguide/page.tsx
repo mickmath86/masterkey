@@ -29,7 +29,7 @@ import { useSearchParams } from "next/navigation";
 // DEV OVERRIDE — uncomment ONE line below to
 // force a specific variant in localhost:
 // ─────────────────────────────────────────────
-// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sellguide-version-2': 'control' } })  // control: questionnaire, CTA button first
+posthog.featureFlags.overrideFeatureFlags({ flags: { 'sellguide-version-2': 'control' } })  // control: questionnaire, CTA button first
 // posthog.featureFlags.overrideFeatureFlags({ flags: { 'sellguide-version-2': 'test' } })   // test: questionnaire, market shown immediately
 
 const WEBHOOK_URL =
