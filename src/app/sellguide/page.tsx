@@ -29,8 +29,8 @@ import { useSearchParams } from "next/navigation";
 // DEV OVERRIDE — uncomment ONE line below to
 // force a specific variant in localhost:
 // ─────────────────────────────────────────────
-// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sell-guide-landing-page-campaign': 'test' } })
-// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sell-guide-landing-page-campaign': 'control' } })
+// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sell-guide-landing-page-campaign': 'control' } })   // control: questionnaire, CTA button first
+// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sell-guide-landing-page-campaign': 'test-v2' } })  // test: questionnaire, market shown immediately
 
 const WEBHOOK_URL =
   "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/wi5kuxoR9mbMghJUaVMm";
@@ -103,10 +103,12 @@ const REASON_OPTIONS = [
 
 function SellGuideQuestionnaire({
   onComplete,
+  initialStep = 0,
 }: {
   onComplete: (data: QData) => void;
+  initialStep?: number;
 }) {
-  const [step, setStep] = useState(0); // 0 = not started (hero)
+  const [step, setStep] = useState(initialStep); // 0 = hero CTA, 1 = start at market selection
   const [data, setData] = useState<QData>({
     market: "", intent: "", address: "", addressValid: false,
     timeline: "", reason: "", reasonOther: "", idealPrice: "",
@@ -588,7 +590,9 @@ function SellGuidePageInner() {
       return;
     }
     const flag = posthog.getFeatureFlag("sell-guide-landing-page-campaign");
-    setVariant(flag === "test" ? "test" : "control");
+    if (flag === "test-v2") setVariant("test");
+    else if (flag === "test" || flag === "control") setVariant("control");
+    else setVariant("control");
   }, []);
 
   useEffect(() => {
@@ -690,7 +694,7 @@ function SellGuidePageInner() {
           idealPrice: data.idealPrice,
           formType: "seller-guide",
           source: "sellguide-page",
-          variant: "test",
+          variant: variant === "test" ? "test-v2" : "test-v1",
           downloadable: `sellers-checklist-${data.market}`,
           assetUrl: selectedMarket ? `https://www.usemasterkey.com${selectedMarket.file}` : "",
           submittedAt: new Date().toISOString(),
@@ -758,93 +762,9 @@ function SellGuidePageInner() {
     );
   }
 
-  // ── CONTROL variant ────────────────────────────────────────────────────────
-  if (variant !== "test") {
-    return (
-      <div className="min-h-screen bg-white">
-        <section className="relative overflow-hidden bg-white pb-0 border-b border-gray-100">
-          <NavbarMinimal theme="light" />
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full bg-orange-400/8 blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-amber-400/6 blur-3xl" />
-          </div>
-          <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12">
-            {/* Mobile: col (text → image), Desktop: 2-col grid */}
-            <div className="flex flex-col lg:grid lg:grid-cols-2 gap-12 items-center">
-              <div className="py-1 lg:py-20">
-                <HeroHeadline />
-                <p className="text-gray-500 text-lg leading-relaxed mb-8 max-w-md">
-                  Your complete guide to selling your home for top dollar — from prep and staging to closing with confidence. Choose your market below.
-                </p>
-
-                {/* Control form */}
-                <form onSubmit={handleControlSubmit} className="bg-gray-50 border border-gray-200 rounded-2xl p-6 mb-8 space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1.5">First Name <span className="text-red-400">*</span></label>
-                      <input type="text" value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} placeholder="Jane" required className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 focus:outline-none bg-white" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1.5">Last Name</label>
-                      <input type="text" value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} placeholder="Smith" className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 focus:outline-none bg-white" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1.5">Phone <span className="text-red-400">*</span></label>
-                    <input type="tel" value={form.phone} onChange={e => handlePhoneChange(e.target.value)} placeholder="(805) 555-0100" className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:ring-2 focus:outline-none bg-white ${phoneError ? "border-red-400 focus:ring-red-400 text-gray-900" : "border-gray-300 focus:ring-orange-400 focus:border-orange-400 text-gray-900"}`} />
-                    {phoneError && <p className="mt-1.5 text-xs text-red-400">{phoneError}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1.5">Email Address <span className="text-red-400">*</span></label>
-                    <input type="email" value={form.email} onChange={e => handleEmailChange(e.target.value)} placeholder="jane@example.com" required className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:ring-2 focus:outline-none bg-white ${emailError ? "border-red-400 focus:ring-red-400 text-gray-900" : "border-gray-300 focus:ring-orange-400 focus:border-orange-400 text-gray-900"}`} />
-                    {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1.5">Which market? <span className="text-red-400">*</span></label>
-                    <div className="relative">
-                      <select value={form.market} onChange={e => { setForm(f => ({ ...f, market: e.target.value, propertyAddress: "" })); setAddressValid(false); }} required className="w-full appearance-none px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-orange-400 focus:border-orange-400 focus:outline-none cursor-pointer">
-                        <option value="" disabled>Select a market…</option>
-                        {MARKETS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                      </select>
-                      <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none opacity-40" />
-                    </div>
-                  </div>
-                  {form.market && (
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1.5">Property Address <span className="text-red-400">*</span></label>
-                      <GooglePlacesInput id="control-address" value={form.propertyAddress} onChange={v => setForm(f => ({ ...f, propertyAddress: v }))} onValidationChange={v => setAddressValid(v)} placeholder="Start typing your address…" showValidation={true} className="bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-orange-400 focus:border-orange-400" />
-                      <p className="mt-1.5 text-[11px] text-gray-400">Enter the address of the home you're thinking of selling.</p>
-                    </div>
-                  )}
-                  <button id="sell-submit" type="submit" disabled={!isValid() || isSubmitting} className="w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-orange-500 hover:bg-orange-400 text-white font-semibold py-3 rounded-lg transition-colors text-sm shadow-sm shadow-orange-200">
-                    <ClipboardDocumentListIcon className="w-4 h-4" />
-                    {isSubmitting ? "Opening your checklist…" : "Get the Seller's Prep Checklist — Free"}
-                  </button>
-                  <p className="text-xs text-center leading-relaxed text-gray-400">No spam, ever. We will never sell your information.</p>
-                </form>
-
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">What's inside</p>
-                <ul className="space-y-2.5">
-                  {WHAT_INSIDE.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-sm text-gray-600">
-                      <CheckCircleIcon className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />{item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <HeroMedia />
-            </div>
-          </div>
-        </section>
-        <BottomSection />
-        <LandingPageV6 />
-        <Footer />
-        {calendarOpen && <CalendarModal onClose={() => setCalendarOpen(false)} />}
-      </div>
-    );
-  }
-
-  // ── TEST variant — questionnaire hero ─────────────────────────────────────
+  // ── CONTROL variant: questionnaire with hero CTA button (step 0) ─────────────
+  // ── TEST variant: questionnaire starting at step 1 (market shown immediately) ─
+  // Both render the same light page; only initialStep differs
   return (
     <div className="min-h-screen bg-white">
       <section className="relative overflow-hidden bg-white pb-0 border-b border-gray-100">
@@ -861,7 +781,7 @@ function SellGuidePageInner() {
               <p className="text-gray-500 text-lg leading-relaxed mb-8 max-w-md">
                 Your complete guide to selling your home for top dollar — personalized for your market. Takes 2 minutes.
               </p>
-              <SellGuideQuestionnaire onComplete={handleQComplete} />
+              <SellGuideQuestionnaire onComplete={handleQComplete} initialStep={variant === "test" ? 1 : 0} />
             </div>
             {/* Image below CTA on mobile, right column on desktop */}
             <HeroMedia />
