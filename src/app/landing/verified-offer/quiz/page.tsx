@@ -194,31 +194,81 @@ function QuizInner() {
       }
     } catch { /* fail open */ }
 
-    // Fire webhook
-    if (WEBHOOK_URL !== "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/e19d3888-d45b-4836-82cb-5c09f3a9af2d") {
-      try {
-        await fetch(WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            firstName: data.firstName,
-            lastName: data.lastName,
-            phone: data.phone,
-            email: data.email,
-            propertyAddress: data.address,
-            timeline: data.timeline,
-            condition: data.condition,
-            motivation:
-              data.motivation === "other"
-                ? data.motivationOther
-                : data.motivation,
-            formType: "verified-offer",
-            source: "verified-offer-quiz",
-            submittedAt: new Date().toISOString(),
-          }),
-        });
-      } catch { /* fail open */ }
+    // ── Rentcast enrichment — fire both calls in parallel, fail gracefully ──
+    let rentcastValue: number | null = null;
+    let rentcastValueLow: number | null = null;
+    let rentcastValueHigh: number | null = null;
+    let rentcastRentEst: number | null = null;
+    let bedrooms: string | null = null;
+    let bathrooms: string | null = null;
+    let sqft: string | null = null;
+    let yearBuilt: string | null = null;
+    let propertyType: string | null = null;
+
+    if (data.address) {
+      const encoded = encodeURIComponent(data.address);
+      const [avmRes, factsRes] = await Promise.allSettled([
+        fetch(`/api/rentcast/value?address=${encoded}`),
+        fetch(`/api/homevalue/property-lookup?address=${encoded}`),
+      ]);
+      if (avmRes.status === "fulfilled" && avmRes.value.ok) {
+        try {
+          const avm = await avmRes.value.json();
+          rentcastValue = avm.price ?? null;
+          rentcastValueLow = avm.priceRangeLow ?? null;
+          rentcastValueHigh = avm.priceRangeHigh ?? null;
+          rentcastRentEst = avm.rent ?? null;
+        } catch { /* ignore */ }
+      }
+      if (factsRes.status === "fulfilled" && factsRes.value.ok) {
+        try {
+          const facts = await factsRes.value.json();
+          if (facts.found === true) {
+            bedrooms = facts.bedrooms || null;
+            bathrooms = facts.bathrooms || null;
+            sqft = facts.sqft || null;
+            yearBuilt = facts.yearBuilt || null;
+            propertyType = facts.propertyType || null;
+          }
+        } catch { /* ignore */ }
+      }
     }
+
+    // ── Fire webhook ──────────────────────────────────────────────────────────
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phone: data.phone,
+          email: data.email,
+          propertyAddress: data.address,
+          timeline: data.timeline,
+          condition: data.condition,
+          motivation:
+            data.motivation === "other"
+              ? data.motivationOther
+              : data.motivation,
+          // Rentcast valuation
+          estimatedValue: rentcastValue,
+          estimatedValueLow: rentcastValueLow,
+          estimatedValueHigh: rentcastValueHigh,
+          estimatedMonthlyRent: rentcastRentEst,
+          // Property facts
+          bedrooms,
+          bathrooms,
+          squareFootage: sqft,
+          yearBuilt,
+          propertyType,
+          // Meta
+          formType: "verified-offer",
+          source: "verified-offer-quiz",
+          submittedAt: new Date().toISOString(),
+        }),
+      });
+    } catch { /* fail open */ }
 
     setIsSubmitting(false);
     const params = new URLSearchParams({
