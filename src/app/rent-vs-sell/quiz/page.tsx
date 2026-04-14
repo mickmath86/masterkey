@@ -249,8 +249,7 @@ function QuizInner() {
     if (!results) { setIsSubmitting(false); return; }
 
     // Fire webhook
-    if (RENT_VS_SELL_WEBHOOK !== "RENT_VS_SELL_WEBHOOK_PLACEHOLDER") {
-      try {
+    try {
         await fetch(RENT_VS_SELL_WEBHOOK, {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -273,8 +272,7 @@ function QuizInner() {
             submittedAt: new Date().toISOString(),
           }),
         });
-      } catch { /* fail open */ }
-    }
+    } catch { /* fail open */ }
 
     setIsSubmitting(false);
 
