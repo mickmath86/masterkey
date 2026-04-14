@@ -17,7 +17,7 @@ import {
 } from "@heroicons/react/16/solid";
 
 // ─── Webhook placeholder ──────────────────────────────────────────────────────
-const WEBHOOK_URL = "VERIFIED_OFFER_WEBHOOK_PLACEHOLDER";
+const WEBHOOK_URL = "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/e19d3888-d45b-4836-82cb-5c09f3a9af2d";
 
 // ─── Phone validation ─────────────────────────────────────────────────────────
 function validatePhoneFormat(phone: string): string | null {
@@ -195,7 +195,7 @@ function QuizInner() {
     } catch { /* fail open */ }
 
     // Fire webhook
-    if (WEBHOOK_URL !== "VERIFIED_OFFER_WEBHOOK_PLACEHOLDER") {
+    if (WEBHOOK_URL !== "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/e19d3888-d45b-4836-82cb-5c09f3a9af2d") {
       try {
         await fetch(WEBHOOK_URL, {
           method: "POST",
