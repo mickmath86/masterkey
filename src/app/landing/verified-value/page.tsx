@@ -102,7 +102,7 @@ function VerifiedOfferHero() {
                   disabled={!addressValid}
                   className="flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-6 py-3 rounded-lg transition-colors text-sm whitespace-nowrap shadow-sm"
                 >
-                  See What My Home Is Worth
+                  Get Started
                   <ArrowRightIcon className="w-4 h-4" />
                 </button>
               </div>
