@@ -42,68 +42,6 @@ export default function Content6() {
                   This means when you sell with us, you’re not just getting a price — you’re getting a guarantee. No more wondering if you priced too high or too low. No more 
                   second-guessing after the listing drops. Just clarity, confidence, and a sale that delivers exactly what your home is worth.
                 </p>
-              <h1 className=" mt-4 text-2xl font-semibold text-gray-900 dark:text-white">How it Works</h1>
-             
-              <ul role="list" className="mt-8 space-y-8 text-gray-600 dark:text-gray-400">
-                <li className="flex gap-x-3">
-                  {/* <CloudArrowUpIcon
-                    aria-hidden="true"
-                    className="mt-1 size-5 flex-none text-sky-600 dark:text-sky-400"
-                  /> */}
-                  <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400 mr-3">M</h1>
-                  <span>
-                    <strong className="font-semibold text-gray-900 dark:text-white"> Market Assessment</strong> <br />
-                    <strong className="text-gray-900 dark:text-white">Establishing a Smart, Defensible Listing Price</strong> <br />
-                    We begin by performing a detailed market assessment using recent neighborhood sales, active listings, buyer demand, and current market conditions. This allows us to recommend a listing price that reflects how buyers are actually behaving — not just what similar homes were listed for. This step sets the foundation for everything that follows.
-                  </span>
-                </li>
-                <li className="flex gap-x-3">
-                
-                  <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400 mr-3">A</h1>
-                  <span>
-                    <strong className="font-semibold text-gray-900 dark:text-white">Appraisal</strong> <br />
-                    <strong className="text-gray-900 dark:text-white">Independent, Third-Party Valuation (Paid for by MasterKey)</strong> <br />
-                    Next, we bring in a licensed, third-party appraiser — at our expense — to establish an objective baseline value for your home. This appraisal is independent, unbiased, and grounded in real market data. It removes guesswork and gives both you and potential buyers confidence in the value of the property.
-                  </span>
-                </li>
-                <li className="flex gap-x-3">
-                  <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400 mr-3">S</h1>
-                  <span>
-                    <strong className="font-semibold text-gray-900 dark:text-white">Systems Review</strong> <br />
-                    <strong className="text-gray-900 dark:text-white">Identifying Issues Before Buyers Do</strong> <br />
-                    We then hire a professional home inspector to review the home's major systems — roof, plumbing, electrical, HVAC, and structure. This step helps surface any unresolved issues early, reducing surprises during escrow and strengthening buyer confidence. Transparency here protects your price and your timeline.
-                  </span>
-                </li>
-                <li className="flex gap-x-3">
-                  <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400 mr-3">T</h1>
-                  <span>
-                    <strong className="font-semibold text-gray-900 dark:text-white">True Price Approval</strong> <br />
-                    <strong className="text-gray-900 dark:text-white">Arriving at Your Verified Value</strong> <br />
-                    With the market assessment, appraisal, and systems review complete, we align on your home's Verified Value — the number our guarantee is based on. This verified value sets the threshold for our offer commitment.
-                    Our guarantee: if we don't secure an offer within 2% of this verified value, you don't pay us a commission.
-                    This is where clarity replaces uncertainty.
-                  </span>
-                </li>
-                <li className="flex gap-x-3">
-                  <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400 mr-3">E</h1>
-                  <span>
-                    <strong className="font-semibold text-gray-900 dark:text-white">Enhanced Listing Placement</strong> <br />
-                    <strong className="text-gray-900 dark:text-white">Launching With Maximum Impact From Day One</strong> <br />
-                    Once your verified value is established, we activate our enhanced listing process designed to drive immediate buyer attention and momentum. This includes:
-                    Professional photography and cinematic video, drone imagery to showcase the property and surrounding area, strategic pricing and positioning across all major real estate platforms, targeted exposure to qualified buyer networks and local agents, and a coordinated launch strategy to maximize first-week activity.
-                    The goal is simple: strong demand early, without price reductions later.
-                  </span>
-                </li>
-                <li className="flex gap-x-3">
-                  <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400 mr-3">R</h1>
-                  <span>
-                    <strong className="font-semibold text-gray-900 dark:text-white">Risk-Free Sale</strong> <br />
-                    <strong className="text-gray-900 dark:text-white">Our Commission Is on the Line</strong> <br />
-                    Once your home goes live, your Verified Value Guarantee is active. If we don't deliver a written offer within 2% of your verified value during the agreed timeframe, we waive our commission. You're not paying for effort — you're paying for results.
-                    This is how we align our incentives with yours.
-                  </span>
-                </li>
-              </ul>
               
             </div>
           </div>
