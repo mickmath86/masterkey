@@ -5,12 +5,17 @@ const faqs = [
   {
     question: "What exactly is the Verified Value Guarantee?",
     answer:
-      "The Verified Value Guarantee means we commit to securing a written offer within 2% of your home's independently appraised value within the agreed timeframe. If we don't, we waive our commission. The guarantee is tied to a professional third-party appraisal, not estimates or opinions.",
+      "The Verified Value Guarantee means we commit to securing a written offer within 2% of your home's Verified Value within the agreed timeframe — or we waive our commission. The Verified Value is determined by a combination of three things MasterKey pays for upfront: (1) a professional third-party appraisal, (2) a full systems inspection, and (3) our own independent market analysis. Together, these establish a defensible, data-backed number that becomes the benchmark we're held to. This is not based on estimates, automated tools, or agent opinions.",
   },
   {
     question: 'Who pays for the appraisal?',
     answer:
-      "We do. As part of our process, MasterKey covers the cost of a professional third-party appraisal to establish your verified value. If the listing is cancelled early or the terms of the guarantee aren't met, the appraisal cost may be reimbursed.",
+      "We do. MasterKey covers the upfront cost of the third-party appraisal, systems inspection, and our own market analysis — all of which combine to establish your Verified Value. These are real costs we absorb on your behalf at the start of the process. When your home successfully closes, we recoup those costs through escrow as part of the transaction. If the listing is cancelled before closing, those costs may be reimbursed per the terms of the listing agreement.",
+  },
+  {
+    question: 'What is included in establishing the Verified Value — and what does it cost me upfront?',
+    answer:
+      "Nothing out of pocket. MasterKey funds three components upfront to establish your Verified Value: a licensed third-party appraisal, a comprehensive systems inspection, and our own market comparables analysis. These aren't opinions — they're independently verified data points. The total cost of these services is advanced by MasterKey and recouped through escrow when your home closes. There is no upfront expense to you as the seller.",
   },
   {
     question: 'Who chooses the appraiser?',
