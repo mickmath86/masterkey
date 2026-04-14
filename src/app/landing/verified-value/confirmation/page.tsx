@@ -88,7 +88,7 @@ function ConfirmationInner() {
       <header className="border-b border-border px-6 py-4">
         <div className="max-w-lg mx-auto">
           <a
-            href="/landing/verified-offer"
+            href="/landing/verified-value"
             className="flex items-center gap-2 text-sky-500 font-bold text-sm w-fit"
           >
             <HomeModernIcon className="w-4 h-4" />
@@ -113,10 +113,10 @@ function ConfirmationInner() {
               Request Received
             </div>
             <h1 className="text-3xl font-bold text-foreground leading-tight mb-3">
-              {firstName ? `Thanks, ${firstName}!` : "You're all set!"}
+              {firstName ? `Thanks, ${firstName}!` : "We'll be in touch!"}
             </h1>
             <p className="text-muted-foreground leading-relaxed">
-              We've received your information
+              We've received your property details
               {address ? ` for ${address}` : ""} and one of our local experts
               will be in touch with you shortly to discuss your verified offer.
             </p>
@@ -129,8 +129,8 @@ function ConfirmationInner() {
             </p>
             {[
               "We review your property details",
-              "A local expert prepares your verified offer range",
-              "We call you to walk through the numbers — no pressure",
+              "A local expert researches your property and local market",
+              "We call you to share our findings and discuss next steps — no pressure",
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-2.5">
                 <div className="w-5 h-5 rounded-full bg-sky-100 flex items-center justify-center flex-shrink-0 mt-0.5">

@@ -23,7 +23,7 @@ function VerifiedOfferHero() {
   function handleStart() {
     if (!addressValid) return;
     const params = new URLSearchParams({ address });
-    router.push(`/landing/verified-offer/quiz?${params.toString()}`);
+    router.push(`/landing/verified-value/quiz?${params.toString()}`);
   }
 
   return (
@@ -40,9 +40,9 @@ function VerifiedOfferHero() {
           />
           <div className="relative mx-auto max-w-3xl text-center">
             <h1 className="text-foreground text-balance font-bold text-4xl sm:mt-12 sm:text-6xl">
-              Get an Offer at Your Verified Value in 45 Days{" "}
+              Sell Your Home in 60 Days{" "}
               <span className="text-muted-foreground font-normal">
-                — or You Pay Us
+                — or We Work for
               </span>{" "}
               <span className="relative font-bold text-sky-500">
                 <svg
@@ -102,12 +102,12 @@ function VerifiedOfferHero() {
                   disabled={!addressValid}
                   className="flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-6 py-3 rounded-lg transition-colors text-sm whitespace-nowrap shadow-sm"
                 >
-                  Get My Offer
+                  See What My Home Is Worth
                   <ArrowRightIcon className="w-4 h-4" />
                 </button>
               </div>
               <p className="text-muted-foreground mt-2 text-xs text-center">
-                Free · No obligation · Takes 2 minutes
+                Free · No obligation · No instant online estimate — a real expert will review your home
               </p>
             </div>
           </div>

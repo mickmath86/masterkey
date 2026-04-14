@@ -275,7 +275,7 @@ function QuizInner() {
       name: data.firstName,
       address: data.address,
     });
-    router.push(`/landing/verified-offer/confirmation?${params.toString()}`);
+    router.push(`/landing/verified-value/confirmation?${params.toString()}`);
   }
 
   const inputCls =
@@ -289,7 +289,7 @@ function QuizInner() {
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-6 py-4">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <a
-            href="/landing/verified-offer"
+            href="/landing/verified-value"
             className="flex items-center gap-2 text-sky-500 font-bold text-sm"
           >
             <HomeModernIcon className="w-4 h-4" />
@@ -633,7 +633,7 @@ function QuizInner() {
                   className="ml-auto flex items-center gap-2 bg-sky-500 hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors shadow-sm"
                 >
                   <CheckCircleIcon className="w-4 h-4" />
-                  {isSubmitting ? "Submitting…" : "Get My Verified Offer →"}
+                  {isSubmitting ? "Submitting…" : "Request My Expert Review →"}
                 </button>
               )
             )}

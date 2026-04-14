@@ -109,11 +109,10 @@ export default function AboutUsSection() {
         <div className="mx-auto mt-32 max-w-7xl px-6 sm:mt-40 lg:px-8">
           <div className="mx-auto max-w-2xl lg:mx-0">
             <h2 className="text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl dark:text-white">
-              We approach work as a place to make the world better
+              Our results speak for themselves
             </h2>
             <p className="mt-6 text-base/7 text-gray-600 dark:text-gray-300">
-              Diam nunc lacus lacus aliquam turpis enim. Eget hac velit est euismod lacus. Est non placerat nam arcu.
-              Cras purus nibh cursus sit eu in id. Integer vel nibh.
+              We combine local market expertise with data-driven pricing strategy and a performance-based guarantee — so you never wonder if you left money on the table.
             </p>
           </div>
           <div className="mx-auto mt-16 flex max-w-2xl flex-col gap-8 lg:mx-0 lg:mt-20 lg:max-w-none lg:flex-row lg:items-end">
