@@ -113,18 +113,6 @@ function VerifiedOfferHero() {
           </div>
         </section>
 
-        {/* Video section — identical to V4 */}
-        <section className="border-foreground/10 relative mt-8 border-y sm:mt-16">
-          <div className="relative z-10 mx-auto max-w-6xl border-x px-3">
-            <div className="border-x">
-              <div
-                aria-hidden
-                className="h-3 w-full bg-[repeating-linear-gradient(-45deg,var(--color-foreground),var(--color-foreground)_1px,transparent_1px,transparent_4px)] opacity-5"
-              />
-              <VideoPlayer />
-            </div>
-          </div>
-        </section>
       </main>
     </>
   );
@@ -134,6 +122,18 @@ function VerifiedOfferPageInner() {
   return (
     <>
       <VerifiedOfferHero />
+      {/* Video lives here — outside the stateful hero so keystrokes don't remount it */}
+      <section className="border-foreground/10 relative border-y">
+        <div className="relative z-10 mx-auto max-w-6xl border-x px-3">
+          <div className="border-x">
+            <div
+              aria-hidden
+              className="h-3 w-full bg-[repeating-linear-gradient(-45deg,var(--color-foreground),var(--color-foreground)_1px,transparent_1px,transparent_4px)] opacity-5"
+            />
+            <VideoPlayer />
+          </div>
+        </div>
+      </section>
       <Content6 />
       <CTA3 />
       <AboutUsSection />
