@@ -14,6 +14,7 @@ import Testimonials from "@/components/landing-pages/landing-page-v4/components/
 import { Header } from "@/components/landing-pages/landing-page-v4/sections/header";
 import VideoPlayer from "@/components/video-player";
 import { ArrowRightIcon } from "@heroicons/react/16/solid";
+import HowItWorksSection from "@/components/how-it-works-5";
 
 function VerifiedOfferHero() {
   const router = useRouter();
@@ -32,7 +33,7 @@ function VerifiedOfferHero() {
       <main role="main" className="bg-muted/50">
         <section
           id="home"
-          className="relative mx-auto max-w-5xl px-6 pt-32 text-center"
+          className="relative mx-auto max-w-5xl px-6 py-32 text-center"
         >
           <div
             aria-hidden="true"
@@ -135,6 +136,7 @@ function VerifiedOfferPageInner() {
         </div>
       </section>
       <Content6 />
+      <HowItWorksSection />
       <CTA3 />
       <AboutUsSection />
       <Testimonials />

@@ -1,3 +1,4 @@
+import '@/styles/how-it-works-5.css'
 import { cn } from '@/lib/utils'
 import { Vercel } from '@/components/ui/svgs/vercel'
 import { Linear } from '@/components/ui/svgs/linear'

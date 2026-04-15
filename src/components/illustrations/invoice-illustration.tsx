@@ -1,6 +1,8 @@
+import '@/styles/how-it-works-5.css'
 import { cn } from '@/lib/utils'
 import { LogoIcon } from '@/components/logo'
 import { DocumentIllustation } from '@/components/illustrations/document-illustration'
+import { ShieldCheck } from 'lucide-react'
 
 export const InvoiceIllustration = ({ className }: { className?: string }) => {
     return (
@@ -8,18 +10,23 @@ export const InvoiceIllustration = ({ className }: { className?: string }) => {
             aria-hidden
             className="relative">
             <div className={cn('mask-b-from-65% before:bg-background before:border-border after:border-border after:bg-background/50 before:z-1 group relative -mx-4 px-4 pt-6 before:absolute before:inset-x-6 before:bottom-0 before:top-4 before:rounded-xl before:border before:shadow after:absolute after:inset-x-9 after:bottom-0 after:top-2 after:rounded-xl after:border after:shadow', className)}>
-                <div className="bg-illustration ring-border-illustration relative z-10 overflow-hidden rounded-xl p-8 text-sm shadow-lg shadow-indigo-900/15 ring-1">
+                <div className="bg-illustration bg-white ring-border-illustration relative z-10 overflow-hidden rounded-xl p-8 text-sm shadow-lg shadow-indigo-900/15 ring-1">
                     <div className="mb-6 flex items-start justify-between">
                         <div className="space-y-0.5">
                             <LogoIcon />
-                            <div className="mt-4 font-mono text-xs">INV-456789</div>
-                            <div className="mt-1 -translate-x-1 font-mono text-2xl font-semibold">$284,342.57</div>
-                            <div className="text-xs font-medium">Due in 15 days</div>
+                            <div className="mt-4 font-mono text-xs">VAL-456789</div>
+                            <div className="mt-1 -translate-x-1 font-mono text-2xl font-semibold">$950,342.57</div>
+                            <div className="text-xs font-medium">Verified Value good for 60 days</div>
                         </div>
                         <DocumentIllustation />
+                       
                     </div>
 
                     <div className="space-y-1.5 [--color-border:color-mix(in_oklab,var(--color-foreground)10%,transparent)]">
+                         <div className="bg-linear-to-br rounded-sm border-foreground/5 flex items-center gap-1 border-t from-indigo-400 to-emerald-600 p-2 text-sm">
+                            <ShieldCheck className="size-4 text-white drop-shadow-sm" />
+                            <span className="text-white">Verified</span>
+                        </div>
                         <div className="grid grid-cols-[auto_1fr] items-center">
                             <span className="text-muted-foreground w-18 block">To</span>
                             <span className="bg-border h-2 w-1/4 rounded-full px-2" />
