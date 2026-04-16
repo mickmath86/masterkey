@@ -138,6 +138,18 @@ export function MasterKeyMark({ className }: { className?: string }) {
   )
 }
 
+export function MasterkeyWhiteMark({ className }: { className?: string }) {
+  return (
+    <Image 
+        alt="mk-white-mark"
+        src="/logos/white-mark.png"
+        width={200}
+        height={200}
+        className={`w-auto dark:hidden ${className}`}
+      />
+  )
+}
+
 export function MasterKeyLogoInlineBlack({ className }: { className?: string }) {
   return (
     <Image 

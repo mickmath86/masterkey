@@ -4,17 +4,19 @@ import { useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { GooglePlacesInput } from "@/components/ui/google-places-input";
 import Content6 from "@/components/landing-pages/landing-page-v4/sections/content-6";
+import HeroSection from "@/components/secondary-hero-10";
 import CTA3 from "@/components/landing-pages/landing-page-v4/components/cta3";
 import AboutUsSection from "@/components/landing-pages/landing-page-v4/sections/about-us";
 import WhyThisWorksSection from "@/components/landing-pages/landing-page-v4/sections/why-this-works";
 import FAQ from "@/components/landing-pages/landing-page-v4/sections/faq";
 import CTA2 from "@/components/landing-pages/landing-page-v4/sections/cta2";
 import V4Footer from "@/components/landing-pages/landing-page-v4/sections/footer";
-import Testimonials from "@/components/landing-pages/landing-page-v4/components/testimonials";
+import TestimonialsV4 from "@/components/landing-pages/landing-page-v4/components/testimonials";
 import { Header } from "@/components/landing-pages/landing-page-v4/sections/header";
 import VideoPlayer from "@/components/video-player";
 import { ArrowRightIcon } from "@heroicons/react/16/solid";
 import HowItWorksSection from "@/components/how-it-works-5";
+import Testimonials8 from "@/components/testimonials-8";
 
 function VerifiedOfferHero() {
   const router = useRouter();
@@ -135,12 +137,16 @@ function VerifiedOfferPageInner() {
           </div>
         </div>
       </section>
-      <Content6 />
+    <HeroSection /> 
       <HowItWorksSection />
       <CTA3 />
+      
       <AboutUsSection />
-      <Testimonials />
+      <Testimonials8 />
+      {/* <TestimonialsV4 /> */}
       <WhyThisWorksSection />
+        <Content6 />
+      
       <FAQ />
       <CTA2 />
       <V4Footer />

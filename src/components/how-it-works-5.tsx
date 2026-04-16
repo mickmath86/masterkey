@@ -9,6 +9,7 @@ import ActionnableIllustration from './ui/illustrations/actionnable'
 import IDCheckIllustration from './ui/illustrations/id-check'
 import { InvoiceIllustration } from './illustrations/invoice-illustration'
 import { BankStatsIllustration } from './illustrations/bank-stats'
+import IntegrationsSection from './integrations-6'
 
 export default function HowItWorksSection() {
     return (
@@ -21,7 +22,7 @@ export default function HowItWorksSection() {
                         <p className="text-muted-foreground mt-4 text-balance text-lg">Experience our streamlined approach to data analysis that empowers your team to make informed decisions quickly and efficiently.</p>
                     </div>
 
-                    <div className="md:max-w-1/3 mx-auto my-8 grid gap-12 *:py-6">
+                    <div className="md:max-w-2/3 mx-auto my-8 flex flex-col  gap-12 *:py-6">
                         <div className="relative">
                             <div className="text-center">
                                 <span className="bg-foreground/5 text-foreground mx-auto flex size-6 items-center justify-center rounded-full border text-sm font-medium">1</span>
@@ -46,10 +47,11 @@ export default function HowItWorksSection() {
                         </div>
                         <div className="space-y-6">
                             <div className="text-center">
-                                <span className="bg-foreground/5 text-foreground mx-auto flex size-6 items-center justify-center rounded-full border text-sm font-medium">3</span>
-                                <div className="mx-auto my-8 flex w-fit gap-2">
-                                   <BankStatsIllustration />
-                                </div>
+                                <span className="bg-foreground/5 my-10 text-foreground mx-auto flex size-6 items-center justify-center rounded-full border text-sm font-medium">3</span>
+                                
+                                   
+                                   <IntegrationsSection />
+                                
                                 <h3 className="text-foreground mb-3 text-lg font-medium">Enhanced Listing</h3>
                                 <p className="text-muted-foreground text-balance">Transform insights into beautiful visualizations and shareable reports to drive decisions.</p>
                             </div>
@@ -60,7 +62,7 @@ export default function HowItWorksSection() {
                         asChild
                         variant="outline"
                         className="mx-auto flex w-fit">
-                        <Link href="/sign-up">Get Started</Link>
+                        <Link href="#home">Get Started</Link>
                     </Button>
                 </div>
             </div>
