@@ -23,11 +23,11 @@ const STYLES = `
 .mk-d5 { transition-delay: 0.52s !important; }
 `;
 
-let injected = false;
 function injectStyles() {
-  if (injected || typeof document === "undefined") return;
-  injected = true;
+  if (typeof document === "undefined") return;
+  if (document.getElementById("mk-reveal-styles")) return;
   const s = document.createElement("style");
+  s.id = "mk-reveal-styles";
   s.textContent = STYLES;
   document.head.appendChild(s);
 }
