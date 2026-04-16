@@ -1,7 +1,6 @@
 "use client";
 
 import { Reveal } from "../components/reveal";
-'use client'
 
 import { useState } from 'react'
 import OurTeam from '../components/our-team'
