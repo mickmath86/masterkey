@@ -1,3 +1,6 @@
+"use client";
+
+import { Reveal } from "../components/reveal";
 'use client'
 
 import { useState } from 'react'
@@ -69,7 +72,7 @@ export default function AboutUsSection() {
                 loop
                 muted
                 playsInline
-                className="mt-10 aspect-6/5 w-full max-w-lg rounded-2xl object-cover outline-1 -outline-offset-1 outline-black/5 sm:mt-16 lg:mt-0 lg:max-w-none xl:row-span-2 xl:row-end-2 xl:mt-36 dark:outline-white/10"
+                data-reveal-wrap="true" className="mt-10 aspect-6/5 w-full max-w-lg rounded-2xl object-cover outline-1 -outline-offset-1 outline-black/5 sm:mt-16 lg:mt-0 lg:max-w-none xl:row-span-2 xl:row-end-2 xl:mt-36 dark:outline-white/10"
               >
                 <source src="/video/about-us-hero.mp4" type="video/mp4" />
                 Your browser does not support the video tag.

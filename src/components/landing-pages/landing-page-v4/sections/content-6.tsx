@@ -1,3 +1,6 @@
+"use client";
+
+import { Reveal } from "../components/reveal";
 import { CloudArrowUpIcon, LockClosedIcon, ServerIcon } from '@heroicons/react/20/solid'
 
 export default function Content6() {
@@ -8,6 +11,7 @@ export default function Content6() {
       <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 lg:mx-0 lg:max-w-none lg:grid-cols-2 lg:items-start lg:gap-y-10">
         <div className="lg:col-span-2 lg:col-start-1 lg:row-start-1 lg:mx-auto lg:grid lg:w-full lg:max-w-7xl lg:grid-cols-2 lg:gap-x-8 lg:px-8">
           <div className="lg:pr-4">
+            <Reveal type="left">
             <div className="lg:max-w-lg">
               <p className="text-base/7 font-semibold text-sky-600 dark:text-sky-400">The Verified Value Guarantee</p>
               <h1 className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl dark:text-white">
@@ -22,12 +26,13 @@ export default function Content6() {
             </div>
           </div>
         </div>
-        <div className="-mt-12 -ml-12 p-12 lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:overflow-hidden">
+        <div className="-mt-12 -ml-12 p-12 lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:overflow-hidden"><Reveal type="scale" delay={1}>
           <img
             alt=""
             src="/images/house-for-sale.jpg"
             className="w-3xl max-w-none rounded-xl bg-gray-900 shadow-xl ring-1 ring-gray-400/10 sm:w-228 dark:bg-gray-800 dark:ring-white/10"
           />
+          </Reveal>
         </div>
         <div className="lg:col-span-2 lg:col-start-1 lg:row-start-2 lg:mx-auto lg:grid lg:w-full lg:max-w-7xl lg:grid-cols-2 lg:gap-x-8 lg:px-8">
           <div className="lg:pr-4">
@@ -65,16 +70,16 @@ export default function Content6() {
                     <strong className="text-gray-900 dark:text-white">Independent, Third-Party Valuation (Paid for by MasterKey)</strong> <br />
                     Next, we bring in a licensed, third-party appraiser — at our expense — to establish an objective baseline value for your home. This appraisal is independent, unbiased, and grounded in real market data. It removes guesswork and gives both you and potential buyers confidence in the value of the property.
                   </span>
-                </li>
-                <li className="flex gap-x-3">
+                </li></Reveal>
+                <Reveal type="up" delay={3}><li className="flex gap-x-3">
                   <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400 mr-3">S</h1>
                   <span>
                     <strong className="font-semibold text-gray-900 dark:text-white">Systems Review</strong> <br />
                     <strong className="text-gray-900 dark:text-white">Identifying Issues Before Buyers Do</strong> <br />
                     We then hire a professional home inspector to review the home's major systems — roof, plumbing, electrical, HVAC, and structure. This step helps surface any unresolved issues early, reducing surprises during escrow and strengthening buyer confidence. Transparency here protects your price and your timeline.
                   </span>
-                </li>
-                <li className="flex gap-x-3">
+                </li></Reveal>
+                <Reveal type="up" delay={4}><li className="flex gap-x-3">
                   <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400 mr-3">T</h1>
                   <span>
                     <strong className="font-semibold text-gray-900 dark:text-white">True Price Approval</strong> <br />
@@ -83,8 +88,8 @@ export default function Content6() {
                     Our guarantee: if we don't secure an offer within 2% of this verified value, you don't pay us a commission.
                     This is where clarity replaces uncertainty.
                   </span>
-                </li>
-                <li className="flex gap-x-3">
+                </li></Reveal>
+                <Reveal type="up" delay={5}><li className="flex gap-x-3">
                   <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400 mr-3">E</h1>
                   <span>
                     <strong className="font-semibold text-gray-900 dark:text-white">Enhanced Listing Placement</strong> <br />
@@ -93,8 +98,8 @@ export default function Content6() {
                     Professional photography and cinematic video, drone imagery to showcase the property and surrounding area, strategic pricing and positioning across all major real estate platforms, targeted exposure to qualified buyer networks and local agents, and a coordinated launch strategy to maximize first-week activity.
                     The goal is simple: strong demand early, without price reductions later.
                   </span>
-                </li>
-                <li className="flex gap-x-3">
+                </li></Reveal>
+                <Reveal type="up" delay={5}><li className="flex gap-x-3">
                   <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400 mr-3">R</h1>
                   <span>
                     <strong className="font-semibold text-gray-900 dark:text-white">Risk-Free Sale</strong> <br />
@@ -102,7 +107,7 @@ export default function Content6() {
                     Once your home goes live, your Verified Value Guarantee is active. If we don't deliver a written offer within 2% of your verified value during the agreed timeframe, we waive our commission. You're not paying for effort — you're paying for results.
                     This is how we align our incentives with yours.
                   </span>
-                </li>
+                </li></Reveal>
               </ul>
               
             </div>

@@ -1,3 +1,6 @@
+"use client";
+
+import { Reveal } from "../components/reveal";
 import { CurrencyIllustration } from "../components/currency-illustration";
 import { VisualizationIllustration } from "../components/vizualization-illustration";
 import { ChartIllustration } from '../components/chart-illustration';
@@ -8,11 +11,11 @@ export default function WhyThisWorksSection() {
     <div className="bg-white py-24 sm:py-32 dark:bg-gray-900">
       <div className="mx-auto max-w-2xl px-6 lg:max-w-7xl lg:px-8">
         {/* <h2 className="text-base/7 font-semibold text-sky-600 dark:text-sky-400">Deploy faster</h2> */}
-        <p className="mt-2 max-w-lg text-4xl font-semibold tracking-tight text-pretty text-gray-950 sm:text-5xl dark:text-white">
+        <Reveal type="up"><p className="mt-2 max-w-lg text-4xl font-semibold tracking-tight text-pretty text-gray-950 sm:text-5xl dark:text-white">
          What Makes Our Approach Different
-        </p>
+        </p></Reveal>
         <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2">
-          <div className="relative lg:col-span-3">
+          <Reveal type="scale" delay={1}><div className="relative lg:col-span-3">
             <div className="absolute inset-0 rounded-lg bg-white max-lg:rounded-t-4xl lg:rounded-tl-4xl dark:bg-gray-800" />
             <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-[calc(var(--radius-lg)+1px)] max-lg:rounded-t-[calc(2rem+1px)] lg:rounded-tl-[calc(2rem+1px)]">
               {/* <img
@@ -40,8 +43,8 @@ export default function WhyThisWorksSection() {
               </div>
             </div>
             <div className="pointer-events-none absolute inset-0 rounded-lg shadow-sm outline outline-black/5 max-lg:rounded-t-4xl lg:rounded-tl-4xl dark:outline-white/15" />
-          </div>
-          <div className="relative lg:col-span-3">
+          </div></Reveal>
+          <Reveal type="scale" delay={2}><div className="relative lg:col-span-3">
             <div className="absolute inset-0 rounded-lg bg-white lg:rounded-tr-4xl dark:bg-gray-800" />
             <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(var(--radius-lg)+1px)] lg:rounded-tr-[calc(2rem+1px)]">
               
@@ -57,8 +60,8 @@ export default function WhyThisWorksSection() {
               </div>
             </div>
             <div className="pointer-events-none absolute inset-0 rounded-lg shadow-sm outline outline-black/5 lg:rounded-tr-4xl dark:outline-white/15" />
-          </div>
-          <div className="relative lg:col-span-2">
+          </div></Reveal>
+          <Reveal type="scale" delay={3}><div className="relative lg:col-span-2">
             <div className="absolute inset-0 rounded-lg bg-white lg:rounded-bl-4xl dark:bg-gray-800" />
             <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-[calc(var(--radius-lg)+1px)] lg:rounded-bl-[calc(2rem+1px)]">
               {/* <img
@@ -87,7 +90,7 @@ export default function WhyThisWorksSection() {
               </div>
             </div>
             <div className="pointer-events-none absolute inset-0 rounded-lg shadow-sm outline outline-black/5 lg:rounded-bl-4xl dark:outline-white/15" />
-          </div>
+          </div></Reveal>
           <div className="relative lg:col-span-2">
             <div className="absolute inset-0 rounded-lg bg-white dark:bg-gray-800" />
             <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-[calc(var(--radius-lg)+1px)]">

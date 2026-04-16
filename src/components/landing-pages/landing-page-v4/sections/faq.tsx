@@ -1,3 +1,6 @@
+"use client";
+
+import { Reveal } from "../components/reveal";
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
 import { MinusSmallIcon, PlusSmallIcon } from '@heroicons/react/24/outline'
 
@@ -94,9 +97,9 @@ export default function FAQ() {
     <div className="bg-white dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-40">
         <div className="mx-auto max-w-4xl">
-          <h2 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+          <Reveal type="up"><h2 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
             Frequently asked questions
-          </h2>
+          </h2></Reveal>
           <dl className="mt-16 divide-y divide-gray-900/10 dark:divide-white/10">
             {faqs.map((faq) => (
               <Disclosure key={faq.question} as="div" className="py-6 first:pt-0 last:pb-0">

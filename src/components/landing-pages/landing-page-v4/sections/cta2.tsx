@@ -1,3 +1,6 @@
+"use client";
+
+import { Reveal } from "../components/reveal";
 export default function CTA2() {
   return (
     <div className="bg-white">
@@ -16,7 +19,7 @@ export default function CTA2() {
               </radialGradient>
             </defs>
           </svg>
-          <div className="mx-auto max-w-md text-center lg:mx-0 lg:flex-auto lg:py-32 lg:text-left">
+          <div className="mx-auto max-w-md text-center lg:mx-0 lg:flex-auto lg:py-32 lg:text-left"><Reveal type="left">
             <h2 className="text-3xl font-semibold tracking-tight text-balance text-white sm:text-4xl">
               Ready to Sell With Certainty?
             </h2>
@@ -36,8 +39,9 @@ export default function CTA2() {
                 <span aria-hidden="true">→</span>
               </a>
             </div>
+          </Reveal>
           </div>
-          <div className="relative mt-16 h-80 lg:mt-8">
+          <div className="relative mt-16 h-80 lg:mt-8"><Reveal type="right" delay={1}>
             <img
               alt="MK Sold"
               src="/images/house-for-sale.jpg"
@@ -45,6 +49,7 @@ export default function CTA2() {
               height={1080}
               className="absolute shadow-md top-0 left-0 w-228 max-w-none rounded-md bg-white/5 ring-1 ring-white/10"
             />
+            </Reveal>
           </div>
         </div>
       </div>
