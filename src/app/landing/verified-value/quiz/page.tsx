@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { GooglePlacesInput } from "@/components/ui/google-places-input";
 import {
   ArrowRightIcon,
   ArrowLeftIcon,
@@ -86,6 +87,7 @@ const MOTIVATION_OPTIONS = [
 // ─── Form state ───────────────────────────────────────────────────────────────
 interface QuizData {
   address: string;
+  addressValid: boolean;
   timeline: string;
   condition: string;
   motivation: string;
@@ -103,10 +105,13 @@ function QuizInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const address = searchParams.get("address") ?? "";
+  // If address pre-filled from hero, skip the address step
+  const hasPrefilledAddress = address.trim() !== "";
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(hasPrefilledAddress ? 1 : 0);
   const [data, setData] = useState<QuizData>({
     address,
+    addressValid: hasPrefilledAddress,
     timeline: "",
     condition: "",
     motivation: "",
@@ -120,7 +125,7 @@ function QuizInner() {
   const [emailError, setEmailError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const TOTAL = 5;
+  const TOTAL = hasPrefilledAddress ? 5 : 6;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   function set<K extends keyof QuizData>(k: K, v: QuizData[K]) {
@@ -129,6 +134,7 @@ function QuizInner() {
 
   function canAdvance(): boolean {
     switch (step) {
+      case 0: return data.addressValid;
       case 1: return data.timeline !== "";
       case 2: return data.condition !== "";
       case 3:
@@ -150,7 +156,8 @@ function QuizInner() {
     }
   }
 
-  const progress = Math.round((step / TOTAL) * 100);
+  const displayStep = hasPrefilledAddress ? step : step === 0 ? 1 : step + 1;
+  const progress = Math.round((displayStep / TOTAL) * 100);
 
   // Auto-advance after selection on steps 1, 2, 3
   function selectAndAdvance<K extends keyof QuizData>(k: K, v: QuizData[K]) {
@@ -296,7 +303,7 @@ function QuizInner() {
             Verified Offer
           </a>
           <span className="text-xs text-muted-foreground">
-            Step {step} of {TOTAL}
+            {step === 0 ? "Step 1" : `Step ${hasPrefilledAddress ? step : step + 1}`} of {TOTAL}
           </span>
         </div>
       </header>
@@ -323,12 +330,38 @@ function QuizInner() {
       <div className="flex-1 flex flex-col items-center px-6 py-8">
         <div className="w-full max-w-lg space-y-6">
 
+          {/* ══ STEP 0: ADDRESS (shown when not pre-filled from hero) ══ */}
+          {step === 0 && (
+            <div className="space-y-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-sky-500 mb-2">
+                  Step {hasPrefilledAddress ? 1 : 2} of {TOTAL}
+                </p>
+                <h2 className="text-2xl font-bold text-foreground mb-1">
+                  What's the property address?
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Enter the address of the home you're thinking of selling.
+                </p>
+              </div>
+              <GooglePlacesInput
+                id="vv-quiz-address"
+                value={data.address}
+                onChange={(v) => setData((d) => ({ ...d, address: v }))}
+                onValidationChange={(valid) => setData((d) => ({ ...d, addressValid: valid }))}
+                placeholder="123 Oak Street, Thousand Oaks, CA"
+                showValidation={true}
+                className="bg-background border-input text-foreground placeholder-muted-foreground focus:ring-sky-500 focus:border-sky-500"
+              />
+            </div>
+          )}
+
           {/* ══ STEP 1: TIMELINE ══ */}
           {step === 1 && (
             <div className="space-y-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-sky-500 mb-2">
-                  Step 1 of {TOTAL}
+                  Step {hasPrefilledAddress ? 1 : 2} of {TOTAL}
                 </p>
                 <h2 className="text-2xl font-bold text-foreground mb-1">
                   When are you looking to sell?
@@ -383,7 +416,7 @@ function QuizInner() {
             <div className="space-y-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-sky-500 mb-2">
-                  Step 2 of {TOTAL}
+                  Step {hasPrefilledAddress ? 2 : 3} of {TOTAL}
                 </p>
                 <h2 className="text-2xl font-bold text-foreground mb-1">
                   What condition is the property in?
@@ -438,7 +471,7 @@ function QuizInner() {
             <div className="space-y-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-sky-500 mb-2">
-                  Step 3 of {TOTAL}
+                  Step {hasPrefilledAddress ? 3 : 4} of {TOTAL}
                 </p>
                 <h2 className="text-2xl font-bold text-foreground mb-1">
                   What's motivating your move?
@@ -494,7 +527,7 @@ function QuizInner() {
             <div className="space-y-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-sky-500 mb-2">
-                  Step 4 of {TOTAL}
+                  Step {hasPrefilledAddress ? 4 : 5} of {TOTAL}
                 </p>
                 <h2 className="text-2xl font-bold text-foreground mb-1">
                   What's your phone number?
@@ -606,7 +639,7 @@ function QuizInner() {
 
           {/* ── Navigation ── */}
           <div className="flex items-center gap-3 pt-2">
-            {step > 1 && (
+            {(step > 1 || (!hasPrefilledAddress && step === 1)) && (
               <button
                 onClick={() => setStep((s) => s - 1)}
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
