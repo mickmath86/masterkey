@@ -129,18 +129,13 @@ export interface SheetsDataResponse {
 const cache = new Map<string, { data: SheetsDataResponse; ts: number }>();
 const TTL = 1000 * 60 * 10;
 
-export async function GET(req: NextRequest) {
-  const submarket = req.nextUrl.searchParams.get("submarket") ?? "thousand-oaks";
+export async function fetchAllSheetsData(submarket: string): Promise<SheetsDataResponse | null> {
   const validKeys = Object.keys(CITY_COL);
-  if (!validKeys.includes(submarket)) {
-    return NextResponse.json({ error: "Invalid submarket" }, { status: 400 });
-  }
+  if (!validKeys.includes(submarket)) return null;
 
   // Check memory cache
   const cached = cache.get(submarket);
-  if (cached && Date.now() - cached.ts < TTL) {
-    return NextResponse.json(cached.data);
-  }
+  if (cached && Date.now() - cached.ts < TTL) return cached.data;
 
   const cityIdx = CITY_COL[submarket];
 
@@ -148,10 +143,8 @@ export async function GET(req: NextRequest) {
   async function extract(gid: string): Promise<SheetRow[]> {
     const rows = await fetchSheet(gid);
     return rows.map(row => {
-      // Find month: first non-empty cell
       const monthOffset = row.findIndex(c => c.trim() !== "");
       const month = monthOffset >= 0 ? row[monthOffset].trim() : "";
-      // City value: month column + cityIdx (relative)
       const valueRaw = row[monthOffset + cityIdx] ?? "";
       return { month, value: parseNum(valueRaw) };
     }).filter(r => r.month !== "");
@@ -229,9 +222,16 @@ export async function GET(req: NextRequest) {
     };
 
     cache.set(submarket, { data, ts: Date.now() });
-    return NextResponse.json(data);
+    return data;
   } catch (err) {
     console.error("[sheets-data] error:", err);
-    return NextResponse.json({ error: "Failed to fetch sheet data" }, { status: 500 });
+    return null;
   }
+}
+
+export async function GET(req: NextRequest) {
+  const submarket = req.nextUrl.searchParams.get("submarket") ?? "thousand-oaks";
+  const data = await fetchAllSheetsData(submarket);
+  if (!data) return NextResponse.json({ error: "Failed to fetch sheet data" }, { status: 500 });
+  return NextResponse.json(data);
 }

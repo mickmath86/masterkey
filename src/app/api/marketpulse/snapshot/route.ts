@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { SubmarketKey, MarketSnapshotResponse } from "@/lib/types";
 import type { SheetsDataResponse } from "../sheets-data/route";
+import { fetchAllSheetsData } from "../sheets-data/route";
 
 const SUBMARKET_LABELS: Record<SubmarketKey, string> = {
   "thousand-oaks": "Thousand Oaks",
@@ -40,16 +41,7 @@ function getSupabase() {
 const memCache = new Map<string, { data: MarketSnapshotResponse; ts: number }>();
 const MEM_TTL = 1000 * 60 * 10; // 10 min
 
-// ─── Fetch sheets data (calls our own sheets-data route internally) ───────────
-async function fetchSheetsData(submarket: SubmarketKey, baseUrl: string): Promise<SheetsDataResponse | null> {
-  try {
-    const res = await fetch(`${baseUrl}/api/marketpulse/sheets-data?submarket=${submarket}`, {
-      next: { revalidate: 600 },
-    });
-    if (!res.ok) return null;
-    return await res.json() as SheetsDataResponse;
-  } catch { return null; }
-}
+
 
 // ─── Get or generate AI summary from Supabase + Perplexity ───────────────────
 async function getAiSummary(submarket: SubmarketKey, label: string): Promise<string> {
@@ -129,15 +121,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(cached.data, { headers: { "X-Cache": "MEM" } });
   }
 
-  // Derive base URL for internal fetch
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
   try {
-    // Fetch sheets data + AI summary in parallel
+    // Fetch sheets data + AI summary in parallel (direct import — no HTTP roundtrip)
     const [sheets, aiSummary] = await Promise.all([
-      fetchSheetsData(submarket, baseUrl),
+      fetchAllSheetsData(submarket),
       getAiSummary(submarket, label),
     ]);
 
