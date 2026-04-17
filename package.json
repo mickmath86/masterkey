@@ -79,6 +79,7 @@
     "react-dom": "^19",
     "react-gauge-component": "^1.2.64",
     "react-is": "^19.1.1",
+    "react-markdown": "^10.1.0",
     "react-syntax-highlighter": "^15.6.6",
     "react-use-measure": "^2.1.7",
     "recharts": "2.15.4",

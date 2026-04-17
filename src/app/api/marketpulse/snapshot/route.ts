@@ -75,7 +75,7 @@ async function getAiSummary(submarket: SubmarketKey, label: string): Promise<str
         model: "sonar",
         messages: [{
           role: "user",
-          content: `Write a concise 2-3 sentence real estate market summary for ${label}, California for ${new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}. Focus on current buyer/seller conditions, price trends, and inventory. Be factual and specific to this local market.`,
+          content: `Write a concise 2-3 sentence real estate market summary for ${label}, California for ${new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}. Use these current MLS data points in your summary: median sale price, days on market, active listings, and months of supply from the ${label} market. Focus on buyer vs seller conditions and price trends. Format key numbers in **bold**. Be factual and specific.`,
         }],
         max_tokens: 200,
       }),
@@ -103,8 +103,8 @@ async function getAiSummary(submarket: SubmarketKey, label: string): Promise<str
 // ─── Determine market balance from months of supply ───────────────────────────
 function getMarketBalance(mos: number | null): "buyers" | "balanced" | "sellers" {
   if (mos === null) return "balanced";
-  if (mos < 3) return "sellers";
-  if (mos > 6) return "buyers";
+  if (mos <= 4) return "sellers";
+  if (mos >= 6) return "buyers";
   return "balanced";
 }
 
