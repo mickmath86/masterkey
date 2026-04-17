@@ -26,6 +26,7 @@ import {
 } from "recharts";
 import type { MarketSnapshotResponse, SubmarketKey } from "@/lib/types";
 import SourceCitations, { type CitationSource } from "@/components/marketpulse/SourceCitations";
+import Blog from "@/components/blog-5";
 
 /* ═══════════════════════════════════════════════════════
    CONSTANTS
@@ -610,6 +611,9 @@ export default function MarketPulseDashboard() {
           )}
         </div>
       </div>
+
+      {/* Blog Section */}
+     
     </div>
   );
 }
