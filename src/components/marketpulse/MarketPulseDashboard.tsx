@@ -123,20 +123,19 @@ function MarketHeatBar({
   monthsOfSupply: number | null;
   balance: "buyers" | "balanced" | "sellers";
 }) {
-  // Scale: 0 mo = far right (100%), 10+ mo = far left (0%)
-  // Padded so 4 mo ≈ 33% and 6 mo ≈ 67% to keep markers off the edges
-  // Map 0→10 months to 95%→5% (padded)
+  // Scale: 0 mo = far left (sellers), 10+ mo = far right (buyers)
+  // Padded so 4 mo ≈ 41% and 6 mo ≈ 59%
   const MAX_MOS = 10;
   let position = 50;
   if (monthsOfSupply !== null) {
     const clamped = Math.max(0, Math.min(MAX_MOS, monthsOfSupply));
-    // 0 mo → 95 (sellers, right), 10 mo → 5 (buyers, left)
-    position = 95 - (clamped / MAX_MOS) * 90;
+    // 0 mo → 5 (sellers, left), 10 mo → 95 (buyers, right)
+    position = 5 + (clamped / MAX_MOS) * 90;
   }
 
   // Marker positions for 4 mo and 6 mo
-  const pos4mo = 95 - (4 / MAX_MOS) * 90; // ≈ 59%
-  const pos6mo = 95 - (6 / MAX_MOS) * 90; // ≈ 41%
+  const pos4mo = 5 + (4 / MAX_MOS) * 90; // ≈ 41%
+  const pos6mo = 5 + (6 / MAX_MOS) * 90; // ≈ 59%
 
   const balanceColor =
     balance === "sellers" ? "text-emerald-400"
@@ -151,18 +150,18 @@ function MarketHeatBar({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between text-[11px] font-medium">
-        <span className="text-red-400">Buyer's</span>
+        <span className="text-emerald-400">Seller's</span>
         <span className={`font-semibold ${balanceColor}`}>
           {monthsOfSupply !== null ? `${monthsOfSupply} mos supply` : balanceLabel}
         </span>
-        <span className="text-emerald-400">Seller's</span>
+        <span className="text-red-400">Buyer's</span>
       </div>
 
       <div className="relative h-3 rounded-full overflow-visible">
-        {/* Gradient: left=buyers(red) → center=balanced(amber) → right=sellers(green) */}
+        {/* Gradient: left=sellers(green) → center=balanced(amber) → right=buyers(red) */}
         <div
           className="absolute inset-0 rounded-full"
-          style={{ background: "linear-gradient(to right, #ef4444, #f59e0b 50%, #10b981)" }}
+          style={{ background: "linear-gradient(to right, #10b981, #f59e0b 50%, #ef4444)" }}
         />
         <div
           className="absolute inset-0 rounded-full"
@@ -188,10 +187,10 @@ function MarketHeatBar({
       </div>
 
       <div className="relative text-[10px] text-white/30" style={{ height: "16px" }}>
-        <span className="absolute left-0">{"≥6 mos"}</span>
-        <span className="absolute" style={{ left: `${pos6mo - 3}%` }}>6</span>
+        <span className="absolute left-0">{"≤4 mos"}</span>
         <span className="absolute" style={{ left: `${pos4mo - 3}%` }}>4</span>
-        <span className="absolute right-0">{"≤4 mos"}</span>
+        <span className="absolute" style={{ left: `${pos6mo - 3}%` }}>6</span>
+        <span className="absolute right-0">{"≥6 mos"}</span>
       </div>
     </div>
   );
