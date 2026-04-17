@@ -133,6 +133,11 @@ export type SubmarketKey =
   | "westlake"
   | "oxnard";
 
+export interface SheetRow {
+  month: string;
+  value: number | null;
+}
+
 export interface MarketSnapshotResponse {
   submarket: SubmarketKey;
   label: string;
@@ -162,6 +167,18 @@ export interface MarketSnapshotResponse {
     propertyType: string | null;
   }[];
   fetchedAt: string;
+  // Extended Google Sheets data for multi-metric chart tabs
+  sheetsData?: {
+    medianPrice: SheetRow[];
+    newListings: SheetRow[];
+    activeListings: SheetRow[];
+    closedSales: SheetRow[];
+    daysOnMarket: SheetRow[];
+    pricePerSf: SheetRow[];
+    monthsSupply: SheetRow[];
+    showsToContract: SheetRow[];
+    pctOfOrigPrice: SheetRow[];
+  };
 }
 
 export interface Playbook {

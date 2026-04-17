@@ -1,31 +1,23 @@
 /**
  * GET /api/marketpulse/snapshot?submarket=thousand-oaks
  *
- * Data strategy (accuracy + speed):
+ * Data strategy:
+ * 1. Hard metrics (median price, active listings, DOM, price/sf, months supply, etc.)
+ *    → Google Sheets (InfoSparks data, manually maintained by Mike)
+ *    → Cached in memory for 10 min, Google caches the CSV for 1hr
  *
- * 1. READ from Supabase first (fast, sub-100ms, always available)
- *    - marketpulse_snapshots   → metrics + AI summary
- *    - marketpulse_price_history → chart data
- *    - marketpulse_comps         → listings table
+ * 2. AI market summary → Perplexity (unchanged)
+ *    → Cached in Supabase by submarket + month
+ *    → Re-generated if stale (>24hr)
  *
- * 2. If Supabase data is stale (> 6 hours) OR missing:
- *    → Trigger a background ingest for this submarket
- *    → Return whatever is in Supabase immediately (no user-facing wait)
- *    → Next page load will have fresh data
- *
- * 3. If Supabase is completely empty (first ever load):
- *    → Fall back to live Rentcast + Perplexity fetch, write to Supabase, return
- *
- * The nightly cron job at 2am keeps Supabase warm for all 6 submarkets so
- * cold-start fallback should rarely trigger in practice.
+ * Rentcast is no longer used.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { SubmarketKey, MarketSnapshotResponse } from "@/lib/types";
-import { ingestSubmarket } from "../ingest/route";
+import type { SheetsDataResponse } from "../sheets-data/route";
 
-// ─── Submarket config ─────────────────────────────────────────────────────────
 const SUBMARKET_LABELS: Record<SubmarketKey, string> = {
   "thousand-oaks": "Thousand Oaks",
   "newbury-park":  "Newbury Park",
@@ -34,141 +26,169 @@ const SUBMARKET_LABELS: Record<SubmarketKey, string> = {
   westlake:        "Westlake Village",
   oxnard:          "Oxnard",
 };
-
 const VALID_SUBMARKETS = new Set(Object.keys(SUBMARKET_LABELS));
 
-// ─── Supabase anon client (public read) ───────────────────────────────────────
+// ─── Supabase (AI summary cache only) ────────────────────────────────────────
 function getSupabase() {
-  const url  = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key  = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return null;
   return createClient(url, key);
 }
 
-// ─── In-memory L1 cache (avoids hammering Supabase on every request) ─────────
-const memCache = new Map<string, { data: MarketSnapshotResponse; timestamp: number }>();
-const MEM_CACHE_TTL = 1000 * 60 * 10; // 10 minutes — Supabase is refreshed hourly by cron
-const STALE_THRESHOLD_MS = 1000 * 60 * 60 * 6; // 6 hours — trigger background refresh
+// ─── L1 in-memory cache ───────────────────────────────────────────────────────
+const memCache = new Map<string, { data: MarketSnapshotResponse; ts: number }>();
+const MEM_TTL = 1000 * 60 * 10; // 10 min
 
-// ─── Read from Supabase ───────────────────────────────────────────────────────
-async function readFromSupabase(submarket: SubmarketKey): Promise<MarketSnapshotResponse | null> {
+// ─── Fetch sheets data (calls our own sheets-data route internally) ───────────
+async function fetchSheetsData(submarket: SubmarketKey, baseUrl: string): Promise<SheetsDataResponse | null> {
+  try {
+    const res = await fetch(`${baseUrl}/api/marketpulse/sheets-data?submarket=${submarket}`, {
+      next: { revalidate: 600 },
+    });
+    if (!res.ok) return null;
+    return await res.json() as SheetsDataResponse;
+  } catch { return null; }
+}
+
+// ─── Get or generate AI summary from Supabase + Perplexity ───────────────────
+async function getAiSummary(submarket: SubmarketKey, label: string): Promise<string> {
   const supabase = getSupabase();
-  if (!supabase) return null;
+  const currentMonth = new Date().toISOString().slice(0, 7); // "2026-04"
 
-  // Fetch snapshot, price history, and comps in parallel
-  const [snapResult, histResult, compsResult] = await Promise.all([
-    supabase
+  // Check Supabase cache
+  if (supabase) {
+    const { data } = await supabase
       .from("marketpulse_snapshots")
-      .select("*")
+      .select("ai_summary, snapshot_date")
       .eq("submarket", submarket)
       .order("snapshot_date", { ascending: false })
       .limit(1)
-      .single(),
+      .single();
 
-    supabase
-      .from("marketpulse_price_history")
-      .select("*")
-      .eq("submarket", submarket)
-      .order("month", { ascending: true }),
+    if (data?.ai_summary && data.snapshot_date?.slice(0, 7) === currentMonth) {
+      return data.ai_summary;
+    }
+  }
 
-    supabase
-      .from("marketpulse_comps")
-      .select("*")
-      .eq("submarket", submarket)
-      .order("fetched_at", { ascending: false })
-      .limit(10),
-  ]);
+  // Generate fresh summary via Perplexity
+  const apiKey = process.env.PERPLEXITY_API_KEY;
+  if (!apiKey) return `Market data for ${label} sourced from MLS records.`;
 
-  const snap = snapResult.data;
-  if (!snap) return null; // Nothing in DB yet
+  try {
+    const res = await fetch("https://api.perplexity.ai/chat/completions", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "sonar",
+        messages: [{
+          role: "user",
+          content: `Write a concise 2-3 sentence real estate market summary for ${label}, California for ${new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}. Focus on current buyer/seller conditions, price trends, and inventory. Be factual and specific to this local market.`,
+        }],
+        max_tokens: 200,
+      }),
+    });
+    const j = await res.json();
+    const summary = j?.choices?.[0]?.message?.content ?? `${label} market data updated monthly from MLS records.`;
 
-  const history = histResult.data ?? [];
-  const comps = compsResult.data ?? [];
+    // Cache in Supabase
+    if (supabase) {
+      await supabase.from("marketpulse_snapshots").upsert({
+        submarket,
+        snapshot_date: new Date().toISOString().slice(0, 10),
+        ai_summary: summary,
+        market_balance: "balanced",
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "submarket,snapshot_date" });
+    }
 
-  return {
-    submarket,
-    label: SUBMARKET_LABELS[submarket],
-    medianPrice: snap.median_price,
-    medianPriceChangePct: snap.median_price_change_pct,
-    avgDaysOnMarket: snap.avg_days_on_market,
-    activeListings: snap.active_listings,
-    pricePerSqft: snap.price_per_sqft,
-    monthsOfSupply: snap.months_of_supply,
-    marketBalance: snap.market_balance ?? "balanced",
-    aiSummary: snap.ai_summary ?? "",
-    priceHistory: history.map((h) => ({
-      month: h.month,
-      sfr: h.sfr_price,
-      condo: h.condo_price,
-      townhome: h.townhome_price,
-    })),
-    comps: comps.map((c) => ({
-      address: c.address,
-      price: c.price ?? 0,
-      sqft: c.sqft,
-      pricePerSqft: c.price_per_sqft,
-      bedrooms: c.bedrooms,
-      bathrooms: c.bathrooms,
-      daysOld: c.days_on_market,
-      status: (c.status as "Active" | "Sold" | "Pending") ?? "Active",
-      propertyType: c.property_type,
-    })),
-    fetchedAt: snap.updated_at ?? snap.created_at,
-  };
+    return summary;
+  } catch {
+    return `${label} market data sourced from MLS records and updated monthly.`;
+  }
 }
 
-// ─── Check if data is stale ───────────────────────────────────────────────────
-function isStale(fetchedAt: string): boolean {
-  return Date.now() - new Date(fetchedAt).getTime() > STALE_THRESHOLD_MS;
+// ─── Determine market balance from months of supply ───────────────────────────
+function getMarketBalance(mos: number | null): "buyers" | "balanced" | "sellers" {
+  if (mos === null) return "balanced";
+  if (mos < 3) return "sellers";
+  if (mos > 6) return "buyers";
+  return "balanced";
 }
 
 // ─── Main handler ─────────────────────────────────────────────────────────────
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const raw = searchParams.get("submarket") ?? "thousand-oaks";
-  const submarket: SubmarketKey = VALID_SUBMARKETS.has(raw)
-    ? (raw as SubmarketKey)
-    : "thousand-oaks";
+  const submarket: SubmarketKey = VALID_SUBMARKETS.has(raw) ? (raw as SubmarketKey) : "thousand-oaks";
+  const label = SUBMARKET_LABELS[submarket];
 
-  // L1: in-memory cache check
+  // L1: memory cache
   const cached = memCache.get(submarket);
-  if (cached && Date.now() - cached.timestamp < MEM_CACHE_TTL) {
+  if (cached && Date.now() - cached.ts < MEM_TTL) {
     return NextResponse.json(cached.data, { headers: { "X-Cache": "MEM" } });
   }
 
-  // L2: Supabase read
+  // Derive base URL for internal fetch
+  const baseUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
   try {
-    const dbData = await readFromSupabase(submarket);
+    // Fetch sheets data + AI summary in parallel
+    const [sheets, aiSummary] = await Promise.all([
+      fetchSheetsData(submarket, baseUrl),
+      getAiSummary(submarket, label),
+    ]);
 
-    if (dbData) {
-      // Store in L1 cache
-      memCache.set(submarket, { data: dbData, timestamp: Date.now() });
-
-      // If stale: trigger background refresh (don't await — return stale data immediately)
-      if (isStale(dbData.fetchedAt)) {
-        console.log(`[snapshot] ${submarket} is stale — triggering background ingest`);
-        ingestSubmarket(submarket).catch((e) =>
-          console.error(`[snapshot] background ingest failed for ${submarket}:`, e)
-        );
-      }
-
-      return NextResponse.json(dbData, { headers: { "X-Cache": "DB" } });
+    if (!sheets) {
+      return NextResponse.json({ error: "Sheet data unavailable" }, { status: 503 });
     }
 
-    // L3: Supabase empty — cold start, fetch live and write to DB
-    console.log(`[snapshot] ${submarket} not in DB — running cold-start ingest`);
-    await ingestSubmarket(submarket);
+    const { latest, medianPrice } = sheets;
 
-    const freshData = await readFromSupabase(submarket);
-    if (freshData) {
-      memCache.set(submarket, { data: freshData, timestamp: Date.now() });
-      return NextResponse.json(freshData, { headers: { "X-Cache": "COLD" } });
-    }
+    // Build priceHistory from median price sheet (SFR only from this sheet)
+    const priceHistory = medianPrice
+      .filter(r => r.value !== null)
+      .map(r => ({
+        month: r.month,
+        sfr: r.value,
+        condo: null,
+        townhome: null,
+      }));
 
-    return NextResponse.json({ error: "No data available" }, { status: 503 });
+    const response: MarketSnapshotResponse = {
+      submarket,
+      label,
+      medianPrice: latest.medianPrice,
+      medianPriceChangePct: latest.medianPriceChangePct,
+      avgDaysOnMarket: latest.daysOnMarket,
+      activeListings: latest.activeListings,
+      pricePerSqft: latest.pricePerSf,
+      monthsOfSupply: latest.monthsSupply,
+      marketBalance: getMarketBalance(latest.monthsSupply),
+      aiSummary,
+      priceHistory,
+      comps: [], // Comps removed — no longer from Rentcast
+      fetchedAt: new Date().toISOString(),
+      // Extended sheets data for multi-metric chart tabs
+      sheetsData: {
+        medianPrice: sheets.medianPrice,
+        newListings: sheets.newListings,
+        activeListings: sheets.activeListings,
+        closedSales: sheets.closedSales,
+        daysOnMarket: sheets.daysOnMarket,
+        pricePerSf: sheets.pricePerSf,
+        monthsSupply: sheets.monthsSupply,
+        showsToContract: sheets.showsToContract,
+        pctOfOrigPrice: sheets.pctOfOrigPrice,
+      },
+    };
+
+    memCache.set(submarket, { data: response, ts: Date.now() });
+    return NextResponse.json(response, { headers: { "X-Cache": "SHEETS" } });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Unknown error";
-    console.error("[snapshot] error:", msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    console.error("[snapshot] error:", err);
+    return NextResponse.json({ error: "Failed to load snapshot" }, { status: 500 });
   }
 }

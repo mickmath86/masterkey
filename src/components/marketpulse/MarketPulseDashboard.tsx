@@ -87,6 +87,17 @@ const SOURCES_AI_SUMMARY: CitationSource[] = [
   },
 ];
 
+const CHART_METRICS: { key: string; label: string; unit: string; color: string }[] = [
+  { key: "medianPrice",     label: "Median Price",         unit: "$",  color: "#5BA8A8" },
+  { key: "activeListings",  label: "Active Listings",      unit: "",   color: "#7C9EF5" },
+  { key: "closedSales",     label: "Closed Sales",         unit: "",   color: "#A78BFA" },
+  { key: "newListings",     label: "New Listings",         unit: "",   color: "#F59E0B" },
+  { key: "daysOnMarket",    label: "Days on Market",       unit: " days", color: "#F87171" },
+  { key: "pricePerSf",      label: "Price / SF",           unit: "$",  color: "#34D399" },
+  { key: "monthsSupply",    label: "Months Supply",        unit: " mo", color: "#FB923C" },
+  { key: "pctOfOrigPrice",  label: "% of Original Price",  unit: "%",  color: "#E879F9" },
+];
+
 const SOURCES_CHART: CitationSource[] = [
   {
     name: "Rentcast",
@@ -361,6 +372,7 @@ export default function MarketPulseDashboard() {
     Set<PropertyType>
   >(new Set(["sfr", "condo", "townhome"]));
   const [timeframe, setTimeframe] = useState<TimeframeKey>("1Y");
+  const [selectedMetric, setSelectedMetric] = useState<string>("medianPrice");
   const [data, setData] = useState<MarketSnapshotResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -409,6 +421,18 @@ export default function MarketPulseDashboard() {
     if (!tf || tf.months === null) return data.priceHistory;
     return data.priceHistory.slice(-tf.months);
   })();
+
+  // Active metric data from sheetsData
+  const activeMetricData = (() => {
+    const sd = (data as any)?.sheetsData;
+    if (!sd) return filteredHistory.map(r => ({ month: r.month, value: r.sfr }));
+    const rows: { month: string; value: number | null }[] = sd[selectedMetric] ?? [];
+    const tf = TIMEFRAMES.find(t => t.key === timeframe);
+    const sliced = tf?.months ? rows.slice(-tf.months) : rows;
+    return sliced;
+  })();
+
+  const activeMetric = CHART_METRICS.find(m => m.key === selectedMetric) ?? CHART_METRICS[0];
 
   const submarketLabel =
     SUBMARKETS.find((s) => s.key === selectedSubmarket)?.label ??
@@ -606,81 +630,62 @@ export default function MarketPulseDashboard() {
           )}
         </div>
 
-        {/* ── Price History Chart ── */}
+        {/* ── Multi-Metric Chart ── */}
         <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-5 mb-5">
-          <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
+          {/* Metric tabs */}
+          <div className="flex flex-wrap gap-1.5 mb-4 pb-4 border-b border-white/[0.06]">
+            {CHART_METRICS.map(m => (
+              <button
+                key={m.key}
+                onClick={() => setSelectedMetric(m.key)}
+                className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all border ${
+                  selectedMetric === m.key
+                    ? "text-white border-transparent"
+                    : "bg-transparent border-white/10 text-white/30 hover:text-white/50"
+                }`}
+                style={selectedMetric === m.key ? {
+                  backgroundColor: activeMetric.color + "22",
+                  borderColor: activeMetric.color + "55",
+                  color: activeMetric.color,
+                } : {}}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
             <div className="flex items-center gap-2">
-              <h3 className="text-[13px] font-semibold text-white">
-                Median Price History
-              </h3>
+              <h3 className="text-[13px] font-semibold text-white">{activeMetric.label}</h3>
               <SourceCitations sources={SOURCES_CHART} />
             </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              {/* Property type toggles */}
-              <div className="flex gap-1.5">
-                {(Object.keys(PROPERTY_TYPE_CONFIG) as PropertyType[]).map(
-                  (pt) => (
-                    <button
-                      key={pt}
-                      onClick={() => {
-                        setActivePropertyTypes((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(pt)) next.delete(pt);
-                          else next.add(pt);
-                          return next;
-                        });
-                      }}
-                      className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all border ${
-                        activePropertyTypes.has(pt)
-                          ? "border-transparent text-white"
-                          : "bg-transparent border-white/10 text-white/30 hover:text-white/50"
-                      }`}
-                      style={
-                        activePropertyTypes.has(pt)
-                          ? {
-                              backgroundColor:
-                                PROPERTY_TYPE_CONFIG[pt].color + "33",
-                              color: PROPERTY_TYPE_CONFIG[pt].color,
-                              borderColor: PROPERTY_TYPE_CONFIG[pt].color + "66",
-                            }
-                          : {}
-                      }
-                    >
-                      {PROPERTY_TYPE_CONFIG[pt].label}
-                    </button>
-                  )
-                )}
-              </div>
-
-              {/* Timeframe selector */}
-              <div className="flex bg-white/[0.04] border border-white/[0.06] rounded-lg p-0.5 gap-0.5">
-                {TIMEFRAMES.map((tf) => (
-                  <button
-                    key={tf.key}
-                    onClick={() => setTimeframe(tf.key)}
-                    className={`px-3 py-1 rounded-md text-[11px] font-medium transition-all ${
-                      timeframe === tf.key
-                        ? "bg-white/[0.1] text-white"
-                        : "text-white/30 hover:text-white/60"
-                    }`}
-                  >
-                    {tf.label}
-                  </button>
-                ))}
-              </div>
+            <div className="flex bg-white/[0.04] border border-white/[0.06] rounded-lg p-0.5 gap-0.5">
+              {TIMEFRAMES.map((tf) => (
+                <button
+                  key={tf.key}
+                  onClick={() => setTimeframe(tf.key)}
+                  className={`px-3 py-1 rounded-md text-[11px] font-medium transition-all ${
+                    timeframe === tf.key
+                      ? "bg-white/[0.1] text-white"
+                      : "text-white/30 hover:text-white/60"
+                  }`}
+                >
+                  {tf.label}
+                </button>
+              ))}
             </div>
           </div>
 
           {loading ? (
             <Skeleton className="h-[220px] w-full" />
-          ) : filteredHistory.length === 0 ? (
+          ) : activeMetricData.length === 0 ? (
             <div className="h-[220px] flex items-center justify-center text-white/20 text-sm">
-              No price history data available
+              No data available for this metric
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <LineChart
-                data={filteredHistory}
+                data={activeMetricData}
                 margin={{ top: 5, right: 5, bottom: 5, left: 10 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -691,32 +696,44 @@ export default function MarketPulseDashboard() {
                   tickLine={false}
                 />
                 <YAxis
-                  tickFormatter={(v) => fmt$(v)}
+                  tickFormatter={(v) =>
+                    activeMetric.unit === "$"
+                      ? fmt$(v)
+                      : activeMetric.unit === "%"
+                      ? `${v}%`
+                      : String(v)
+                  }
                   tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)" }}
                   axisLine={false}
                   tickLine={false}
                   width={62}
                 />
-                <Tooltip content={<CustomTooltip />} />
-                {(Object.keys(PROPERTY_TYPE_CONFIG) as PropertyType[]).map(
-                  (pt) =>
-                    activePropertyTypes.has(pt) ? (
-                      <Line
-                        key={pt}
-                        type="monotone"
-                        dataKey={pt}
-                        name={PROPERTY_TYPE_CONFIG[pt].label}
-                        stroke={PROPERTY_TYPE_CONFIG[pt].color}
-                        strokeWidth={2}
-                        dot={false}
-                        activeDot={{
-                          r: 4,
-                          strokeWidth: 0,
-                          fill: PROPERTY_TYPE_CONFIG[pt].color,
-                        }}
-                      />
-                    ) : null
-                )}
+                <Tooltip
+                  formatter={(v: number) =>
+                    activeMetric.unit === "$"
+                      ? fmt$(v)
+                      : activeMetric.unit === "%"
+                      ? `${v}%`
+                      : `${v}${activeMetric.unit}`
+                  }
+                  contentStyle={{
+                    background: "rgba(15,23,42,0.95)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: "8px",
+                    fontSize: 12,
+                    color: "#fff",
+                  }}
+                  labelStyle={{ color: "rgba(255,255,255,0.5)" }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  name={activeMetric.label}
+                  stroke={activeMetric.color}
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, strokeWidth: 0, fill: activeMetric.color }}
+                />
               </LineChart>
             </ResponsiveContainer>
           )}
