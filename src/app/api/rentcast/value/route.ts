@@ -8,6 +8,12 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const address = searchParams.get('address')
 
+  // Optional enrichment params
+  const propertyType = searchParams.get('propertyType')
+  const bedrooms    = searchParams.get('bedrooms')
+  const bathrooms   = searchParams.get('bathrooms')
+  const squareFootage = searchParams.get('squareFootage')
+
   try {
     if (!address) {
       return NextResponse.json(
@@ -16,8 +22,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Check cache first
-    const cacheKey = `rentcast:avm:${address}`
+    // Cache key includes enrichment params so enriched calls don't serve stale unenriched results
+    const cacheKey = `rentcast:avm:${address}:${propertyType ?? ''}:${bedrooms ?? ''}:${bathrooms ?? ''}:${squareFootage ?? ''}`
     const cached = cache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       console.log('Returning cached Rentcast AVM data for:', address)
@@ -35,8 +41,26 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Build enriched query string matching the Rentcast docs example
+    // Map our display labels to Rentcast's expected propertyType strings
+    const typeMap: Record<string, string> = {
+      "Single Family Home":       "Single Family",
+      "Condo / Townhome":         "Condo",
+      "Multi-Family (2–4 units)": "Multi Family",
+      "Land / Lot":               "Land",
+    };
+    const rentcastType = propertyType ? (typeMap[propertyType] ?? propertyType) : null;
+
+    const params = new URLSearchParams({ address })
+    if (rentcastType)  params.set('propertyType',   rentcastType)
+    if (bedrooms)      params.set('bedrooms',        bedrooms)
+    if (bathrooms)     params.set('bathrooms',       bathrooms)
+    if (squareFootage) params.set('squareFootage',   squareFootage)
+    params.set('compCount', '5') // match Rentcast docs example
+
+    console.log(`[rentcast/value] AVM call: ${params.toString()}`);
     const response = await fetch(
-      `https://api.rentcast.io/v1/avm/value?address=${encodeURIComponent(address)}`,
+      `https://api.rentcast.io/v1/avm/value?${params.toString()}`,
       {
         method: 'GET',
         headers: {

@@ -33,12 +33,12 @@ interface PropertyFacts {
 }
 
 interface AVMData {
-  price?: number;
-  priceRangeLow?: number;
-  priceRangeHigh?: number;
-  rent?: number;
-  rentRangeLow?: number;
-  rentRangeHigh?: number;
+  price?: number | null;
+  priceRangeLow?: number | null;
+  priceRangeHigh?: number | null;
+  rent?: number | null;
+  rentRangeLow?: number | null;
+  rentRangeHigh?: number | null;
   latitude?: number;
   longitude?: number;
 }
@@ -107,6 +107,14 @@ function QuizInner() {
   // Editable confirm fields (seeded from Rentcast, user can override)
   const [confirmedValue, setConfirmedValue] = useState("");
   const [confirmedRent, setConfirmedRent] = useState("");
+  const [showRefinement, setShowRefinement] = useState(false);
+  const [refinedValue, setRefinedValue] = useState<number | null>(null);
+  const [refinementData, setRefinementData] = useState({
+    condition: "", garage: "", kitchenUpdate: "", bathroomUpdate: "",
+    roofUpdate: "", hvacUpdate: "",
+    features: [] as string[],
+  });
+  const [refinementLoading, setRefinementLoading] = useState(false);
 
   // ── Step state ──
   // 1=address, 2=confirm(optional), 3=purchase, 4=mortgage, 5=title(auto), 6=contact, 7=name
@@ -139,23 +147,55 @@ function QuizInner() {
     setRentcastDone(false);
 
     try {
-      const [factsRes, avmRes] = await Promise.allSettled([
-        fetch(`/api/homevalue/property-lookup?address=${encodeURIComponent(address)}`),
-        fetch(`/api/rentcast/value?address=${encodeURIComponent(address)}`),
-      ]);
-
+      // Step 1: fetch property facts first so we can enrich the AVM call
       let facts: PropertyFacts | null = null;
+      try {
+        const factsRes = await fetch(`/api/homevalue/property-lookup?address=${encodeURIComponent(address)}`);
+        if (factsRes.ok) {
+          const j = await factsRes.json();
+          if (j.found === true) facts = j as PropertyFacts;
+        }
+      } catch { /* ignore */ }
+
+      // Step 2: AVM value + rent — both enriched with property attributes, run in parallel
+      const enrichedParams = new URLSearchParams({ address });
+      if (facts?.propertyType) enrichedParams.set("propertyType", facts.propertyType);
+      if (facts?.bedrooms)     enrichedParams.set("bedrooms",     facts.bedrooms);
+      if (facts?.bathrooms)    enrichedParams.set("bathrooms",    facts.bathrooms);
+      if (facts?.sqft)         enrichedParams.set("squareFootage", facts.sqft);
+
       let avmData: AVMData | null = null;
+      try {
+        const [valueRes, rentRes] = await Promise.allSettled([
+          fetch(`/api/rentcast/value?${enrichedParams.toString()}`),
+          fetch(`/api/rentcast/rent?${enrichedParams.toString()}`),
+        ]);
 
-      if (factsRes.status === "fulfilled" && factsRes.value.ok) {
-        const j = await factsRes.value.json();
-        if (j.found === true) facts = j as PropertyFacts;
-      }
+        let price: number | null = null;
+        let priceRangeLow: number | null = null;
+        let priceRangeHigh: number | null = null;
+        let rent: number | null = null;
+        let rentRangeLow: number | null = null;
+        let rentRangeHigh: number | null = null;
 
-      if (avmRes.status === "fulfilled" && avmRes.value.ok) {
-        const j = await avmRes.value.json();
-        if (j.price || j.rent) avmData = j as AVMData;
-      }
+        if (valueRes.status === "fulfilled" && valueRes.value.ok) {
+          const j = await valueRes.value.json();
+          price          = j.price ?? null;
+          priceRangeLow  = j.priceRangeLow ?? null;
+          priceRangeHigh = j.priceRangeHigh ?? null;
+        }
+
+        if (rentRes.status === "fulfilled" && rentRes.value.ok) {
+          const j = await rentRes.value.json();
+          rent          = j.rent ?? null;
+          rentRangeLow  = j.rentRangeLow ?? null;
+          rentRangeHigh = j.rentRangeHigh ?? null;
+        }
+
+        if (price || rent) {
+          avmData = { price, priceRangeLow, priceRangeHigh, rent, rentRangeLow, rentRangeHigh };
+        }
+      } catch { /* ignore */ }
 
       setPropertyFacts(facts);
       setAvm(avmData);
@@ -194,6 +234,50 @@ function QuizInner() {
     }
   }, [rentcastDone, hasConfirmStep, step]);
 
+  // ── Refined value calculation ──────────────────────────────────────────────
+  function computeRefinedValue() {
+    const base = parseFloat(confirmedValue.replace(/[,$]/g, "")) || (avm?.price ?? 0);
+    if (!base) return;
+    setRefinementLoading(true);
+    let adj = base;
+    // Condition adjustment
+    if (refinementData.condition.includes("Excellent")) adj *= 1.05;
+    else if (refinementData.condition.includes("Good")) adj *= 1.02;
+    else if (refinementData.condition.includes("Fair")) adj *= 0.97;
+    else if (refinementData.condition.includes("Needs Work")) adj *= 0.92;
+    // Garage
+    if (refinementData.garage.includes("2-Car")) adj += 15000;
+    else if (refinementData.garage.includes("3-Car")) adj += 25000;
+    else if (refinementData.garage.includes("1-Car")) adj += 8000;
+    // Kitchen update
+    if (refinementData.kitchenUpdate.includes("Within the last year")) adj += 20000;
+    else if (refinementData.kitchenUpdate.includes("1–5 years")) adj += 12000;
+    else if (refinementData.kitchenUpdate.includes("5–10")) adj += 5000;
+    // Bathroom update
+    if (refinementData.bathroomUpdate.includes("Within the last year")) adj += 10000;
+    else if (refinementData.bathroomUpdate.includes("1–5 years")) adj += 6000;
+    // Roof
+    if (refinementData.roofUpdate.includes("Within the last year")) adj += 12000;
+    else if (refinementData.roofUpdate.includes("1–5 years")) adj += 7000;
+    // HVAC
+    if (refinementData.hvacUpdate.includes("Within the last year")) adj += 8000;
+    else if (refinementData.hvacUpdate.includes("1–5 years")) adj += 4000;
+    // Round to nearest $1000
+    const rounded = Math.round(adj / 1000) * 1000;
+    setTimeout(() => {
+      setRefinedValue(rounded);
+      setRefinementLoading(false);
+    }, 800); // brief delay for UX
+  }
+
+  function applyRefinedValue() {
+    if (refinedValue) {
+      setConfirmedValue(refinedValue.toLocaleString());
+      set("homeValue", refinedValue.toLocaleString());
+      setShowRefinement(false);
+    }
+  }
+
   // ── Confirm step apply ────────────────────────────────────────────────────
   function applyConfirm() {
     if (confirmedValue.trim()) set("homeValue", confirmedValue.trim());
@@ -214,7 +298,47 @@ function QuizInner() {
     }
   }
 
-  function nextStep() { setStep(s => s + 1); }
+  const [validating, setValidating] = useState(false);
+
+  async function nextStep() {
+    // Step 6 = contact info — validate phone + email via Abstract before advancing
+    if (step === 6) {
+      setValidating(true);
+      let blocked = false;
+
+      try {
+        const res = await fetch("/api/validate-phone", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: data.phone }),
+        });
+        const r = await res.json();
+        if (!r.valid) {
+          setPhoneError(r.reason ?? "Please enter a valid phone number.");
+          blocked = true;
+        }
+      } catch { /* fail open — format check already passed */ }
+
+      if (!blocked) {
+        try {
+          const res = await fetch("/api/validate-email", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: data.email }),
+          });
+          const r = await res.json();
+          if (!r.valid) {
+            setEmailError(r.reason ?? "Please enter a valid email address.");
+            blocked = true;
+          }
+        } catch { /* fail open */ }
+      }
+
+      setValidating(false);
+      if (blocked) return; // stay on step 6
+      setStep(s => s + 1);
+      return;
+    }
+    setStep(s => s + 1);
+  }
   function prevStep() {
     if (step === 3 && !hasConfirmStep) setStep(1);
     else setStep(s => s - 1);
@@ -231,24 +355,10 @@ function QuizInner() {
       homeValue: confirmedValue.trim() || data.homeValue,
     };
 
-    // Phone validation
-    try {
-      const res = await fetch("/api/validate-phone", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: finalData.phone }) });
-      const r = await res.json();
-      if (!r.valid) { setPhoneError(r.reason ?? "Please enter a valid phone number."); setIsSubmitting(false); return; }
-    } catch { /* fail open */ }
-
-    // Email validation
-    try {
-      const res = await fetch("/api/validate-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: finalData.email }) });
-      const r = await res.json();
-      if (!r.valid) { setEmailError(r.reason ?? "Please enter a valid email."); setIsSubmitting(false); return; }
-    } catch { /* fail open */ }
-
+    // Calculate results — if inputs are incomplete, still fire webhook with what we have
     const results = calculate(finalData);
-    if (!results) { setIsSubmitting(false); return; }
 
-    // Fire webhook
+    // Fire webhook regardless of whether calculate succeeded
     try {
         await fetch(RENT_VS_SELL_WEBHOOK, {
           method: "POST", headers: { "Content-Type": "application/json" },
@@ -265,14 +375,17 @@ function QuizInner() {
             rentcastEstimatedValue: avm?.price ?? null,
             rentcastEstimatedRent: avm?.rent ?? null,
             rentcastConfirmedRent: confirmedRent || null,
-            verdict5yr: results.verdict5yr, verdict10yr: results.verdict10yr,
-            sellNetProceeds: Math.round(results.saleAfterTax),
-            rentWealth10yr: Math.round(results.rentTotalWealth10yr),
+            verdict5yr: results?.verdict5yr ?? null, verdict10yr: results?.verdict10yr ?? null,
+            sellNetProceeds: results ? Math.round(results.saleAfterTax) : null,
+            rentWealth10yr: results ? Math.round(results.rentTotalWealth10yr) : null,
             formType: "rent-vs-sell", source: "rent-vs-sell-quiz",
             submittedAt: new Date().toISOString(),
           }),
         });
-    } catch { /* fail open */ }
+    } catch (error) {
+      console.error("Rent vs sell webhook submission failed", error);
+      /* fail open */
+    }
 
     setIsSubmitting(false);
 
@@ -307,13 +420,30 @@ function QuizInner() {
   // ── Shared input classes ──────────────────────────────────────────────────
   const inputCls = "w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white";
   const inputErrCls = "w-full px-3 py-2.5 border border-red-400 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-red-400 focus:outline-none bg-white";
+  // Format number with commas as user types, strip non-numeric on change
+  function formatDollar(raw: string): string {
+    const digits = raw.replace(/[^0-9]/g, "");
+    if (!digits) return "";
+    return parseInt(digits, 10).toLocaleString("en-US");
+  }
+
   const dollarInput = (val: string, onChange: (v: string) => void, placeholder: string) => (
     <div className="relative">
       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-      <input type="text" inputMode="numeric" value={val} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white" />
+      <input
+        type="text"
+        inputMode="numeric"
+        value={val}
+        onChange={e => onChange(formatDollar(e.target.value))}
+        placeholder={placeholder}
+        className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
+      />
     </div>
   );
+
+  // Year options from current year back to 1900
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: currentYear - 1899 }, (_, i) => currentYear - i);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -428,12 +558,38 @@ function QuizInner() {
                       </div>
                     )}
 
-                    {/* Editable: Estimated home value */}
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                    {/* Editable: Estimated home value + range + refinement */}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium text-gray-600">
                         Estimated Home Value
-                        {avm?.price && <span className="ml-1.5 text-blue-500 text-[11px]">Rentcast: {fmt(avm.price)}</span>}
                       </label>
+
+                      {/* Value range bar */}
+                      {avm?.priceRangeLow && avm?.priceRangeHigh && (
+                        <div className="bg-white rounded-lg px-3 py-2.5 border border-blue-100">
+                          <div className="flex items-center justify-between text-[11px] text-gray-400 mb-1.5">
+                            <span>Low estimate</span>
+                            <span className="font-semibold text-blue-600 text-xs">Rentcast range</span>
+                            <span>High estimate</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm font-semibold text-gray-900">
+                            <span>{fmt(avm.priceRangeLow)}</span>
+                            <span className="text-blue-600 text-base">{avm?.price ? fmt(avm.price) : "—"}</span>
+                            <span>{fmt(avm.priceRangeHigh)}</span>
+                          </div>
+                          {/* Range bar */}
+                          <div className="relative h-1.5 bg-blue-100 rounded-full mt-2">
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-200 via-blue-500 to-blue-200 rounded-full" />
+                            {avm?.price && (
+                              <div
+                                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow"
+                                style={{ left: `calc(${Math.min(100,Math.max(0,((avm.price - avm.priceRangeLow) / (avm.priceRangeHigh - avm.priceRangeLow)) * 100))}% - 6px)` }}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
                         <input
@@ -445,7 +601,100 @@ function QuizInner() {
                           className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
                         />
                       </div>
-                      <p className="text-[11px] text-gray-400 mt-1">Edit if you have a more current estimate.</p>
+
+                      {/* Tooltip + refinement trigger */}
+                      <div className="p-3 bg-white/70 rounded-lg border border-blue-100 text-[11px] text-gray-500 leading-relaxed">
+                        This is an estimate provided by Rentcast based on public records and comparable sales. For a more accurate valuation that takes into consideration updates to your home, click{" "}
+                        <button
+                          onClick={() => setShowRefinement(r => !r)}
+                          className="text-blue-500 hover:underline font-medium"
+                        >
+                          here
+                        </button>
+                        .
+                      </div>
+
+                      {/* Refinement accordion */}
+                      {showRefinement && (
+                        <div className="border border-blue-200 rounded-xl bg-blue-50/50 p-4 space-y-4">
+                          <p className="text-xs font-semibold text-blue-700 mb-1">Tell us more about your home to refine the estimate</p>
+
+                          {/* Condition */}
+                          <div>
+                            <p className="text-xs font-medium text-gray-600 mb-2">Overall condition</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              {["Excellent — like new / recently renovated","Good — well maintained, minor wear","Fair — needs some updating","Needs Work — significant repairs needed"].map(opt => (
+                                <button key={opt} onClick={() => setRefinementData(d => ({...d, condition: opt}))}
+                                  className={`text-left px-3 py-2 rounded-lg border text-[11px] transition-colors ${refinementData.condition === opt ? "border-blue-400 bg-blue-100 text-blue-800 font-medium" : "border-gray-200 text-gray-600 hover:border-blue-300"}`}>
+                                  {opt.split(" — ")[0]}
+                                  <span className="block text-[10px] text-gray-400 font-normal">{opt.split(" — ")[1]}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Garage */}
+                          <div>
+                            <p className="text-xs font-medium text-gray-600 mb-2">Garage</p>
+                            <div className="flex flex-wrap gap-2">
+                              {["None","1-Car Garage","2-Car Garage","3-Car Garage","Carport"].map(opt => (
+                                <button key={opt} onClick={() => setRefinementData(d => ({...d, garage: opt}))}
+                                  className={`px-3 py-1.5 rounded-full border text-[11px] transition-colors ${refinementData.garage === opt ? "border-blue-400 bg-blue-100 text-blue-800 font-medium" : "border-gray-200 text-gray-600 hover:border-blue-300"}`}>
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Updates — 2-col grid */}
+                          {[
+                            { key: "kitchenUpdate" as const, label: "Kitchen last updated" },
+                            { key: "bathroomUpdate" as const, label: "Bathrooms last updated" },
+                            { key: "roofUpdate" as const, label: "Roof last updated" },
+                            { key: "hvacUpdate" as const, label: "HVAC last updated" },
+                          ].map(({ key, label }) => (
+                            <div key={key}>
+                              <p className="text-xs font-medium text-gray-600 mb-2">{label}</p>
+                              <div className="flex flex-wrap gap-2">
+                                {["Within the last year","1–5 years ago","5–10 years ago","10+ years ago / original","Not applicable"].map(opt => (
+                                  <button key={opt} onClick={() => setRefinementData(d => ({...d, [key]: opt}))}
+                                    className={`px-3 py-1.5 rounded-full border text-[11px] transition-colors ${refinementData[key] === opt ? "border-blue-400 bg-blue-100 text-blue-800 font-medium" : "border-gray-200 text-gray-600 hover:border-blue-300"}`}>
+                                    {opt.replace(" / original","").replace(" years ago","yr").replace("Within the last year","<1yr")}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* Compute button */}
+                          <button
+                            onClick={computeRefinedValue}
+                            disabled={!refinementData.condition || refinementLoading}
+                            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors"
+                          >
+                            {refinementLoading ? "Calculating…" : "Calculate Adjusted Value"}
+                          </button>
+
+                          {/* Refined value result */}
+                          {refinedValue && !refinementLoading && (
+                            <div className="bg-white border border-blue-200 rounded-xl p-4 text-center space-y-2">
+                              <p className="text-xs text-gray-400">Adjusted estimate based on your inputs</p>
+                              <p className="text-2xl font-bold text-blue-700">{fmt(refinedValue)}</p>
+                              <p className="text-[11px] text-gray-400">
+                                {refinedValue > (avm?.price ?? 0)
+                                  ? `+${fmt(refinedValue - (avm?.price ?? 0))} above Rentcast estimate`
+                                  : `${fmt((avm?.price ?? 0) - refinedValue)} below Rentcast estimate`}
+                              </p>
+                              <button
+                                onClick={applyRefinedValue}
+                                className="mt-1 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors"
+                              >
+                                Use {fmt(refinedValue)} as my home value
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Editable: Estimated monthly rent */}
@@ -461,7 +710,7 @@ function QuizInner() {
                           inputMode="numeric"
                           value={confirmedRent}
                           onChange={e => setConfirmedRent(e.target.value)}
-                          placeholder={avm?.rent ? Math.round(avm.rent).toLocaleString() : "3,950"}
+                          placeholder={avm?.rent ? Math.round(avm.rent).toLocaleString() : "Enter estimated rent"}
                           className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">/mo</span>
@@ -471,7 +720,7 @@ function QuizInner() {
                         <p className="text-[11px] text-gray-500 leading-relaxed">
                           {avm?.rent
                             ? <>The <strong>{fmt(avm.rent)}/mo</strong> figure is based on local area averages. Your home&apos;s actual rental value may be higher depending on upgrades, lot size, location, and condition.</>
-                            : <>The <strong>$3,950/mo</strong> figure is based on Thousand Oaks averages. Your home&apos;s actual rental value may be higher depending on upgrades, lot size, location, and condition.</>
+                            : <>Enter your estimated monthly rent, or leave blank and we&apos;ll use local area averages. Your home&apos;s actual rental value may be higher depending on upgrades, lot size, location, and condition.</>
                           }
                           {" "}<a href="/contact" className="text-blue-500 hover:underline font-medium whitespace-nowrap">Contact MasterKey</a> for a free, personalized rental analysis.
                         </p>
@@ -534,7 +783,16 @@ function QuizInner() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1.5">Year Purchased <span className="text-red-400">*</span></label>
-                  <input type="text" inputMode="numeric" value={data.purchaseYear} onChange={e => set("purchaseYear", e.target.value)} placeholder="2018" className={inputCls} />
+                  <select
+                    value={data.purchaseYear}
+                    onChange={e => set("purchaseYear", e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
+                  >
+                    <option value="">Select year…</option>
+                    {yearOptions.map(y => (
+                      <option key={y} value={String(y)}>{y}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
@@ -651,8 +909,8 @@ function QuizInner() {
                 <ArrowLeftIcon className="w-4 h-4" />Back
               </button>
               {step < 7 ? (
-                <button onClick={nextStep} disabled={!canAdvance()} className="ml-auto flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors">
-                  Continue <ArrowRightIcon className="w-4 h-4" />
+                <button onClick={nextStep} disabled={!canAdvance() || validating} className="ml-auto flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors">
+                  {validating ? "Verifying…" : "Continue"} <ArrowRightIcon className="w-4 h-4" />
                 </button>
               ) : (
                 <button onClick={handleSubmit} disabled={!canAdvance() || isSubmitting} className="ml-auto flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors">
