@@ -693,7 +693,7 @@ function QuizInner() {
                           inputMode="numeric"
                           value={confirmedRent}
                           onChange={e => setConfirmedRent(e.target.value)}
-                          placeholder={avm?.rent ? Math.round(avm.rent).toLocaleString() : "3,950"}
+                          placeholder={avm?.rent ? Math.round(avm.rent).toLocaleString() : "Enter estimated rent"}
                           className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">/mo</span>
@@ -703,7 +703,7 @@ function QuizInner() {
                         <p className="text-[11px] text-gray-500 leading-relaxed">
                           {avm?.rent
                             ? <>The <strong>{fmt(avm.rent)}/mo</strong> figure is based on local area averages. Your home&apos;s actual rental value may be higher depending on upgrades, lot size, location, and condition.</>
-                            : <>The <strong>$3,950/mo</strong> figure is based on Thousand Oaks averages. Your home&apos;s actual rental value may be higher depending on upgrades, lot size, location, and condition.</>
+                            : <>Enter your estimated monthly rent, or leave blank and we&apos;ll use local area averages. Your home&apos;s actual rental value may be higher depending on upgrades, lot size, location, and condition.</>
                           }
                           {" "}<a href="/contact" className="text-blue-500 hover:underline font-medium whitespace-nowrap">Contact MasterKey</a> for a free, personalized rental analysis.
                         </p>
