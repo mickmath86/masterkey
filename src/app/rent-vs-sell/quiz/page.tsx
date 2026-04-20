@@ -235,20 +235,20 @@ function QuizInner() {
     try {
       const res = await fetch("/api/validate-phone", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: finalData.phone }) });
       const r = await res.json();
-      if (!r.valid) { setPhoneError(r.reason ?? "Please enter a valid phone number."); setIsSubmitting(false); return; }
+      if (!r.valid) { setPhoneError(r.reason ?? "Please enter a valid phone number."); /* note: intentionally not blocking submit */ }
     } catch { /* fail open */ }
 
     // Email validation
     try {
       const res = await fetch("/api/validate-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: finalData.email }) });
       const r = await res.json();
-      if (!r.valid) { setEmailError(r.reason ?? "Please enter a valid email."); setIsSubmitting(false); return; }
+      if (!r.valid) { setEmailError(r.reason ?? "Please enter a valid email."); /* note: intentionally not blocking submit */ }
     } catch { /* fail open */ }
 
+    // Calculate results — if inputs are incomplete, still fire webhook with what we have
     const results = calculate(finalData);
-    if (!results) { setIsSubmitting(false); return; }
 
-    // Fire webhook
+    // Fire webhook regardless of whether calculate succeeded
     try {
         await fetch(RENT_VS_SELL_WEBHOOK, {
           method: "POST", headers: { "Content-Type": "application/json" },
@@ -265,9 +265,9 @@ function QuizInner() {
             rentcastEstimatedValue: avm?.price ?? null,
             rentcastEstimatedRent: avm?.rent ?? null,
             rentcastConfirmedRent: confirmedRent || null,
-            verdict5yr: results.verdict5yr, verdict10yr: results.verdict10yr,
-            sellNetProceeds: Math.round(results.saleAfterTax),
-            rentWealth10yr: Math.round(results.rentTotalWealth10yr),
+            verdict5yr: results?.verdict5yr ?? null, verdict10yr: results?.verdict10yr ?? null,
+            sellNetProceeds: results ? Math.round(results.saleAfterTax) : null,
+            rentWealth10yr: results ? Math.round(results.rentTotalWealth10yr) : null,
             formType: "rent-vs-sell", source: "rent-vs-sell-quiz",
             submittedAt: new Date().toISOString(),
           }),
