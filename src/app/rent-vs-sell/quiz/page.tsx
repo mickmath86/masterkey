@@ -33,12 +33,12 @@ interface PropertyFacts {
 }
 
 interface AVMData {
-  price?: number;
-  priceRangeLow?: number;
-  priceRangeHigh?: number;
-  rent?: number;
-  rentRangeLow?: number;
-  rentRangeHigh?: number;
+  price?: number | null;
+  priceRangeLow?: number | null;
+  priceRangeHigh?: number | null;
+  rent?: number | null;
+  rentRangeLow?: number | null;
+  rentRangeHigh?: number | null;
   latitude?: number;
   longitude?: number;
 }
@@ -157,18 +157,43 @@ function QuizInner() {
         }
       } catch { /* ignore */ }
 
-      // Step 2: AVM enriched with property attributes for better accuracy
+      // Step 2: AVM value + rent — both enriched with property attributes, run in parallel
+      const enrichedParams = new URLSearchParams({ address });
+      if (facts?.propertyType) enrichedParams.set("propertyType", facts.propertyType);
+      if (facts?.bedrooms)     enrichedParams.set("bedrooms",     facts.bedrooms);
+      if (facts?.bathrooms)    enrichedParams.set("bathrooms",    facts.bathrooms);
+      if (facts?.sqft)         enrichedParams.set("squareFootage", facts.sqft);
+
       let avmData: AVMData | null = null;
       try {
-        const avmParams = new URLSearchParams({ address });
-        if (facts?.propertyType) avmParams.set("propertyType", facts.propertyType);
-        if (facts?.bedrooms)     avmParams.set("bedrooms",     facts.bedrooms);
-        if (facts?.bathrooms)    avmParams.set("bathrooms",    facts.bathrooms);
-        if (facts?.sqft)         avmParams.set("squareFootage", facts.sqft);
-        const avmRes = await fetch(`/api/rentcast/value?${avmParams.toString()}`);
-        if (avmRes.ok) {
-          const j = await avmRes.json();
-          if (j.price || j.rent) avmData = j as AVMData;
+        const [valueRes, rentRes] = await Promise.allSettled([
+          fetch(`/api/rentcast/value?${enrichedParams.toString()}`),
+          fetch(`/api/rentcast/rent?${enrichedParams.toString()}`),
+        ]);
+
+        let price: number | null = null;
+        let priceRangeLow: number | null = null;
+        let priceRangeHigh: number | null = null;
+        let rent: number | null = null;
+        let rentRangeLow: number | null = null;
+        let rentRangeHigh: number | null = null;
+
+        if (valueRes.status === "fulfilled" && valueRes.value.ok) {
+          const j = await valueRes.value.json();
+          price          = j.price ?? null;
+          priceRangeLow  = j.priceRangeLow ?? null;
+          priceRangeHigh = j.priceRangeHigh ?? null;
+        }
+
+        if (rentRes.status === "fulfilled" && rentRes.value.ok) {
+          const j = await rentRes.value.json();
+          rent          = j.rent ?? null;
+          rentRangeLow  = j.rentRangeLow ?? null;
+          rentRangeHigh = j.rentRangeHigh ?? null;
+        }
+
+        if (price || rent) {
+          avmData = { price, priceRangeLow, priceRangeHigh, rent, rentRangeLow, rentRangeHigh };
         }
       } catch { /* ignore */ }
 
