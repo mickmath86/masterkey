@@ -420,13 +420,30 @@ function QuizInner() {
   // ── Shared input classes ──────────────────────────────────────────────────
   const inputCls = "w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white";
   const inputErrCls = "w-full px-3 py-2.5 border border-red-400 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-red-400 focus:outline-none bg-white";
+  // Format number with commas as user types, strip non-numeric on change
+  function formatDollar(raw: string): string {
+    const digits = raw.replace(/[^0-9]/g, "");
+    if (!digits) return "";
+    return parseInt(digits, 10).toLocaleString("en-US");
+  }
+
   const dollarInput = (val: string, onChange: (v: string) => void, placeholder: string) => (
     <div className="relative">
       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-      <input type="text" inputMode="numeric" value={val} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white" />
+      <input
+        type="text"
+        inputMode="numeric"
+        value={val}
+        onChange={e => onChange(formatDollar(e.target.value))}
+        placeholder={placeholder}
+        className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
+      />
     </div>
   );
+
+  // Year options from current year back to 1900
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: currentYear - 1899 }, (_, i) => currentYear - i);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -766,7 +783,16 @@ function QuizInner() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1.5">Year Purchased <span className="text-red-400">*</span></label>
-                  <input type="text" inputMode="numeric" value={data.purchaseYear} onChange={e => set("purchaseYear", e.target.value)} placeholder="2018" className={inputCls} />
+                  <select
+                    value={data.purchaseYear}
+                    onChange={e => set("purchaseYear", e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
+                  >
+                    <option value="">Select year…</option>
+                    {yearOptions.map(y => (
+                      <option key={y} value={String(y)}>{y}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
