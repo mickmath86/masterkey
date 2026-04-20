@@ -583,32 +583,46 @@ function SellGuidePageInner() {
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   useEffect(() => {
-    // URL param override: ?__variant=test or ?__variant=control
+    // URL param override always wins
     const urlOverride = searchParams.get("__variant");
     if (urlOverride === "test" || urlOverride === "control") {
       setVariant(urlOverride);
       return;
     }
 
-    // Check if flags are already loaded (e.g. cached from prior visit)
-    const immediate = posthog.getFeatureFlag("sellguide-version-2");
-    if (immediate !== undefined) {
-      setVariant(immediate === "test" ? "test" : "control");
-      return;
+    let cancelled = false;
+
+    function resolveFlag() {
+      const flag = posthog.getFeatureFlag("sellguide-version-2");
+      if (!cancelled) {
+        setVariant(flag === "test" ? "test" : "control");
+      }
     }
 
-    // Flags not yet loaded — wait for PostHog /decide to resolve
-    const unsubscribe = posthog.onFeatureFlags(() => {
+    // If PostHog is already loaded and flags are available, use them immediately
+    if (posthog.__loaded) {
       const flag = posthog.getFeatureFlag("sellguide-version-2");
-      setVariant(flag === "test" ? "test" : "control");
-    });
+      if (flag !== undefined) {
+        setVariant(flag === "test" ? "test" : "control");
+        return;
+      }
+    }
 
-    // Fallback: if onFeatureFlags never fires (e.g. network error), default to control after 3s
-    const timeout = setTimeout(() => setVariant("control"), 3000);
+    // Register onFeatureFlags — fires once /decide resolves
+    const unsub = posthog.onFeatureFlags(resolveFlag);
+
+    // Also try reloadFeatureFlags to force a fresh /decide call
+    posthog.reloadFeatureFlags();
+
+    // Hard fallback after 4s — don't leave user in null limbo
+    const timeout = setTimeout(() => {
+      if (!cancelled) setVariant("control");
+    }, 4000);
 
     return () => {
-      if (typeof unsubscribe === "function") unsubscribe();
+      cancelled = true;
       clearTimeout(timeout);
+      if (typeof unsub === "function") unsub();
     };
   }, []);
 
