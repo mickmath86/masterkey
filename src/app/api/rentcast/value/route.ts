@@ -42,12 +42,22 @@ export async function GET(request: NextRequest) {
     }
 
     // Build enriched query string — include all available params for accuracy
+    // Map our display labels back to Rentcast's native enum values
+    const typeMap: Record<string, string> = {
+      "Single Family Home": "SingleFamily",
+      "Condo / Townhome":   "Condo",
+      "Multi-Family (2–4 units)": "MultiFamily",
+      "Land / Lot":         "Land",
+    };
+    const rentcastType = propertyType ? (typeMap[propertyType] ?? propertyType) : null;
+
     const params = new URLSearchParams({ address })
-    if (propertyType)  params.set('propertyType',   propertyType)
+    if (rentcastType)  params.set('propertyType',   rentcastType)
     if (bedrooms)      params.set('bedrooms',        bedrooms)
     if (bathrooms)     params.set('bathrooms',       bathrooms)
     if (squareFootage) params.set('squareFootage',   squareFootage)
 
+    console.log(`[rentcast/value] AVM call: ${params.toString()}`);
     const response = await fetch(
       `https://api.rentcast.io/v1/avm/value?${params.toString()}`,
       {
