@@ -107,6 +107,14 @@ function QuizInner() {
   // Editable confirm fields (seeded from Rentcast, user can override)
   const [confirmedValue, setConfirmedValue] = useState("");
   const [confirmedRent, setConfirmedRent] = useState("");
+  const [showRefinement, setShowRefinement] = useState(false);
+  const [refinedValue, setRefinedValue] = useState<number | null>(null);
+  const [refinementData, setRefinementData] = useState({
+    condition: "", garage: "", kitchenUpdate: "", bathroomUpdate: "",
+    roofUpdate: "", hvacUpdate: "",
+    features: [] as string[],
+  });
+  const [refinementLoading, setRefinementLoading] = useState(false);
 
   // ── Step state ──
   // 1=address, 2=confirm(optional), 3=purchase, 4=mortgage, 5=title(auto), 6=contact, 7=name
@@ -200,6 +208,50 @@ function QuizInner() {
       setStep(3);
     }
   }, [rentcastDone, hasConfirmStep, step]);
+
+  // ── Refined value calculation ──────────────────────────────────────────────
+  function computeRefinedValue() {
+    const base = parseFloat(confirmedValue.replace(/[,$]/g, "")) || (avm?.price ?? 0);
+    if (!base) return;
+    setRefinementLoading(true);
+    let adj = base;
+    // Condition adjustment
+    if (refinementData.condition.includes("Excellent")) adj *= 1.05;
+    else if (refinementData.condition.includes("Good")) adj *= 1.02;
+    else if (refinementData.condition.includes("Fair")) adj *= 0.97;
+    else if (refinementData.condition.includes("Needs Work")) adj *= 0.92;
+    // Garage
+    if (refinementData.garage.includes("2-Car")) adj += 15000;
+    else if (refinementData.garage.includes("3-Car")) adj += 25000;
+    else if (refinementData.garage.includes("1-Car")) adj += 8000;
+    // Kitchen update
+    if (refinementData.kitchenUpdate.includes("Within the last year")) adj += 20000;
+    else if (refinementData.kitchenUpdate.includes("1–5 years")) adj += 12000;
+    else if (refinementData.kitchenUpdate.includes("5–10")) adj += 5000;
+    // Bathroom update
+    if (refinementData.bathroomUpdate.includes("Within the last year")) adj += 10000;
+    else if (refinementData.bathroomUpdate.includes("1–5 years")) adj += 6000;
+    // Roof
+    if (refinementData.roofUpdate.includes("Within the last year")) adj += 12000;
+    else if (refinementData.roofUpdate.includes("1–5 years")) adj += 7000;
+    // HVAC
+    if (refinementData.hvacUpdate.includes("Within the last year")) adj += 8000;
+    else if (refinementData.hvacUpdate.includes("1–5 years")) adj += 4000;
+    // Round to nearest $1000
+    const rounded = Math.round(adj / 1000) * 1000;
+    setTimeout(() => {
+      setRefinedValue(rounded);
+      setRefinementLoading(false);
+    }, 800); // brief delay for UX
+  }
+
+  function applyRefinedValue() {
+    if (refinedValue) {
+      setConfirmedValue(refinedValue.toLocaleString());
+      set("homeValue", refinedValue.toLocaleString());
+      setShowRefinement(false);
+    }
+  }
 
   // ── Confirm step apply ────────────────────────────────────────────────────
   function applyConfirm() {
@@ -464,12 +516,38 @@ function QuizInner() {
                       </div>
                     )}
 
-                    {/* Editable: Estimated home value */}
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                    {/* Editable: Estimated home value + range + refinement */}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium text-gray-600">
                         Estimated Home Value
-                        {avm?.price && <span className="ml-1.5 text-blue-500 text-[11px]">Rentcast: {fmt(avm.price)}</span>}
                       </label>
+
+                      {/* Value range bar */}
+                      {avm?.priceRangeLow && avm?.priceRangeHigh && (
+                        <div className="bg-white rounded-lg px-3 py-2.5 border border-blue-100">
+                          <div className="flex items-center justify-between text-[11px] text-gray-400 mb-1.5">
+                            <span>Low estimate</span>
+                            <span className="font-semibold text-blue-600 text-xs">Rentcast range</span>
+                            <span>High estimate</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm font-semibold text-gray-900">
+                            <span>{fmt(avm.priceRangeLow)}</span>
+                            <span className="text-blue-600 text-base">{avm?.price ? fmt(avm.price) : "—"}</span>
+                            <span>{fmt(avm.priceRangeHigh)}</span>
+                          </div>
+                          {/* Range bar */}
+                          <div className="relative h-1.5 bg-blue-100 rounded-full mt-2">
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-200 via-blue-500 to-blue-200 rounded-full" />
+                            {avm?.price && (
+                              <div
+                                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow"
+                                style={{ left: `calc(${Math.min(100,Math.max(0,((avm.price - avm.priceRangeLow) / (avm.priceRangeHigh - avm.priceRangeLow)) * 100))}% - 6px)` }}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
                         <input
@@ -481,7 +559,100 @@ function QuizInner() {
                           className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
                         />
                       </div>
-                      <p className="text-[11px] text-gray-400 mt-1">Edit if you have a more current estimate.</p>
+
+                      {/* Tooltip + refinement trigger */}
+                      <div className="p-3 bg-white/70 rounded-lg border border-blue-100 text-[11px] text-gray-500 leading-relaxed">
+                        This is an estimate provided by Rentcast based on public records and comparable sales. For a more accurate valuation that takes into consideration updates to your home, click{" "}
+                        <button
+                          onClick={() => setShowRefinement(r => !r)}
+                          className="text-blue-500 hover:underline font-medium"
+                        >
+                          here
+                        </button>
+                        .
+                      </div>
+
+                      {/* Refinement accordion */}
+                      {showRefinement && (
+                        <div className="border border-blue-200 rounded-xl bg-blue-50/50 p-4 space-y-4">
+                          <p className="text-xs font-semibold text-blue-700 mb-1">Tell us more about your home to refine the estimate</p>
+
+                          {/* Condition */}
+                          <div>
+                            <p className="text-xs font-medium text-gray-600 mb-2">Overall condition</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              {["Excellent — like new / recently renovated","Good — well maintained, minor wear","Fair — needs some updating","Needs Work — significant repairs needed"].map(opt => (
+                                <button key={opt} onClick={() => setRefinementData(d => ({...d, condition: opt}))}
+                                  className={`text-left px-3 py-2 rounded-lg border text-[11px] transition-colors ${refinementData.condition === opt ? "border-blue-400 bg-blue-100 text-blue-800 font-medium" : "border-gray-200 text-gray-600 hover:border-blue-300"}`}>
+                                  {opt.split(" — ")[0]}
+                                  <span className="block text-[10px] text-gray-400 font-normal">{opt.split(" — ")[1]}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Garage */}
+                          <div>
+                            <p className="text-xs font-medium text-gray-600 mb-2">Garage</p>
+                            <div className="flex flex-wrap gap-2">
+                              {["None","1-Car Garage","2-Car Garage","3-Car Garage","Carport"].map(opt => (
+                                <button key={opt} onClick={() => setRefinementData(d => ({...d, garage: opt}))}
+                                  className={`px-3 py-1.5 rounded-full border text-[11px] transition-colors ${refinementData.garage === opt ? "border-blue-400 bg-blue-100 text-blue-800 font-medium" : "border-gray-200 text-gray-600 hover:border-blue-300"}`}>
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Updates — 2-col grid */}
+                          {[
+                            { key: "kitchenUpdate" as const, label: "Kitchen last updated" },
+                            { key: "bathroomUpdate" as const, label: "Bathrooms last updated" },
+                            { key: "roofUpdate" as const, label: "Roof last updated" },
+                            { key: "hvacUpdate" as const, label: "HVAC last updated" },
+                          ].map(({ key, label }) => (
+                            <div key={key}>
+                              <p className="text-xs font-medium text-gray-600 mb-2">{label}</p>
+                              <div className="flex flex-wrap gap-2">
+                                {["Within the last year","1–5 years ago","5–10 years ago","10+ years ago / original","Not applicable"].map(opt => (
+                                  <button key={opt} onClick={() => setRefinementData(d => ({...d, [key]: opt}))}
+                                    className={`px-3 py-1.5 rounded-full border text-[11px] transition-colors ${refinementData[key] === opt ? "border-blue-400 bg-blue-100 text-blue-800 font-medium" : "border-gray-200 text-gray-600 hover:border-blue-300"}`}>
+                                    {opt.replace(" / original","").replace(" years ago","yr").replace("Within the last year","<1yr")}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* Compute button */}
+                          <button
+                            onClick={computeRefinedValue}
+                            disabled={!refinementData.condition || refinementLoading}
+                            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors"
+                          >
+                            {refinementLoading ? "Calculating…" : "Calculate Adjusted Value"}
+                          </button>
+
+                          {/* Refined value result */}
+                          {refinedValue && !refinementLoading && (
+                            <div className="bg-white border border-blue-200 rounded-xl p-4 text-center space-y-2">
+                              <p className="text-xs text-gray-400">Adjusted estimate based on your inputs</p>
+                              <p className="text-2xl font-bold text-blue-700">{fmt(refinedValue)}</p>
+                              <p className="text-[11px] text-gray-400">
+                                {refinedValue > (avm?.price ?? 0)
+                                  ? `+${fmt(refinedValue - (avm?.price ?? 0))} above Rentcast estimate`
+                                  : `${fmt((avm?.price ?? 0) - refinedValue)} below Rentcast estimate`}
+                              </p>
+                              <button
+                                onClick={applyRefinedValue}
+                                className="mt-1 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors"
+                              >
+                                Use {fmt(refinedValue)} as my home value
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Editable: Estimated monthly rent */}
