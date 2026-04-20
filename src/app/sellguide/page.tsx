@@ -599,19 +599,12 @@ function SellGuidePageInner() {
       }
     }
 
-    // If PostHog is already loaded and flags are available, use them immediately
-    if (posthog.__loaded) {
-      const flag = posthog.getFeatureFlag("sellguide-version-2");
-      if (flag !== undefined) {
-        setVariant(flag === "test" ? "test" : "control");
-        return;
-      }
-    }
-
-    // Register onFeatureFlags — fires once /decide resolves
+    // Always wait for onFeatureFlags — this fires once /decide has responded
+    // Do NOT read getFeatureFlag() immediately; __loaded only means init() was called,
+    // not that /decide has returned flag assignments yet
     const unsub = posthog.onFeatureFlags(resolveFlag);
 
-    // Also try reloadFeatureFlags to force a fresh /decide call
+    // Force a fresh /decide call in case flags are stale or not yet fetched
     posthog.reloadFeatureFlags();
 
     // Hard fallback after 4s — don't leave user in null limbo
