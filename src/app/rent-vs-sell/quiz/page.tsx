@@ -272,7 +272,10 @@ function QuizInner() {
             submittedAt: new Date().toISOString(),
           }),
         });
-    } catch { /* fail open */ }
+    } catch (error) {
+      console.error("Rent vs sell webhook submission failed", error);
+      /* fail open */
+    }
 
     setIsSubmitting(false);
 

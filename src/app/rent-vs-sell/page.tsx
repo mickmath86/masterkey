@@ -17,8 +17,7 @@ import {
   ScaleIcon,
 } from "@heroicons/react/16/solid";
 
-// ─── Placeholder — swap in real URL when provided ───────────────────────────
-export const RENT_VS_SELL_WEBHOOK = "RENT_VS_SELL_WEBHOOK_PLACEHOLDER";
+export const RENT_VS_SELL_WEBHOOK = "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/e5c3377b-b8fa-4ac1-ba21-bd2d63560dd7";
 export const CALENDAR_SRC = "https://api.leadconnectorhq.com/widget/booking/dC0pazbNghUa1xKcbXiY";
 
 // ─── Types — exported so results page can import ─────────────────────────────
