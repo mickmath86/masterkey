@@ -22,15 +22,6 @@ import {
   HomeModernIcon,
   ClockIcon,
 } from "@heroicons/react/16/solid";
-import posthog from "posthog-js";
-import { useSearchParams } from "next/navigation";
-
-// ─────────────────────────────────────────────
-// DEV OVERRIDE — uncomment ONE line below to
-// force a specific variant in localhost:
-// ─────────────────────────────────────────────
-// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sellguide-version-2': 'control' } })  // control: questionnaire, CTA button first
-// posthog.featureFlags.overrideFeatureFlags({ flags: { 'sellguide-version-2': 'test' } })   // test: questionnaire, market shown immediately
 
 const WEBHOOK_URL =
   "https://services.leadconnectorhq.com/hooks/hXpL9N13md8EpjjO5z0l/webhook-trigger/wi5kuxoR9mbMghJUaVMm";
@@ -66,7 +57,7 @@ function validatePhoneFormat(phone: string): string | null {
 }
 
 // ═══════════════════════════════════════════════════════
-// QUESTIONNAIRE — test variant only
+// QUESTIONNAIRE
 // ═══════════════════════════════════════════════════════
 interface QData {
   market: string;
@@ -103,12 +94,10 @@ const REASON_OPTIONS = [
 
 function SellGuideQuestionnaire({
   onComplete,
-  initialStep = 0,
 }: {
   onComplete: (data: QData) => void;
-  initialStep?: number;
 }) {
-  const [step, setStep] = useState(initialStep); // 0 = hero CTA, 1 = start at market selection
+  const [step, setStep] = useState(1); // Start at market selection
   const [data, setData] = useState<QData>({
     market: "", intent: "", address: "", addressValid: false,
     timeline: "", reason: "", reasonOther: "", idealPrice: "",
@@ -223,22 +212,6 @@ function SellGuideQuestionnaire({
   }
 
   // ── Step content ────────────────────────────────────────────────────────────
-  if (step === 0) {
-    return (
-      <div className="flex flex-col items-start gap-6 w-full max-w-md">
-        <button
-          onClick={() => setStep(1)}
-          className="flex items-center gap-3 bg-orange-500 hover:bg-orange-400 text-white font-bold text-lg px-8 py-4 rounded-xl transition-colors shadow-md shadow-orange-200 w-full sm:w-auto justify-center"
-        >
-          <ClipboardDocumentListIcon className="w-5 h-5" />
-          Get My Report
-          <ArrowRightIcon className="w-5 h-5" />
-        </button>
-        <p className="text-xs text-gray-400">Free · No obligation · Takes 2 minutes</p>
-      </div>
-    );
-  }
-
   // Progress bar
   const progress = Math.round((step / (isSelling ? 8 : 4)) * 100);
 
@@ -416,8 +389,8 @@ function SellGuideQuestionnaire({
             />
 
             {/* Home valuation upsell */}
-            <div className="bg-orange-50 border border-orange-100 rounded-xl p-4">
-              <p className="text-xs font-semibold text-orange-700 mb-2">
+            <div className="bg-sky-50 border border-sky-100 rounded-xl p-4">
+              <p className="text-xs font-semibold text-sky-700 mb-2">
                 Not sure? Our free home valuation tool can help.
               </p>
               <ul className="space-y-1.5">
@@ -427,13 +400,13 @@ function SellGuideQuestionnaire({
                   "Instant results — no waiting, no email required",
                   "98% accuracy vs. recent sales",
                 ].map((b) => (
-                  <li key={b} className="flex items-start gap-2 text-xs text-orange-600">
-                    <CheckCircleIcon className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                  <li key={b} className="flex items-start gap-2 text-xs text-sky-500">
+                    <CheckCircleIcon className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-sky-500" />
                     {b}
                   </li>
                 ))}
               </ul>
-              <p className="text-[11px] text-orange-400 mt-2">
+              <p className="text-[11px] text-sky-400 underline font-bold mt-2">
                 We'll link you to the valuation tool after you get your report.
               </p>
             </div>
@@ -578,20 +551,7 @@ function SellGuideQuestionnaire({
 // ═══════════════════════════════════════════════════════
 function SellGuidePageInner() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [variant, setVariant] = useState<"control" | "test" | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
-
-  useEffect(() => {
-    // URL param override: ?__variant=test or ?__variant=control
-    const urlOverride = searchParams.get("__variant");
-    if (urlOverride === "test" || urlOverride === "control") {
-      setVariant(urlOverride);
-      return;
-    }
-    const flag = posthog.getFeatureFlag("sellguide-version-2");
-    setVariant(flag === "test" ? "test" : "control");
-  }, []);
 
   useEffect(() => {
     const handler = () => setCalendarOpen(true);
@@ -599,83 +559,7 @@ function SellGuidePageInner() {
     return () => window.removeEventListener("openCalendarModal", handler);
   }, []);
 
-  // ── Control variant form state ─────────────────────────────────────────────
-  const [form, setForm] = useState({
-    firstName: "", lastName: "", phone: "", email: "", market: "", propertyAddress: "",
-  });
-  const [emailError, setEmailError] = useState("");
-  const [phoneError, setPhoneError] = useState("");
-  const [addressValid, setAddressValid] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  function isValid() {
-    return (
-      Boolean(form.firstName.trim()) &&
-      Boolean(form.email.trim()) &&
-      emailRegex.test(form.email) &&
-      form.market !== "" &&
-      addressValid &&
-      form.phone.trim() !== "" &&
-      !phoneError
-    );
-  }
-
-  function handleEmailChange(v: string) {
-    setForm(f => ({ ...f, email: v }));
-    setEmailError(v.trim() && !emailRegex.test(v) ? "Please enter a valid email address" : "");
-  }
-
-  function handlePhoneChange(v: string) {
-    setForm(f => ({ ...f, phone: v }));
-    setPhoneError(validatePhoneFormat(v) ?? "");
-  }
-
-  async function handleControlSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isValid() || isSubmitting) return;
-    setIsSubmitting(true);
-
-    if (form.phone.trim()) {
-      try {
-        const res = await fetch("/api/validate-phone", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: form.phone }) });
-        const result = await res.json();
-        if (!result.valid) { setPhoneError(result.reason ?? "Please enter a valid phone number."); setIsSubmitting(false); return; }
-      } catch { /* fail open */ }
-    }
-
-    try {
-      const res = await fetch("/api/validate-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: form.email }) });
-      const result = await res.json();
-      if (!result.valid) { setEmailError(result.reason ?? "Please enter a valid email address."); setIsSubmitting(false); return; }
-    } catch { /* fail open */ }
-
-    const selectedMarket = MARKETS.find(m => m.value === form.market);
-    try {
-      await fetch(WEBHOOK_URL, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: form.firstName, lastName: form.lastName, phone: form.phone,
-          email: form.email, market: form.market, marketName: selectedMarket?.label ?? form.market,
-          propertyAddress: form.propertyAddress, formType: "seller-guide",
-          source: "sellguide-page", variant: "control",
-          downloadable: `sellers-checklist-${form.market}`,
-          assetUrl: selectedMarket ? `https://www.usemasterkey.com${selectedMarket.file}` : "",
-          submittedAt: new Date().toISOString(),
-        }),
-      });
-    } catch { /* fail open */ }
-
-    setIsSubmitting(false);
-    const params = new URLSearchParams({
-      market: form.market,
-      ...(form.firstName.trim() && { name: form.firstName.trim() }),
-      ...(form.propertyAddress.trim() && { address: form.propertyAddress.trim() }),
-    });
-    router.push(`/sellguide/confirmation?${params.toString()}`);
-  }
-
-  // ── Test variant questionnaire completion ──────────────────────────────────
+  // ── Questionnaire completion ──────────────────────────────────
   async function handleQComplete(data: QData) {
     const selectedMarket = MARKETS.find(m => m.value === data.market);
     try {
@@ -692,7 +576,6 @@ function SellGuidePageInner() {
           idealPrice: data.idealPrice,
           formType: "seller-guide",
           source: "sellguide-page",
-          variant: variant ?? "control",
           downloadable: `sellers-checklist-${data.market}`,
           assetUrl: selectedMarket ? `https://www.usemasterkey.com${selectedMarket.file}` : "",
           submittedAt: new Date().toISOString(),
@@ -760,9 +643,7 @@ function SellGuidePageInner() {
     );
   }
 
-  // ── CONTROL variant: questionnaire with hero CTA button (step 0) ─────────────
-  // ── TEST variant: questionnaire starting at step 1 (market shown immediately) ─
-  // Both render the same light page; only initialStep differs
+  // ── Render questionnaire starting at step 1 (market shown immediately) ─
   return (
     <div className="min-h-screen bg-white">
       <section className="relative overflow-hidden bg-white pb-0 border-b border-gray-100">
@@ -779,13 +660,7 @@ function SellGuidePageInner() {
               <p className="text-gray-500 text-lg leading-relaxed mb-8 max-w-md">
                 Your complete guide to selling your home for top dollar — personalized for your market. Takes 2 minutes.
               </p>
-              {variant !== null && (
-                <SellGuideQuestionnaire
-                  key={variant}
-                  onComplete={handleQComplete}
-                  initialStep={variant === "test" ? 1 : 0}
-                />
-              )}
+              <SellGuideQuestionnaire onComplete={handleQComplete} />
             </div>
             {/* Image below CTA on mobile, right column on desktop */}
             <HeroMedia />
@@ -826,7 +701,7 @@ function CalendarModal({ onClose }: { onClose: () => void }) {
               <XMarkIcon className="w-5 h-5" />
             </button>
           </div>
-          <div className="flex-1 overflow-hidden p-4">
+          <div className="flex-1 overflow-y-auto p-4">
             <iframe src={CALENDAR_SRC} style={{ width: "100%", height: "750px", border: "none" }} scrolling="yes" id="sellguide-calendar" title="Schedule Appointment" />
           </div>
         </div>

@@ -75,7 +75,7 @@ function CalendarModal({ onClose }: { onClose: () => void }) {
               <XMarkIcon className="w-5 h-5" />
             </button>
           </div>
-          <div className="flex-1 overflow-hidden p-4">
+          <div className="flex-1 overflow-y-auto p-4">
             <iframe src={CALENDAR_SRC} style={{ width: "100%", height: "750px", border: "none" }} scrolling="yes" title="Schedule Appointment" />
           </div>
         </div>

@@ -1,4 +1,12 @@
+'use client'
+
 export default function CTA3() {
+  const handleScheduleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    // Dispatch custom event to open calendar modal
+    window.dispatchEvent(new Event('openCalendarModal'));
+  };
+
   return (
     <div className="relative isolate overflow-hidden bg-white">
       <div className="px-6 py-24 sm:py-32 lg:px-8">
@@ -17,7 +25,11 @@ export default function CTA3() {
             >
               Call Now
             </a>
-            <a href="#" className="text-sm/6 font-semibold text-gray-900 hover:text-gray-600">
+            <a 
+              href="#" 
+              onClick={handleScheduleClick}
+              className="text-sm/6 font-semibold text-gray-900 hover:text-gray-600"
+            >
              Schedule an Appointment <span aria-hidden="true">→</span>
             </a>
           </div>
@@ -39,3 +51,4 @@ export default function CTA3() {
     </div>
   )
 }
+ 

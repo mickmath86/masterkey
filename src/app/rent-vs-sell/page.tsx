@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState, useEffect } from "react";
 import NavbarMinimal from "@/components/navbar-minimal";
 import { Footer } from "@/components/footer";
 import LandingPageV6 from "@/components/landing-pages/landing-page-v6/page";
@@ -205,6 +205,14 @@ export function validatePhoneFormat(phone: string): string | null {
 // QUESTIONNAIRE
 // ═══════════════════════════════════════════════════════════════════════════════
 function RentVsSellPageInner() {
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Listen for global calendar modal event
+  useEffect(() => {
+    const handler = () => setCalendarOpen(true);
+    window.addEventListener('openCalendarModal', handler);
+    return () => window.removeEventListener('openCalendarModal', handler);
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -325,6 +333,45 @@ function RentVsSellPageInner() {
 
       <LandingPageV6 />
       <Footer />
+      {calendarOpen && <CalendarModal onClose={() => setCalendarOpen(false)} />}
+    </div>
+  );
+}
+
+// ─── Calendar Modal ───────────────────────────────────────────────────────────
+function CalendarModal({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://link.msgsndr.com/js/form_embed.js';
+    script.type = 'text/javascript';
+    document.body.appendChild(script);
+    return () => {
+      const existing = document.querySelector('script[src="https://link.msgsndr.com/js/form_embed.js"]');
+      if (existing) document.body.removeChild(existing);
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-scroll">
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+        <div className="relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">Schedule a Consultation</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Pick a time that works for you — no obligation.</p>
+            </div>
+            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            <iframe src={CALENDAR_SRC} style={{ width: '100%', height: '750px', border: 'none' }} scrolling="yes" id="rvs-calendar" title="Schedule Appointment" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
