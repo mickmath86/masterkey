@@ -214,7 +214,47 @@ function QuizInner() {
     }
   }
 
-  function nextStep() { setStep(s => s + 1); }
+  const [validating, setValidating] = useState(false);
+
+  async function nextStep() {
+    // Step 6 = contact info — validate phone + email via Abstract before advancing
+    if (step === 6) {
+      setValidating(true);
+      let blocked = false;
+
+      try {
+        const res = await fetch("/api/validate-phone", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: data.phone }),
+        });
+        const r = await res.json();
+        if (!r.valid) {
+          setPhoneError(r.reason ?? "Please enter a valid phone number.");
+          blocked = true;
+        }
+      } catch { /* fail open — format check already passed */ }
+
+      if (!blocked) {
+        try {
+          const res = await fetch("/api/validate-email", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: data.email }),
+          });
+          const r = await res.json();
+          if (!r.valid) {
+            setEmailError(r.reason ?? "Please enter a valid email address.");
+            blocked = true;
+          }
+        } catch { /* fail open */ }
+      }
+
+      setValidating(false);
+      if (blocked) return; // stay on step 6
+      setStep(s => s + 1);
+      return;
+    }
+    setStep(s => s + 1);
+  }
   function prevStep() {
     if (step === 3 && !hasConfirmStep) setStep(1);
     else setStep(s => s - 1);
@@ -230,20 +270,6 @@ function QuizInner() {
       ...data,
       homeValue: confirmedValue.trim() || data.homeValue,
     };
-
-    // Phone validation
-    try {
-      const res = await fetch("/api/validate-phone", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: finalData.phone }) });
-      const r = await res.json();
-      if (!r.valid) { setPhoneError(r.reason ?? "Please enter a valid phone number."); /* note: intentionally not blocking submit */ }
-    } catch { /* fail open */ }
-
-    // Email validation
-    try {
-      const res = await fetch("/api/validate-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: finalData.email }) });
-      const r = await res.json();
-      if (!r.valid) { setEmailError(r.reason ?? "Please enter a valid email."); /* note: intentionally not blocking submit */ }
-    } catch { /* fail open */ }
 
     // Calculate results — if inputs are incomplete, still fire webhook with what we have
     const results = calculate(finalData);
@@ -654,8 +680,8 @@ function QuizInner() {
                 <ArrowLeftIcon className="w-4 h-4" />Back
               </button>
               {step < 7 ? (
-                <button onClick={nextStep} disabled={!canAdvance()} className="ml-auto flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors">
-                  Continue <ArrowRightIcon className="w-4 h-4" />
+                <button onClick={nextStep} disabled={!canAdvance() || validating} className="ml-auto flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors">
+                  {validating ? "Verifying…" : "Continue"} <ArrowRightIcon className="w-4 h-4" />
                 </button>
               ) : (
                 <button onClick={handleSubmit} disabled={!canAdvance() || isSubmitting} className="ml-auto flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors">
