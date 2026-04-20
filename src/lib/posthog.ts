@@ -8,6 +8,7 @@ export const initPostHog = () => {
     
     if (posthogKey && !isDevelopment) {
       // Production: full PostHog init
+      // NOTE: advanced_disable_decide must be false (or omitted) for feature flags/experiments to work
       posthog.init(posthogKey, {
         api_host: "/ingest",
         ui_host: "https://us.posthog.com",
@@ -17,7 +18,7 @@ export const initPostHog = () => {
         debug: false,
         autocapture: false,
         disable_session_recording: true,
-        advanced_disable_decide: true,
+        // advanced_disable_decide removed — required for feature flag assignments
       })
     } else if (isDevelopment && posthogKey) {
       // Development: init with opt-out so no data is sent,
