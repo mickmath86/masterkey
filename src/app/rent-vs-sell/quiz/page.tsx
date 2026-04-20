@@ -139,23 +139,30 @@ function QuizInner() {
     setRentcastDone(false);
 
     try {
-      const [factsRes, avmRes] = await Promise.allSettled([
-        fetch(`/api/homevalue/property-lookup?address=${encodeURIComponent(address)}`),
-        fetch(`/api/rentcast/value?address=${encodeURIComponent(address)}`),
-      ]);
-
+      // Step 1: fetch property facts first so we can enrich the AVM call
       let facts: PropertyFacts | null = null;
+      try {
+        const factsRes = await fetch(`/api/homevalue/property-lookup?address=${encodeURIComponent(address)}`);
+        if (factsRes.ok) {
+          const j = await factsRes.json();
+          if (j.found === true) facts = j as PropertyFacts;
+        }
+      } catch { /* ignore */ }
+
+      // Step 2: AVM enriched with property attributes for better accuracy
       let avmData: AVMData | null = null;
-
-      if (factsRes.status === "fulfilled" && factsRes.value.ok) {
-        const j = await factsRes.value.json();
-        if (j.found === true) facts = j as PropertyFacts;
-      }
-
-      if (avmRes.status === "fulfilled" && avmRes.value.ok) {
-        const j = await avmRes.value.json();
-        if (j.price || j.rent) avmData = j as AVMData;
-      }
+      try {
+        const avmParams = new URLSearchParams({ address });
+        if (facts?.propertyType) avmParams.set("propertyType", facts.propertyType);
+        if (facts?.bedrooms)     avmParams.set("bedrooms",     facts.bedrooms);
+        if (facts?.bathrooms)    avmParams.set("bathrooms",    facts.bathrooms);
+        if (facts?.sqft)         avmParams.set("squareFootage", facts.sqft);
+        const avmRes = await fetch(`/api/rentcast/value?${avmParams.toString()}`);
+        if (avmRes.ok) {
+          const j = await avmRes.json();
+          if (j.price || j.rent) avmData = j as AVMData;
+        }
+      } catch { /* ignore */ }
 
       setPropertyFacts(facts);
       setAvm(avmData);

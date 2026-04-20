@@ -8,6 +8,12 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const address = searchParams.get('address')
 
+  // Optional enrichment params
+  const propertyType = searchParams.get('propertyType')
+  const bedrooms    = searchParams.get('bedrooms')
+  const bathrooms   = searchParams.get('bathrooms')
+  const squareFootage = searchParams.get('squareFootage')
+
   try {
     if (!address) {
       return NextResponse.json(
@@ -16,8 +22,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Check cache first
-    const cacheKey = `rentcast:avm:${address}`
+    // Cache key includes enrichment params so enriched calls don't serve stale unenriched results
+    const cacheKey = `rentcast:avm:${address}:${propertyType ?? ''}:${bedrooms ?? ''}:${bathrooms ?? ''}:${squareFootage ?? ''}`
     const cached = cache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       console.log('Returning cached Rentcast AVM data for:', address)
@@ -35,8 +41,15 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Build enriched query string — include all available params for accuracy
+    const params = new URLSearchParams({ address })
+    if (propertyType)  params.set('propertyType',   propertyType)
+    if (bedrooms)      params.set('bedrooms',        bedrooms)
+    if (bathrooms)     params.set('bathrooms',       bathrooms)
+    if (squareFootage) params.set('squareFootage',   squareFootage)
+
     const response = await fetch(
-      `https://api.rentcast.io/v1/avm/value?address=${encodeURIComponent(address)}`,
+      `https://api.rentcast.io/v1/avm/value?${params.toString()}`,
       {
         method: 'GET',
         headers: {
