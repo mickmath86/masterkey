@@ -589,8 +589,27 @@ function SellGuidePageInner() {
       setVariant(urlOverride);
       return;
     }
-    const flag = posthog.getFeatureFlag("sellguide-version-2");
-    setVariant(flag === "test" ? "test" : "control");
+
+    // Check if flags are already loaded (e.g. cached from prior visit)
+    const immediate = posthog.getFeatureFlag("sellguide-version-2");
+    if (immediate !== undefined) {
+      setVariant(immediate === "test" ? "test" : "control");
+      return;
+    }
+
+    // Flags not yet loaded — wait for PostHog /decide to resolve
+    const unsubscribe = posthog.onFeatureFlags(() => {
+      const flag = posthog.getFeatureFlag("sellguide-version-2");
+      setVariant(flag === "test" ? "test" : "control");
+    });
+
+    // Fallback: if onFeatureFlags never fires (e.g. network error), default to control after 3s
+    const timeout = setTimeout(() => setVariant("control"), 3000);
+
+    return () => {
+      if (typeof unsubscribe === "function") unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   useEffect(() => {
