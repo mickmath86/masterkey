@@ -554,6 +554,17 @@ function SellGuidePageInner() {
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   useEffect(() => {
+    // URL param override: ?__variant=test or ?__variant=control
+    const urlOverride = searchParams.get("__variant");
+    if (urlOverride === "test" || urlOverride === "control") {
+      setVariant(urlOverride);
+      return;
+    }
+    const flag = posthog.getFeatureFlag("sellguide-version-2");
+    setVariant(flag === "test" ? "test" : "control");
+  }, []);
+
+  useEffect(() => {
     const handler = () => setCalendarOpen(true);
     window.addEventListener("openCalendarModal", handler);
     return () => window.removeEventListener("openCalendarModal", handler);
