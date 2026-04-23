@@ -285,7 +285,7 @@ function QuizInner() {
     if (!data.address) return;
     setRentcastLoading(true);
     setRentcastDone(false);
-    const ef = editedFacts ?? {};
+    const ef = editedFacts ?? { bedrooms: "", bathrooms: "", sqft: "" };
     const params = new URLSearchParams({ address: data.address });
     if (propertyFacts?.propertyType) params.set("propertyType", propertyFacts.propertyType);
     if (ef.bedrooms)  params.set("bedrooms",      ef.bedrooms);
