@@ -98,7 +98,7 @@ export interface CalcResults {
   chartData: { name: string; Sell: number; Rent: number }[];
 }
 
-export function calculate(form: RVSFormData): CalcResults | null {
+export function calculate(form: RVSFormData, monthlyRentOverride?: number | null): CalcResults | null {
   const homeValue = parseFloat(form.homeValue.replace(/[,$]/g, "")) || 0;
   const purchasePrice = parseFloat(form.purchasePrice.replace(/[,$]/g, "")) || 0;
   const mortgageBalance = parseFloat(form.mortgageBalance.replace(/[,$]/g, "")) || 0;
@@ -122,7 +122,7 @@ export function calculate(form: RVSFormData): CalcResults | null {
   const saleInvested10yr = saleAfterTax * Math.pow(1 + D.investReturnRate, 10);
 
   // ── Rent ──
-  const monthlyRent = D.monthlyRent;
+  const monthlyRent = (monthlyRentOverride && monthlyRentOverride > 0) ? monthlyRentOverride : D.monthlyRent;
   const monthlyPropertyTax = (homeValue * D.propertyTaxRate) / 12;
   const monthlyInsurance = D.annualInsurance / 12;
   const monthlyMgmtFee = monthlyRent * D.mgmtFeeRate;

@@ -136,6 +136,7 @@ function ResultsInner() {
 
   let form: RVSFormData | null = null;
   let results: CalcResults | null = null;
+  let monthlyRentUsed: number | null = null;
 
   try {
     const raw = searchParams.get("d");
@@ -143,6 +144,7 @@ function ResultsInner() {
       const parsed = JSON.parse(atob(raw));
       form = parsed.form;
       results = parsed.results;
+      monthlyRentUsed = parsed.monthlyRent ?? null;
     }
   } catch { /* invalid params */ }
 
@@ -292,7 +294,13 @@ function ResultsInner() {
               <p className="font-bold text-gray-900 text-sm">Rent Scenario</p>
             </div>
             <div className="space-y-2.5">
-              <Row label="Est. monthly rent (VC avg)" value={`${fmt(results.monthlyRent)}/mo`} info="Based on Thousand Oaks single-family rental averages. Your home's actual rent may be higher based on upgrades, lot size, and condition. Contact MasterKey for a personalized rental analysis." />
+              <Row
+                label={monthlyRentUsed && monthlyRentUsed !== 3950 ? "Est. monthly rent (Rentcast)" : "Est. monthly rent (market avg)"}
+                value={`${fmt(results.monthlyRent)}/mo`}
+                info={monthlyRentUsed && monthlyRentUsed !== 3950
+                  ? "Based on Rentcast's long-term rental AVM for your specific property. Actual rent may vary."
+                  : "Based on Ventura County SFR averages. Your home's actual rent may be higher. Contact MasterKey for a personalized rental analysis."}
+              />
               <div className="bg-white/60 rounded-lg p-2.5 space-y-1.5">
                 <p className="text-[11px] text-gray-500 font-medium mb-1">Monthly expenses</p>
                 {results.monthlyMortgage > 0 && <Row label="Mortgage P&I" value={`−${fmt(results.monthlyMortgage)}/mo`} neg />}
@@ -329,7 +337,7 @@ function ResultsInner() {
             Basis = original purchase price; improvements not factored in — actual tax may be lower.
           </p>
           <p className="mt-1.5">
-            <strong className="text-gray-600">Rent scenario:</strong> Monthly rent {fmt(DEFAULTS.monthlyRent)} (Ventura County SFR avg) ·
+            <strong className="text-gray-600">Rent scenario:</strong> Monthly rent {fmt(results.monthlyRent)}{monthlyRentUsed && monthlyRentUsed !== 3950 ? " (Rentcast estimate)" : " (Ventura County avg)"} ·
             Property tax 0.7% · Insurance {fmt(DEFAULTS.annualInsurance)}/yr · Management 9% · Maintenance 1%/yr ·
             Vacancy 5% · Appreciation 4.5%/yr (historical Ventura County average).
           </p>

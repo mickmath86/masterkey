@@ -105,6 +105,7 @@ function QuizInner() {
   const [rentcastDone, setRentcastDone] = useState(false);
 
   // Editable confirm fields (seeded from Rentcast, user can override)
+  const [editedFacts, setEditedFacts] = useState<{ bedrooms: string; bathrooms: string; sqft: string } | null>(null);
   const [confirmedValue, setConfirmedValue] = useState("");
   const [confirmedRent, setConfirmedRent] = useState("");
   const [showRefinement, setShowRefinement] = useState(false);
@@ -198,6 +199,7 @@ function QuizInner() {
       } catch { /* ignore */ }
 
       setPropertyFacts(facts);
+      if (facts) setEditedFacts({ bedrooms: facts.bedrooms || "", bathrooms: facts.bathrooms || "", sqft: facts.sqft || "" });
       setAvm(avmData);
 
       // Pre-fill editable confirm fields from Rentcast
@@ -275,6 +277,43 @@ function QuizInner() {
       setConfirmedValue(refinedValue.toLocaleString());
       set("homeValue", refinedValue.toLocaleString());
       setShowRefinement(false);
+    }
+  }
+
+  // ── Re-fetch AVM + rent with edited facts ────────────────────────────────
+  async function refetchWithEditedFacts() {
+    if (!data.address) return;
+    setRentcastLoading(true);
+    setRentcastDone(false);
+    const ef = editedFacts ?? {};
+    const params = new URLSearchParams({ address: data.address });
+    if (propertyFacts?.propertyType) params.set("propertyType", propertyFacts.propertyType);
+    if (ef.bedrooms)  params.set("bedrooms",      ef.bedrooms);
+    if (ef.bathrooms) params.set("bathrooms",     ef.bathrooms);
+    if (ef.sqft)      params.set("squareFootage", ef.sqft);
+
+    try {
+      const [valueRes, rentRes] = await Promise.allSettled([
+        fetch(`/api/rentcast/value?${params.toString()}`),
+        fetch(`/api/rentcast/rent?${params.toString()}`),
+      ]);
+      let price: number | null = null, priceRangeLow: number | null = null, priceRangeHigh: number | null = null;
+      let rent: number | null = null, rentRangeLow: number | null = null, rentRangeHigh: number | null = null;
+
+      if (valueRes.status === "fulfilled" && valueRes.value.ok) {
+        const j = await valueRes.value.json();
+        price = j.price ?? null; priceRangeLow = j.priceRangeLow ?? null; priceRangeHigh = j.priceRangeHigh ?? null;
+      }
+      if (rentRes.status === "fulfilled" && rentRes.value.ok) {
+        const j = await rentRes.value.json();
+        rent = j.rent ?? null; rentRangeLow = j.rentRangeLow ?? null; rentRangeHigh = j.rentRangeHigh ?? null;
+      }
+      if (price || rent) setAvm({ price, priceRangeLow, priceRangeHigh, rent, rentRangeLow, rentRangeHigh });
+      if (price) { const v = Math.round(price / 1000) * 1000; setConfirmedValue(v.toLocaleString()); set("homeValue", v.toLocaleString()); }
+      if (rent)  { setConfirmedRent(Math.round(rent / 50) * 50 + ""); }
+    } catch { /* ignore */ } finally {
+      setRentcastLoading(false);
+      setRentcastDone(true);
     }
   }
 
@@ -356,7 +395,10 @@ function QuizInner() {
     };
 
     // Calculate results — if inputs are incomplete, still fire webhook with what we have
-    const results = calculate(finalData);
+    const rentNum = confirmedRent.trim()
+      ? parseFloat(confirmedRent.replace(/[,$]/g, ""))
+      : (avm?.rent ?? null);
+    const results = calculate(finalData, rentNum && !isNaN(rentNum) ? rentNum : null);
 
     // Fire webhook regardless of whether calculate succeeded
     try {
@@ -389,27 +431,14 @@ function QuizInner() {
 
     setIsSubmitting(false);
 
-    // Pass confirmed rent as override into results
-    const resultsWithRentOverride = confirmedRent.trim()
-      ? (() => {
-          const rentNum = parseFloat(confirmedRent.replace(/[,$]/g, ""));
-          if (!isNaN(rentNum) && rentNum > 0) {
-            // Recalc with Rentcast rent
-            const overriddenData = { ...finalData };
-            const recalc = calculate(overriddenData);
-            // Patch monthlyRent in results manually since DEFAULTS is global
-            // Simplest: just pass confirmedRent in URL so results page can note it
-            return results;
-          }
-          return results;
-        })()
-      : results;
+
 
     const params = new URLSearchParams({
       d: btoa(JSON.stringify({
         form: { ...finalData },
-        results: resultsWithRentOverride,
+        results,
         rentcastRent: confirmedRent || null,
+        monthlyRent: rentNum && !isNaN(rentNum) ? rentNum : null,
       })),
     });
     router.push(`/rent-vs-sell/results?${params.toString()}`);
@@ -536,25 +565,56 @@ function QuizInner() {
 
                     {/* Property facts */}
                     {propertyFacts && (
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { label: "Bedrooms", value: propertyFacts.bedrooms || "—" },
-                          { label: "Bathrooms", value: propertyFacts.bathrooms || "—" },
-                          { label: "Sq ft", value: propertyFacts.sqft ? parseInt(propertyFacts.sqft).toLocaleString() : "—" },
-                          { label: "Year built", value: propertyFacts.yearBuilt || "—" },
-                          { label: "Type", value: propertyFacts.propertyType || "—" },
-                        ].map(f => (
-                          <div key={f.label} className="bg-white rounded-lg px-3 py-2">
-                            <p className="text-[10px] text-gray-400">{f.label}</p>
-                            <p className="text-sm font-semibold text-gray-900">{f.value}</p>
+                      <div className="space-y-3">
+                        {/* Read-only facts */}
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { label: "Year built", value: propertyFacts.yearBuilt || "—" },
+                            { label: "Type", value: propertyFacts.propertyType || "—" },
+                          ].map(f => (
+                            <div key={f.label} className="bg-white rounded-lg px-3 py-2">
+                              <p className="text-[10px] text-gray-400">{f.label}</p>
+                              <p className="text-sm font-semibold text-gray-900">{f.value}</p>
+                            </div>
+                          ))}
+                          {avm?.priceRangeLow && avm?.priceRangeHigh && (
+                            <div className="bg-white rounded-lg px-3 py-2 col-span-2">
+                              <p className="text-[10px] text-gray-400">Rentcast value range</p>
+                              <p className="text-sm font-semibold text-gray-900">{fmt(avm.priceRangeLow)} – {fmt(avm.priceRangeHigh)}</p>
+                            </div>
+                          )}
+                        </div>
+                        {/* Editable facts */}
+                        <div>
+                          <p className="text-[10px] text-gray-400 mb-2">Edit to improve estimate accuracy</p>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div>
+                              <label className="block text-[10px] text-gray-400 mb-1">Beds</label>
+                              <input type="text" inputMode="numeric" value={editedFacts?.bedrooms ?? propertyFacts.bedrooms}
+                                onChange={e => setEditedFacts(f => ({ ...(f ?? { bedrooms: "", bathrooms: "", sqft: "" }), bedrooms: e.target.value }))}
+                                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-1 focus:ring-blue-400 focus:outline-none bg-white" />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] text-gray-400 mb-1">Baths</label>
+                              <input type="text" inputMode="decimal" value={editedFacts?.bathrooms ?? propertyFacts.bathrooms}
+                                onChange={e => setEditedFacts(f => ({ ...(f ?? { bedrooms: "", bathrooms: "", sqft: "" }), bathrooms: e.target.value }))}
+                                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-1 focus:ring-blue-400 focus:outline-none bg-white" />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] text-gray-400 mb-1">Sq ft</label>
+                              <input type="text" inputMode="numeric" value={editedFacts?.sqft ?? propertyFacts.sqft}
+                                onChange={e => setEditedFacts(f => ({ ...(f ?? { bedrooms: "", bathrooms: "", sqft: "" }), sqft: e.target.value }))}
+                                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-1 focus:ring-blue-400 focus:outline-none bg-white" />
+                            </div>
                           </div>
-                        ))}
-                        {avm?.priceRangeLow && avm?.priceRangeHigh && (
-                          <div className="bg-white rounded-lg px-3 py-2 col-span-2">
-                            <p className="text-[10px] text-gray-400">Rentcast value range</p>
-                            <p className="text-sm font-semibold text-gray-900">{fmt(avm.priceRangeLow)} – {fmt(avm.priceRangeHigh)}</p>
-                          </div>
-                        )}
+                          <button
+                            onClick={refetchWithEditedFacts}
+                            disabled={rentcastLoading}
+                            className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 border border-blue-200 hover:border-blue-400 bg-white px-3 py-2 rounded-lg transition-colors disabled:opacity-40"
+                          >
+                            {rentcastLoading ? "Updating…" : "↻ Recalculate estimate with these values"}
+                          </button>
+                        </div>
                       </div>
                     )}
 
