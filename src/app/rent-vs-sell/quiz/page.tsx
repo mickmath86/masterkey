@@ -591,19 +591,19 @@ function QuizInner() {
                             <div>
                               <label className="block text-[10px] text-gray-400 mb-1">Beds</label>
                               <input type="text" inputMode="numeric" value={editedFacts?.bedrooms ?? propertyFacts.bedrooms}
-                                onChange={e => setEditedFacts(f => ({ bedrooms: f?.bedrooms ?? "", bathrooms: f?.bathrooms ?? "", sqft: f?.sqft ?? "", bedrooms: e.target.value }))}
+                                onChange={e => setEditedFacts(f => ({ bedrooms: e.target.value, bathrooms: f?.bathrooms ?? "", sqft: f?.sqft ?? "" }))}
                                 className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-1 focus:ring-blue-400 focus:outline-none bg-white" />
                             </div>
                             <div>
                               <label className="block text-[10px] text-gray-400 mb-1">Baths</label>
                               <input type="text" inputMode="decimal" value={editedFacts?.bathrooms ?? propertyFacts.bathrooms}
-                                onChange={e => setEditedFacts(f => ({ bedrooms: f?.bedrooms ?? "", bathrooms: f?.bathrooms ?? "", sqft: f?.sqft ?? "", bathrooms: e.target.value }))}
+                                onChange={e => setEditedFacts(f => ({ bedrooms: f?.bedrooms ?? "", bathrooms: e.target.value, sqft: f?.sqft ?? "" }))}
                                 className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-1 focus:ring-blue-400 focus:outline-none bg-white" />
                             </div>
                             <div>
                               <label className="block text-[10px] text-gray-400 mb-1">Sq ft</label>
                               <input type="text" inputMode="numeric" value={editedFacts?.sqft ?? propertyFacts.sqft}
-                                onChange={e => setEditedFacts(f => ({ bedrooms: f?.bedrooms ?? "", bathrooms: f?.bathrooms ?? "", sqft: f?.sqft ?? "", sqft: e.target.value }))}
+                                onChange={e => setEditedFacts(f => ({ bedrooms: f?.bedrooms ?? "", bathrooms: f?.bathrooms ?? "", sqft: e.target.value }))}
                                 className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-1 focus:ring-blue-400 focus:outline-none bg-white" />
                             </div>
                           </div>
