@@ -40,5 +40,5 @@ export default function GHLChatWidget() {
     };
   }, []);
 
-  return null;
+  return <div id="chat-button" />;
 }
