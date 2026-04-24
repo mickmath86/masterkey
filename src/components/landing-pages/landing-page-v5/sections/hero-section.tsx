@@ -64,6 +64,12 @@ function CalendarModal({ onClose }: { onClose: () => void }) {
 export function HeroSection() {
     const [calendarOpen, setCalendarOpen] = useState(false);
 
+  useEffect(() => {
+    const handler = () => setCalendarOpen(true);
+    window.addEventListener("openCalendarModal", handler);
+    return () => window.removeEventListener("openCalendarModal", handler);
+  }, []);
+
     return (
         <>
             <Header />
