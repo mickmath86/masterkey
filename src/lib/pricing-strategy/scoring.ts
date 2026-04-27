@@ -52,7 +52,7 @@ export function scoreStrategy(insights: DerivedInsights): {
   }
 
   // Prep first: needs work + not in a rush + price-focused
-  if (prepCategory === "needs-work" && pricingPriority === "price" && timelineCategory !== "urgent") {
+  if (prepCategory === "needs-work" && pricingPriority === "price" && timelineCategory === "flexible") {
     return { strategyType: "prep-first", confidenceBand: "Moderate" };
   }
 
