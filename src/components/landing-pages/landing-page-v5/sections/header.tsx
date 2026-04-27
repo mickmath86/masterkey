@@ -196,7 +196,7 @@ export function Header() {
 
                             >
                                    <Link href="tel:805-262-9707">
-                                        <span>Call Now</span>
+                                        <span>Call Now: 805-262-9707</span>
                                     </Link>
                             </Button>
                             
@@ -211,7 +211,7 @@ export function Header() {
                                    
                                     size="sm">
                                     <Link href="tel:805-262-9707">
-                                        <span>Call Now</span>
+                                        <span>Call Now: 805-262-9707</span>
                                     </Link>
                                 </Button>
                                 <Button

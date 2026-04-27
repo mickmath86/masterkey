@@ -121,15 +121,17 @@ export function HeroSection() {
                                 </span>{' '}
                                 Home Selling Brokers
                             </h1>
-                            <p className="text-muted-foreground mt-6 text-balance text-lg lg:text-xl">
-                                Zero risk. Local experts. A proven system built to get homes sold fast — even in a slow market.
+                            <p className="text-muted-foreground mt-6 text-balance text-xl lg:text-2xl">
+                                Zero risk. Local experts. A proven system built to get homes sold fast — even in a slow market. <br />
+                                <br />
+                                Let's get started today. <a href="tel:805-262-9707"><strong className="underline">805-262-9707</strong></a>  
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 mt-8">
                                 <Button
                                     asChild
                                     size="lg"
                                     className="px-6 text-base">
-                                    <Link href="tel:805-262-9707">Call Now</Link>
+                                    <Link href="tel:805-262-9707">Call Now: 805-262-9707</Link>
                                 </Button>
                                 <Button
                                     onClick={() => setCalendarOpen(true)}
