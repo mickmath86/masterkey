@@ -134,19 +134,66 @@ function ResultsInner() {
   const router = useRouter();
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  let form: RVSFormData | null = null;
-  let results: CalcResults | null = null;
-  let monthlyRentUsed: number | null = null;
+  const [form, setForm] = useState<RVSFormData | null>(null);
+  const [results, setResults] = useState<CalcResults | null>(null);
+  const [monthlyRentUsed, setMonthlyRentUsed] = useState<number | null>(null);
+  const [reportExpired, setReportExpired] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
 
-  try {
+  useEffect(() => {
+    const id = searchParams.get("id");
     const raw = searchParams.get("d");
-    if (raw) {
-      const parsed = JSON.parse(atob(raw));
-      form = parsed.form;
-      results = parsed.results;
-      monthlyRentUsed = parsed.monthlyRent ?? null;
+
+    if (id) {
+      // Fetch from Supabase by report ID
+      setReportLoading(true);
+      fetch(`/api/rent-vs-sell/report?id=${id}`)
+        .then(async res => {
+          if (res.status === 410) { setReportExpired(true); return; }
+          if (!res.ok) return;
+          const data = await res.json();
+          setForm(data.form);
+          setResults(data.results);
+          setMonthlyRentUsed(data.monthlyRent ?? null);
+        })
+        .catch(() => {})
+        .finally(() => setReportLoading(false));
+    } else if (raw) {
+      // Legacy: decode from base64 URL param
+      try {
+        const parsed = JSON.parse(atob(raw));
+        setForm(parsed.form);
+        setResults(parsed.results);
+        setMonthlyRentUsed(parsed.monthlyRent ?? null);
+      } catch { /* invalid */ }
     }
-  } catch { /* invalid params */ }
+  }, []);
+
+  if (reportLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 rounded-full border-2 border-blue-200 border-t-blue-500 animate-spin mx-auto" />
+          <p className="text-sm text-gray-500">Loading your report…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (reportExpired) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto">
+          <span className="text-amber-500 text-xl">⏰</span>
+        </div>
+        <h2 className="text-lg font-semibold text-gray-900">Report expired</h2>
+        <p className="text-sm text-gray-500 max-w-xs">This report link is older than 30 days. Market conditions may have changed — run a fresh analysis for current numbers.</p>
+        <button onClick={() => router.push("/rent-vs-sell/quiz")} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">
+          Run a new analysis
+        </button>
+      </div>
+    );
+  }
 
   if (!form || !results) {
     return (
