@@ -198,7 +198,7 @@ export const FlowIllustration = () => {
                 </div>
 
                 <div className="bg-illustration corner-tr-bevel ring-border-illustration z-1 shadow-black/6.5 relative w-24 space-y-3 rounded-md rounded-tr-[15%] p-3 shadow-md ring-1">
-                    <div className="text-xs font-semibold text-emerald-500">Verified Value</div>
+                        <div className="text-xs font-semibold text-emerald-500">True <span className="text-gray-600">Verified Value</span> </div>
 
                     <div className="space-y-1.5">
                         {[1, 2].map((row) => (

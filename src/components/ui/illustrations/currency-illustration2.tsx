@@ -10,7 +10,7 @@ export const CurrencyIllustration = () => {
             <div className="bg-illustration before:bg-linear-to-b ring-border-illustration to-illustration shadow-black/6.5 before:border-foreground/5 before:mask-b-from-65% relative w-32 h-48 translate-y-1  space-y-2 rounded-lg p-2 shadow-md ring-1 [--color-border:color-mix(in_oklab,var(--color-foreground)15%,transparent)] before:absolute before:inset-0.5 before:rounded-[6px] before:border before:from-blue-500/15 before:from-25% before:to-75%">
                 <div className="flex -translate-x-0.5 items-center gap-0.5 text-blue-900 dark:text-blue-300">
                     {/* <Bitcoin className="size-3" /> */}
-                    <span className="text-xs font-medium">Inspection</span>
+                    <span className="text-xs font-medium">Systems Inspection</span>
                 </div>
                 <div className="space-y-1.5">
                     <div className="flex items-center gap-1">

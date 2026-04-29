@@ -1,4 +1,7 @@
 import React from 'react'
+
+import '@/styles/how-it-works-5.css'
+
 import { Header } from "@/components/header"
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -7,10 +10,10 @@ import { LogoCloud } from "@/components/logo-cloud"
 import Image from 'next/image'
 import { ChevronRight } from 'lucide-react'
 
-export default function HeroSection() {
+export default function HeroSection6() {
     return (
         <>
-            <Header />
+            {/* <Header /> */}
             <main
                 role="main"
                 className="bg-background overflow-hidden">

@@ -4,7 +4,7 @@ import { clsx } from 'clsx'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 
-export function Logo({ className, uniColor }: { className?: string; uniColor?: boolean }) {
+export function Logo({ className }: { className?: string }) {
   let transition = {
     duration: 0.5,
     ease: 'easeInOut' as const,
@@ -138,18 +138,6 @@ export function MasterKeyMark({ className }: { className?: string }) {
   )
 }
 
-export function MasterkeyWhiteMark({ className }: { className?: string }) {
-  return (
-    <Image 
-        alt="mk-white-mark"
-        src="/logos/white-mark.png"
-        width={200}
-        height={200}
-        className={`w-auto dark:hidden ${className}`}
-      />
-  )
-}
-
 export function MasterKeyLogoInlineBlack({ className }: { className?: string }) {
   return (
     <Image 
@@ -162,17 +150,5 @@ export function MasterKeyLogoInlineBlack({ className }: { className?: string }) 
   )
 }
 
-export function MasterKeyLogoInlineWhite({ className }: { className?: string }) {
-  return (
-    <Image 
-        alt=""
-        src="/logos/masterkey-inline-white.png"
-        width={100}
-        height={100}
-        className={`w-auto ${className}`}
-      />
-  )
-}
-
-// Alias for backwards compatibility
+// Export LogoIcon as an alias for Mark component
 export { Mark as LogoIcon }

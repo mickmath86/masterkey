@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { GooglePlacesInput } from "@/components/ui/google-places-input";
 import Content6 from "@/components/landing-pages/landing-page-v4/sections/content-6";
+import HeroSection6 from "@/components/hero-section";
 import HeroSection from "@/components/secondary-hero-10";
 import CTA3 from "@/components/landing-pages/landing-page-v4/components/cta3";
 import AboutUsSection from "@/components/landing-pages/landing-page-v4/sections/about-us";
@@ -124,7 +125,8 @@ function VerifiedOfferHero() {
 function VerifiedOfferPageInner() {
   return (
     <>
-      <VerifiedOfferHero />
+     <HeroSection6 />
+      {/* <VerifiedOfferHero /> */}
       {/* Video lives here — outside the stateful hero so keystrokes don't remount it */}
       <section className="border-foreground/10 relative border-y">
         <div className="relative z-10 mx-auto max-w-6xl border-x px-3">
@@ -137,7 +139,8 @@ function VerifiedOfferPageInner() {
           </div>
         </div>
       </section>
-    <HeroSection /> 
+   
+    {/* <HeroSection />  */}
       <HowItWorksSection />
       <CTA3 />
       

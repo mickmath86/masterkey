@@ -52,9 +52,9 @@ export default function SellLandingPage() {
 
   const handleGetOffer = () => {
     if (address.trim()) {
-      window.location.href = `/homevalue?address=${encodeURIComponent(address)}`
+      window.location.href = `/questionnaire/listing-presentation?address=${encodeURIComponent(address)}`
     } else {
-      window.location.href = '/homevalue'
+      window.location.href = '/questionnaire/listing-presentation'
     }
   }
 

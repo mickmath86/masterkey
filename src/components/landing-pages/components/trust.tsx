@@ -52,14 +52,14 @@ export default function Trust() {
           <div className="flex items-start justify-end lg:order-first">
             <img
               alt="Product screenshot"
-              src="/images/ventura.webp"
+              src="/images/ventura.jpg"
               width={2432}
               height={1442}
               className="w-3xl max-w-none rounded-xl shadow-xl ring-1 ring-gray-400/10 sm:w-228 dark:hidden dark:ring-white/10"
             />
             <img
               alt="Product screenshot"
-              src="/images/ventura.webp"
+              src="/images/ventura.jpg"
               width={2432}
               height={1442}
               className="w-3xl max-w-none rounded-xl shadow-xl ring-1 ring-gray-400/10 not-dark:hidden sm:w-228 dark:ring-white/10"

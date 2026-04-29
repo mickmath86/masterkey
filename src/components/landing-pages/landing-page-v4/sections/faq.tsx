@@ -1,6 +1,3 @@
-"use client";
-
-import { Reveal } from "../components/reveal";
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
 import { MinusSmallIcon, PlusSmallIcon } from '@heroicons/react/24/outline'
 
@@ -8,17 +5,12 @@ const faqs = [
   {
     question: "What exactly is the Verified Value Guarantee?",
     answer:
-      "The Verified Value Guarantee means we commit to securing a written offer within 2% of your home's Verified Value within the agreed timeframe — or we waive our commission. The Verified Value is determined by a combination of three things MasterKey pays for upfront: (1) a professional third-party appraisal, (2) a full systems inspection, and (3) our own independent market analysis. Together, these establish a defensible, data-backed number that becomes the benchmark we're held to. This is not based on estimates, automated tools, or agent opinions.",
+      "The Verified Value Guarantee means we commit to securing a written offer within 2% of your home's independently appraised value within the agreed timeframe. If we don't, we waive our commission. The guarantee is tied to a professional third-party appraisal, not estimates or opinions.",
   },
   {
     question: 'Who pays for the appraisal?',
     answer:
-      "We do. MasterKey covers the upfront cost of the third-party appraisal, systems inspection, and our own market analysis — all of which combine to establish your Verified Value. These are real costs we absorb on your behalf at the start of the process. When your home successfully closes, we recoup those costs through escrow as part of the transaction. If the listing is cancelled before closing, those costs may be reimbursed per the terms of the listing agreement.",
-  },
-  {
-    question: 'What is included in establishing the Verified Value — and what does it cost me upfront?',
-    answer:
-      "Nothing out of pocket. MasterKey funds three components upfront to establish your Verified Value: a licensed third-party appraisal, a comprehensive systems inspection, and our own market comparables analysis. These aren't opinions — they're independently verified data points. The total cost of these services is advanced by MasterKey and recouped through escrow when your home closes. There is no upfront expense to you as the seller.",
+      "We do. As part of our process, MasterKey covers the cost of a professional third-party appraisal to establish your verified value. If the listing is cancelled early or the terms of the guarantee aren't met, the appraisal cost may be reimbursed.",
   },
   {
     question: 'Who chooses the appraiser?',
@@ -97,9 +89,9 @@ export default function FAQ() {
     <div className="bg-white dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-40">
         <div className="mx-auto max-w-4xl">
-          <Reveal type="up"><h2 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+          <h2 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
             Frequently asked questions
-          </h2></Reveal>
+          </h2>
           <dl className="mt-16 divide-y divide-gray-900/10 dark:divide-white/10">
             {faqs.map((faq) => (
               <Disclosure key={faq.question} as="div" className="py-6 first:pt-0 last:pb-0">

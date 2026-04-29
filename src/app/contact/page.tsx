@@ -19,13 +19,6 @@ function ContactForm() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
 
-  // Listen for global calendar modal event
-  useEffect(() => {
-    const handleOpenCalendar = () => setIsCalendarModalOpen(true);
-    window.addEventListener('openCalendarModal', handleOpenCalendar);
-    return () => window.removeEventListener('openCalendarModal', handleOpenCalendar);
-  }, []);
-
   // Load calendar script when modal opens
   useEffect(() => {
     if (isCalendarModalOpen) {
@@ -357,7 +350,7 @@ function ContactForm() {
                 </div>
                 
                 {/* Calendar Iframe - Scrollable */}
-                <div className="flex-1 overflow-y-auto p-6">
+                <div className="flex-1 overflow-hidden p-6">
                   <div className="w-full min-h-[600px]">
                     <iframe 
                       src="https://api.leadconnectorhq.com/widget/booking/dC0pazbNghUa1xKcbXiY" 
