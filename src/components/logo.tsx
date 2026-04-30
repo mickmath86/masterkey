@@ -142,11 +142,35 @@ export function MasterKeyLogoInlineBlack({ className }: { className?: string }) 
   return (
     <Image 
         alt=""
-        src="/logos/masterkey-black-inline.png"
-        width={100}
-        height={100}
-        className={`w-auto dark:hidden ${className}`}
-      />
+        src="/masterkey-logo-inline-black.svg"
+        width={150}
+        height={40}
+        className={className}
+    />
+  )
+}
+
+export function MasterKeyLogoInlineWhite({ className }: { className?: string }) {
+  return (
+    <Image 
+        alt=""
+        src="/masterkey-logo-inline-white.svg"
+        width={150}
+        height={40}
+        className={className}
+    />
+  )
+}
+
+export function MasterkeyWhiteMark({ className }: { className?: string }) {
+  return (
+    <Image 
+        alt=""
+        src="/masterkey-mark-white.svg"
+        width={40}
+        height={40}
+        className={className}
+    />
   )
 }
 
