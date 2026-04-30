@@ -27,10 +27,12 @@ import {
 import { type RVSFormData, type CalcResults, DEFAULTS, CALENDAR_SRC } from "../page";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function fmt(n: number) {
+function fmt(n: number | null | undefined) {
+  if (n == null || isNaN(n)) return "—";
   return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 }
-function fmtSigned(n: number) {
+function fmtSigned(n: number | null | undefined) {
+  if (n == null || isNaN(n)) return "—";
   const s = fmt(Math.abs(n));
   return n >= 0 ? `+${s}` : `−${s}`;
 }
@@ -319,7 +321,7 @@ function ResultsInner() {
                   info="Under IRS Section 121, homeowners who lived in the home as their primary residence for 2 of the last 5 years can exclude up to $250,000 (single filer) or $500,000 (married/joint) of capital gains from federal tax. State taxes may still apply."
                 />
                 <Row label="Taxable gain" value={fmt(results.taxableGain)} />
-                <Row label="Cap gains tax (15%)" value={results.capitalGainsTax > 0 ? `−${fmt(results.capitalGainsTax)}` : "$0"} neg={results.capitalGainsTax > 0} />
+                <Row label="Cap gains tax (15%)" value={(results.capitalGainsTax ?? 0) > 0 ? `−${fmt(results.capitalGainsTax)}` : "$0"} neg={(results.capitalGainsTax ?? 0) > 0} />
               </div>
               <div className="border-t border-blue-200 pt-2">
                 <Row label="Net cash in pocket (after tax)" value={fmt(results.saleAfterTax)} bold />
@@ -350,7 +352,7 @@ function ResultsInner() {
               />
               <div className="bg-white/60 rounded-lg p-2.5 space-y-1.5">
                 <p className="text-[11px] text-gray-500 font-medium mb-1">Monthly expenses</p>
-                {results.monthlyMortgage > 0 && <Row label="Mortgage P&I" value={`−${fmt(results.monthlyMortgage)}/mo`} neg />}
+                {(results.monthlyMortgage ?? 0) > 0 && <Row label="Mortgage P&I" value={`−${fmt(results.monthlyMortgage)}/mo`} neg />}
                 <Row label="Property tax (0.7%)" value={`−${fmt(results.monthlyPropertyTax)}/mo`} neg />
                 <Row label="Insurance" value={`−${fmt(results.monthlyInsurance)}/mo`} neg />
                 <Row label="Mgmt fee (9%)" value={`−${fmt(results.monthlyMgmtFee)}/mo`} neg info="MasterKey charges 8–10% of monthly rent for full-service property management, including tenant screening, maintenance coordination, and monthly reporting. We used 9% (midpoint) here." />
@@ -360,7 +362,7 @@ function ResultsInner() {
               <div className="border-t border-green-200 pt-2">
                 <Row
                   label="Monthly cash flow"
-                  value={`${results.monthlyCashFlow >= 0 ? "+" : "−"}${fmt(Math.abs(results.monthlyCashFlow))}/mo`}
+                  value={`${(results.monthlyCashFlow ?? 0) >= 0 ? "+" : "−"}${fmt(Math.abs(results.monthlyCashFlow ?? 0))}/mo`}
                   bold
                   neg={results.monthlyCashFlow < 0}
                 />
