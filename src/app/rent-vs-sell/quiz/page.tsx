@@ -236,6 +236,18 @@ function QuizInner() {
     }
   }, [rentcastDone, hasConfirmStep, step]);
 
+  // Part B: reset viewport zoom on every step change (prevents iOS zoom-in persisting)
+  useEffect(() => {
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (!viewport) return;
+    // Temporarily enforce scale=1 to reset zoom, then restore
+    viewport.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1");
+    const timeout = setTimeout(() => {
+      viewport.setAttribute("content", "width=device-width, initial-scale=1");
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [step]);
+
   // ── Refined value calculation ──────────────────────────────────────────────
   function computeRefinedValue() {
     const base = parseFloat(confirmedValue.replace(/[,$]/g, "")) || (avm?.price ?? 0);
@@ -483,8 +495,8 @@ function QuizInner() {
   const progress = Math.round((displayStep() / TOTAL_STEPS) * 100);
 
   // ── Shared input classes ──────────────────────────────────────────────────
-  const inputCls = "w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white";
-  const inputErrCls = "w-full px-3 py-2.5 border border-red-400 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-red-400 focus:outline-none bg-white";
+  const inputCls = "w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white";
+  const inputErrCls = "w-full px-3 py-2.5 border border-red-400 rounded-lg text-base text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-red-400 focus:outline-none bg-white";
   // Format number with commas as user types, strip non-numeric on change
   function formatDollar(raw: string): string {
     const digits = raw.replace(/[^0-9]/g, "");
@@ -501,7 +513,7 @@ function QuizInner() {
         value={val}
         onChange={e => onChange(formatDollar(e.target.value))}
         placeholder={placeholder}
-        className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
+        className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-base text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
       />
     </div>
   );
@@ -628,19 +640,19 @@ function QuizInner() {
                               <label className="block text-[10px] text-gray-400 mb-1">Beds</label>
                               <input type="text" inputMode="numeric" value={editedFacts?.bedrooms ?? propertyFacts.bedrooms}
                                 onChange={e => setEditedFacts(f => ({ bedrooms: e.target.value, bathrooms: f?.bathrooms ?? "", sqft: f?.sqft ?? "" }))}
-                                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-1 focus:ring-blue-400 focus:outline-none bg-white" />
+                                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-base text-gray-900 focus:ring-1 focus:ring-blue-400 focus:outline-none bg-white" />
                             </div>
                             <div>
                               <label className="block text-[10px] text-gray-400 mb-1">Baths</label>
                               <input type="text" inputMode="decimal" value={editedFacts?.bathrooms ?? propertyFacts.bathrooms}
                                 onChange={e => setEditedFacts(f => ({ bedrooms: f?.bedrooms ?? "", bathrooms: e.target.value, sqft: f?.sqft ?? "" }))}
-                                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-1 focus:ring-blue-400 focus:outline-none bg-white" />
+                                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-base text-gray-900 focus:ring-1 focus:ring-blue-400 focus:outline-none bg-white" />
                             </div>
                             <div>
                               <label className="block text-[10px] text-gray-400 mb-1">Sq ft</label>
                               <input type="text" inputMode="numeric" value={editedFacts?.sqft ?? propertyFacts.sqft}
                                 onChange={e => setEditedFacts(f => ({ bedrooms: f?.bedrooms ?? "", bathrooms: f?.bathrooms ?? "", sqft: e.target.value }))}
-                                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-1 focus:ring-blue-400 focus:outline-none bg-white" />
+                                className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-base text-gray-900 focus:ring-1 focus:ring-blue-400 focus:outline-none bg-white" />
                             </div>
                           </div>
                           <button
@@ -694,7 +706,7 @@ function QuizInner() {
                           value={confirmedValue}
                           onChange={e => { setConfirmedValue(e.target.value); set("homeValue", e.target.value); }}
                           placeholder={avm?.price ? Math.round(avm.price).toLocaleString() : "Enter value"}
-                          className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
+                          className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-base text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
                         />
                       </div>
 
@@ -807,7 +819,7 @@ function QuizInner() {
                           value={confirmedRent}
                           onChange={e => setConfirmedRent(e.target.value)}
                           placeholder={avm?.rent ? Math.round(avm.rent).toLocaleString() : "Enter estimated rent"}
-                          className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
+                          className="w-full pl-6 pr-3 py-2.5 border border-gray-300 rounded-lg text-base text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">/mo</span>
                       </div>
@@ -882,7 +894,7 @@ function QuizInner() {
                   <select
                     value={data.purchaseYear}
                     onChange={e => set("purchaseYear", e.target.value)}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white"
                   >
                     <option value="">Select year…</option>
                     {yearOptions.map(y => (
@@ -911,7 +923,7 @@ function QuizInner() {
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1.5">Current Interest Rate <span className="text-red-400">*</span></label>
                   <div className="relative">
-                    <input type="text" inputMode="decimal" value={data.interestRate} onChange={e => set("interestRate", e.target.value)} placeholder="6.5" className="w-full pr-8 pl-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white" />
+                    <input type="text" inputMode="decimal" value={data.interestRate} onChange={e => set("interestRate", e.target.value)} placeholder="6.5" className="w-full pr-8 pl-3 py-2.5 border border-gray-300 rounded-lg text-base text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white" />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
                   </div>
                 </div>
