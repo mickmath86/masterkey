@@ -400,36 +400,7 @@ function QuizInner() {
       : (avm?.rent ?? null);
     const results = calculate(finalData, rentNum && !isNaN(rentNum) ? rentNum : null);
 
-    // Fire webhook regardless of whether calculate succeeded
-    try {
-        await fetch(RENT_VS_SELL_WEBHOOK, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            firstName: finalData.firstName, lastName: finalData.lastName,
-            phone: finalData.phone, email: finalData.email,
-            propertyAddress: finalData.address,
-            homeValue: finalData.homeValue,
-            purchasePrice: finalData.purchasePrice,
-            purchaseYear: finalData.purchaseYear,
-            mortgageBalance: finalData.mortgageBalance,
-            interestRate: finalData.interestRate,
-            titleOwnership: finalData.titleOwnership,
-            rentcastEstimatedValue: avm?.price ?? null,
-            rentcastEstimatedRent: avm?.rent ?? null,
-            rentcastConfirmedRent: confirmedRent || null,
-            verdict5yr: results?.verdict5yr ?? null, verdict10yr: results?.verdict10yr ?? null,
-            sellNetProceeds: results ? Math.round(results.saleAfterTax) : null,
-            rentWealth10yr: results ? Math.round(results.rentTotalWealth10yr) : null,
-            formType: "rent-vs-sell", source: "rent-vs-sell-quiz",
-            submittedAt: new Date().toISOString(),
-          }),
-        });
-    } catch (error) {
-      console.error("Rent vs sell webhook submission failed", error);
-      /* fail open */
-    }
-
-    // Save report to Supabase and get a shareable ID
+    // 1. Save report to Supabase first — so reportUrl is available for the webhook
     let reportId: string | null = null;
     let reportUrl: string | null = null;
     try {
@@ -449,20 +420,34 @@ function QuizInner() {
       }
     } catch { /* fail open */ }
 
-    // Also update webhook with report URL now that we have it
-    if (reportUrl) {
-      try {
-        await fetch(RENT_VS_SELL_WEBHOOK, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            firstName: finalData.firstName,
-            reportUrl,
-            formType: "rent-vs-sell-report-url",
-            submittedAt: new Date().toISOString(),
-          }),
-        });
-      } catch { /* fail open */ }
+    // 2. Fire webhook with full payload including reportUrl
+    try {
+      await fetch(RENT_VS_SELL_WEBHOOK, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: finalData.firstName, lastName: finalData.lastName,
+          phone: finalData.phone, email: finalData.email,
+          propertyAddress: finalData.address,
+          homeValue: finalData.homeValue,
+          purchasePrice: finalData.purchasePrice,
+          purchaseYear: finalData.purchaseYear,
+          mortgageBalance: finalData.mortgageBalance,
+          interestRate: finalData.interestRate,
+          titleOwnership: finalData.titleOwnership,
+          rentcastEstimatedValue: avm?.price ?? null,
+          rentcastEstimatedRent: avm?.rent ?? null,
+          rentcastConfirmedRent: confirmedRent || null,
+          verdict5yr: results?.verdict5yr ?? null, verdict10yr: results?.verdict10yr ?? null,
+          sellNetProceeds: results ? Math.round(results.saleAfterTax) : null,
+          rentWealth10yr: results ? Math.round(results.rentTotalWealth10yr) : null,
+          reportUrl: reportUrl ?? null,
+          formType: "rent-vs-sell", source: "rent-vs-sell-quiz",
+          submittedAt: new Date().toISOString(),
+        }),
+      });
+    } catch (error) {
+      console.error("Rent vs sell webhook submission failed", error);
+      /* fail open */
     }
 
     setIsSubmitting(false);
