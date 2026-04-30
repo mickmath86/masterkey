@@ -429,19 +429,58 @@ function QuizInner() {
       /* fail open */
     }
 
+    // Save report to Supabase and get a shareable ID
+    let reportId: string | null = null;
+    let reportUrl: string | null = null;
+    try {
+      const saveRes = await fetch("/api/rent-vs-sell/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          form: finalData,
+          results,
+          monthlyRent: rentNum && !isNaN(rentNum) ? rentNum : null,
+        }),
+      });
+      if (saveRes.ok) {
+        const saved = await saveRes.json();
+        reportId = saved.id ?? null;
+        reportUrl = saved.url ?? null;
+      }
+    } catch { /* fail open */ }
+
+    // Also update webhook with report URL now that we have it
+    if (reportUrl) {
+      try {
+        await fetch(RENT_VS_SELL_WEBHOOK, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firstName: finalData.firstName,
+            reportUrl,
+            formType: "rent-vs-sell-report-url",
+            submittedAt: new Date().toISOString(),
+          }),
+        });
+      } catch { /* fail open */ }
+    }
+
     setIsSubmitting(false);
 
-
-
-    const params = new URLSearchParams({
-      d: btoa(JSON.stringify({
-        form: { ...finalData },
-        results,
-        rentcastRent: confirmedRent || null,
-        monthlyRent: rentNum && !isNaN(rentNum) ? rentNum : null,
-      })),
-    });
-    router.push(`/rent-vs-sell/results?${params.toString()}`);
+    // Redirect — prefer shareable ID, fall back to base64 URL param
+    if (reportId) {
+      router.push(`/rent-vs-sell/results?id=${reportId}`);
+    } else {
+      const params = new URLSearchParams({
+        d: btoa(JSON.stringify({
+          form: { ...finalData },
+          results,
+          rentcastRent: confirmedRent || null,
+          monthlyRent: rentNum && !isNaN(rentNum) ? rentNum : null,
+        })),
+      });
+      router.push(`/rent-vs-sell/results?${params.toString()}`);
+    }
   }
 
   const progress = Math.round((displayStep() / TOTAL_STEPS) * 100);
