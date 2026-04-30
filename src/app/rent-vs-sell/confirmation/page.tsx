@@ -145,17 +145,6 @@ function ConfirmationInner() {
             )}
           </div>
 
-          {/* View report button */}
-          {reportId && (
-            <a
-              href={`/rent-vs-sell/results?id=${reportId}`}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3.5 rounded-xl transition-colors text-sm"
-            >
-              View My Report
-              <ArrowRightIcon className="w-4 h-4" />
-            </a>
-          )}
-
           {/* Resent confirmation */}
           {resent && (
             <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-xl">
@@ -168,7 +157,7 @@ function ConfirmationInner() {
           {!resent && (
             <button
               onClick={() => setShowResend(r => !r)}
-              className="flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-colors mx-auto"
+              className="flex items-center justify-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors mx-auto"
             >
               <ArrowPathIcon className="w-3.5 h-3.5" />
               {showResend ? "Cancel" : "Didn't get it? Update your contact info and resend"}
