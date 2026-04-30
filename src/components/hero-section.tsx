@@ -2,7 +2,7 @@ import React from 'react'
 
 import '@/styles/how-it-works-5.css'
 
-import { Header } from "@/components/header"
+// import { Header } from "@/components/header"
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ProductIllustration } from "@/components/ui/illustrations/product-illustration"
@@ -37,7 +37,7 @@ export default function HeroSection6() {
                                 <Link
                                     href="#"
                                     className="group flex items-center gap-2 text-sm after:absolute after:inset-0">
-                                    Meet Tailark 2 : The Ultimate Design System
+                                    Meet Tailark 2 : The Ultimate Design Systems
                                     <ChevronRight className="not-group-hover:opacity-50 size-4" />
                                 </Link>
                             </div>

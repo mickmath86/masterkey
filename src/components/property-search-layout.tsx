@@ -157,14 +157,68 @@ export default function PropertySearchLayout({
     }
   }
 
-  // Trigger search when filters change (debounced)
+  // Apply filters client-side when properties are already loaded
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      fetchProperties()
-    }, 500) // 500ms debounce
-
-    return () => clearTimeout(timeoutId)
-  }, [filters])
+    // If we have properties passed in, filter them client-side
+    if (properties.length > 0) {
+      let filtered = [...properties]
+      
+      // Apply filters
+      if (filters.priceMin) {
+        const minPrice = parseFloat(filters.priceMin)
+        filtered = filtered.filter(p => p.price >= minPrice)
+      }
+      if (filters.priceMax) {
+        const maxPrice = parseFloat(filters.priceMax)
+        filtered = filtered.filter(p => p.price <= maxPrice)
+      }
+      if (filters.beds) {
+        const minBeds = parseInt(filters.beds)
+        filtered = filtered.filter(p => p.beds >= minBeds)
+      }
+      if (filters.baths) {
+        const minBaths = parseFloat(filters.baths)
+        filtered = filtered.filter(p => p.baths >= minBaths)
+      }
+      if (filters.homeType.length > 0) {
+        filtered = filtered.filter(p => filters.homeType.includes(p.propertyType))
+      }
+      if (filters.sqftMin) {
+        const minSqft = parseFloat(filters.sqftMin)
+        filtered = filtered.filter(p => p.sqft >= minSqft)
+      }
+      if (filters.sqftMax) {
+        const maxSqft = parseFloat(filters.sqftMax)
+        filtered = filtered.filter(p => p.sqft <= maxSqft)
+      }
+      if (filters.yearBuiltMin && filters.yearBuiltMin.trim() !== '') {
+        const minYear = parseInt(filters.yearBuiltMin)
+        filtered = filtered.filter(p => p.yearBuilt && p.yearBuilt >= minYear)
+      }
+      if (filters.yearBuiltMax && filters.yearBuiltMax.trim() !== '') {
+        const maxYear = parseInt(filters.yearBuiltMax)
+        filtered = filtered.filter(p => p.yearBuilt && p.yearBuilt <= maxYear)
+      }
+      if (filters.lotSizeMin && filters.lotSizeMin.trim() !== '') {
+        const minLot = parseFloat(filters.lotSizeMin)
+        filtered = filtered.filter(p => p.lotSize && p.lotSize >= minLot)
+      }
+      if (filters.lotSizeMax && filters.lotSizeMax.trim() !== '') {
+        const maxLot = parseFloat(filters.lotSizeMax)
+        filtered = filtered.filter(p => p.lotSize && p.lotSize <= maxLot)
+      }
+      
+      setFilteredProperties(filtered)
+      onPropertiesUpdate?.(filtered)
+    } else {
+      // No properties provided, try to fetch from API
+      const timeoutId = setTimeout(() => {
+        fetchProperties()
+      }, 500) // 500ms debounce
+      
+      return () => clearTimeout(timeoutId)
+    }
+  }, [filters, properties])
 
   const formatPrice = (price: number | undefined | null, status: string) => {
     if (!price || price === 0) {
@@ -181,7 +235,10 @@ export default function PropertySearchLayout({
   }
 
   const handleSearch = () => {
-    fetchProperties()
+    // Only fetch if no properties are provided (API mode)
+    if (properties.length === 0) {
+      fetchProperties()
+    }
   }
 
   return (
@@ -235,31 +292,33 @@ export default function PropertySearchLayout({
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center space-x-4">
-            <div className="flex-1">
-              <GooglePlacesInput
-                value={filters.location}
-                onChange={(address) => setFilters(prev => ({ ...prev, location: address }))}
-                placeholder="Enter city"
-                types={['(cities)']}
-                className="w-full"
-                showValidation={false}
-              />
+      {/* Search Bar - Only show if no properties are pre-loaded */}
+      {properties.length === 0 && (
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center space-x-4">
+              <div className="flex-1">
+                <GooglePlacesInput
+                  value={filters.location}
+                  onChange={(address) => setFilters(prev => ({ ...prev, location: address }))}
+                  placeholder="Enter city"
+                  types={['(cities)']}
+                  className="w-full"
+                  showValidation={false}
+                />
+              </div>
+              <Button 
+                className="px-6" 
+                onClick={handleSearch}
+                disabled={isLoading || !filters.location}
+              >
+                <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
+                {isLoading ? 'Searching...' : 'Search'}
+              </Button>
             </div>
-            <Button 
-              className="px-6" 
-              onClick={handleSearch}
-              disabled={isLoading || !filters.location}
-            >
-              <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
-              {isLoading ? 'Searching...' : 'Search'}
-            </Button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Desktop Filters Bar (lg and above) */}
       <div className="hidden lg:block bg-white border-b border-gray-200">

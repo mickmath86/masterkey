@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
@@ -32,6 +32,7 @@ interface PropertyMapProps {
 export default function PropertyMap({ properties, selectedProperty }: PropertyMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
+  const [mapLoaded, setMapLoaded] = useState(false)
 
   // Initialize Mapbox
   useEffect(() => {
@@ -40,12 +41,17 @@ export default function PropertyMap({ properties, selectedProperty }: PropertyMa
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-122.4194, 37.7749], // San Francisco
-      zoom: 12
+      center: [-118.75, 34.19], // Thousand Oaks area
+      zoom: 11
     })
 
     // Add navigation controls
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right')
+
+    // Wait for map to load before adding markers
+    map.current.on('load', () => {
+      setMapLoaded(true)
+    })
 
     return () => {
       if (map.current) {
@@ -56,7 +62,7 @@ export default function PropertyMap({ properties, selectedProperty }: PropertyMa
 
   // Add property markers to map and fit bounds
   useEffect(() => {
-    if (!map.current) return
+    if (!map.current || !mapLoaded) return
 
     // Clear existing markers
     const existingMarkers = document.querySelectorAll('.mapboxgl-marker')
@@ -124,7 +130,7 @@ export default function PropertyMap({ properties, selectedProperty }: PropertyMa
         maxZoom: 15
       })
     }
-  }, [properties])
+  }, [properties, mapLoaded])
 
   // Center map on selected property
   useEffect(() => {
