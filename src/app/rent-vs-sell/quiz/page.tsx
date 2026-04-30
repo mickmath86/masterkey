@@ -452,20 +452,32 @@ function QuizInner() {
 
     setIsSubmitting(false);
 
-    // Redirect — prefer shareable ID, fall back to base64 URL param
-    if (reportId) {
-      router.push(`/rent-vs-sell/results?id=${reportId}`);
-    } else {
-      const params = new URLSearchParams({
-        d: btoa(JSON.stringify({
-          form: { ...finalData },
-          results,
-          rentcastRent: confirmedRent || null,
-          monthlyRent: rentNum && !isNaN(rentNum) ? rentNum : null,
-        })),
-      });
-      router.push(`/rent-vs-sell/results?${params.toString()}`);
-    }
+    // Redirect to confirmation page (not results directly)
+    // Encode minimal webhook payload so resend can re-fire it
+    const webhookPayload = btoa(JSON.stringify({
+      firstName: finalData.firstName, lastName: finalData.lastName,
+      phone: finalData.phone, email: finalData.email,
+      propertyAddress: finalData.address,
+      homeValue: finalData.homeValue,
+      purchasePrice: finalData.purchasePrice,
+      purchaseYear: finalData.purchaseYear,
+      mortgageBalance: finalData.mortgageBalance,
+      interestRate: finalData.interestRate,
+      titleOwnership: finalData.titleOwnership,
+      verdict5yr: results?.verdict5yr ?? null,
+      verdict10yr: results?.verdict10yr ?? null,
+      sellNetProceeds: results ? Math.round(results.saleAfterTax) : null,
+      rentWealth10yr: results ? Math.round(results.rentTotalWealth10yr) : null,
+    }));
+
+    const confirmParams = new URLSearchParams({
+      ...(reportId ? { id: reportId } : {}),
+      email: finalData.email,
+      phone: finalData.phone,
+      name: finalData.firstName,
+      d: webhookPayload,
+    });
+    router.push(`/rent-vs-sell/confirmation?${confirmParams.toString()}`);
   }
 
   const progress = Math.round((displayStep() / TOTAL_STEPS) * 100);
