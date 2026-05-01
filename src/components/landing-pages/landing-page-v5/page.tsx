@@ -5,12 +5,14 @@ import  WhyThisWorksSection  from "./sections/why-this-works";
 import CTA2 from "./sections/cta2";
 import Footer from './sections/footer'
 import Testimonials  from "./components/testimonials";
+import { Testimonial19 } from "@/components/testimonial19";
 
 
 export default function LandingPageV5() {
     return (
     <>
         <HeroSection />
+        <Testimonial19 />
         <CTA3/>
         <AboutUsSection />
         <Testimonials /> 
