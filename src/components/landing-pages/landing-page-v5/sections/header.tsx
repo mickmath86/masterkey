@@ -176,7 +176,7 @@ export function Header() {
                         />
                         <div className="flex justify-between gap-8 max-lg:h-14 max-lg:w-full max-lg:border-b">
                             <Link
-                                href="/"
+                                href="#"
                                 aria-label="home"
                                 className="flex items-center space-x-2">
                                 <MasterKeyLogoInlineBlack className="h-8 w-auto" />

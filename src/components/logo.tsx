@@ -141,8 +141,8 @@ export function MasterKeyMark({ className }: { className?: string }) {
 export function MasterKeyLogoInlineBlack({ className }: { className?: string }) {
   return (
     <Image 
-        alt=""
-        src="/masterkey-logo-inline-black.svg"
+        alt="MasterKey Logo"
+        src="/logos/masterkey-black-inline.png"
         width={150}
         height={40}
         className={className}
