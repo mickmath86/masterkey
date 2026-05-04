@@ -29,46 +29,77 @@ interface Testimonial19Props {
 
 const defaultTestimonials: Testimonial[] = [
   {
-    name: "Sarah Johnson",
-    role: "Homeowner",
-    company: "Thousand Oaks, CA",
-    content: "MasterKey made selling my home incredibly easy. The AI valuation was spot-on, and I received multiple offers within days. Highly recommend!",
+    name: "Eric Etebari",
+    role: "Property Owner",
+    company: "Malibu / Ventura County, CA",
+    content: "Working with Mark, Mike, and Keith at MasterKey has been a great experience. Navigating a sale in Malibu can feel overwhelming, but their team has made everything clear and easy to understand. They came in with a thoughtful strategy, strong local knowledge, and communication that actually makes you feel supported.",
+    rating: 5,
+    avatar: "/testimonials/eric-etibari.jpeg",
+  },
+  {
+    name: "Todd Shillington",
+    role: "Property Owner",
+    company: "Ventura County, CA",
+    content: "MasterKey is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!",
+    rating: 5,
+    avatar: "https://media.licdn.com/dms/image/v2/C5103AQES00pM4V_ulA/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1516247300532?e=1778112000&v=beta&t=3cgNUKyFz-7EUF2cTP7ZtDC4YPvBzRyMcSc6TwyDl2c",
+  },
+  {
+    name: "Kevin Marsden",
+    role: "Real Estate Client",
+    company: "Ventura County, CA",
+    content: "Professional and excellent service. I highly recommend. The Mathias team can help you out with all your real estate and management needs.",
+    rating: 5,
+    avatar: "https://media.licdn.com/dms/image/v2/C5603AQGkWSPSxQVhRg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1646713829633?e=1778112000&v=beta&t=Fn6hfgive1V_sKVFKXNtGg9Fxl0ugoNxIeSTTpViPRg",
+  },
+  {
+    name: "Steve Scherer",
+    role: "Real Estate Client",
+    company: "Ventura County, CA",
+    content: "I always got the information I needed, and they were totally upfront about everything. Plus, their honesty and integrity made the whole process so much smoother. I highly recommend them!",
+    rating: 5,
+    avatar: "/testimonials/steve-scherer.jpeg",
+  },
+  {
+    name: "Samir Akhter",
+    role: "Real Estate Client",
+    company: "Ventura County, CA",
+    content: "Mark was very professional to work with. Always responsive and straightforward. It was a pleasure working with the team. Would highly recommend.",
+    rating: 5,
+    avatar: "https://lh3.googleusercontent.com/a-/ALV-UjXK6AUkgD2GbP4sO8zyMkbREz0BmcT8iv7zHn1SADPut7SY-5yX=w144-h144-p-rp-mo-br100",
+  },
+  
+  
+  {
+    name: "Olivia Sellers",
+    role: "Property Owner",
+    company: "Ventura County, CA",
+    content: "The team was quick to respond and handle maintenance issues and kept the property in great shape.",
+    rating: 5,
+    avatar: "https://lh3.googleusercontent.com/a-/ALV-UjXoTdTHK7RWyQ5rrWbCxXxw3BWXl-bCq7MbVfdtDZcygFNod0kl=w144-h144-p-rp-mo-br100",
+  },
+  {
+    name: "Javier Aguilera",
+    role: "Property Management Client",
+    company: "Ventura County, CA",
+    content: "I highly recommend them not only as property managers but as brokers as well.",
+    avatar: "/testimonials/javier-aguilera.png",
     rating: 5,
   },
   {
-    name: "Michael Chen",
-    role: "Real Estate Investor",
-    company: "Los Angeles, CA",
-    content: "The market insights and property analysis tools are game-changing. I've made smarter investment decisions and increased my portfolio value significantly.",
-    rating: 5,
-  },
-  {
-    name: "Emily Rodriguez",
-    role: "First-Time Buyer",
+    name: "Mark Foley",
+    role: "Property Management Client",
     company: "Ventura, CA",
-    content: "As a first-time buyer, I was nervous about the process. MasterKey's platform gave me confidence with accurate valuations and transparent market data.",
+    content: "Mark was incredibly kind and helpful during our long stay in Ventura. He was quick to answer any questions we had and offer suggestions for areas to explore. The Hilltop Drive apartment was clean and well-stocked with all we could need for a 6-month stay. I highly recommend working with Mark!",
     rating: 5,
   },
   {
-    name: "David Thompson",
-    role: "Property Manager",
-    company: "Santa Barbara, CA",
-    content: "The rental estimate tools have been invaluable for pricing our properties competitively. We've reduced vacancy rates and maximized rental income.",
+    name: "Maria LaCanfora",
+    role: "First-Time Buyer",
+    company: "Ventura County, CA",
+    content: "My husband and I had an absolutely amazing experience working with Mark at MasterKey. As first-time home buyers, we started out feeling overwhelmed, but Mark quickly put us at ease. He walked us through every step and made sure we always knew what to expect. We couldn't be happier with our new home.",
     rating: 5,
-  },
-  {
-    name: "Jennifer Martinez",
-    role: "Homeowner",
-    company: "Camarillo, CA",
-    content: "I was skeptical about AI valuations, but MasterKey proved me wrong. The detailed market analysis helped me price my home perfectly and sell quickly.",
-    rating: 5,
-  },
-  {
-    name: "Robert Kim",
-    role: "Real Estate Agent",
-    company: "Simi Valley, CA",
-    content: "I use MasterKey for all my client presentations. The comprehensive property reports and market insights give my clients confidence in their decisions.",
-    rating: 5,
+    avatar: "https://scontent-lax3-1.cdninstagram.com/v/t51.2885-19/473732354_617963560819016_8008291265077624383_n.jpg?efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDgwLmMyIn0&_nc_ht=scontent-lax3-1.cdninstagram.com&_nc_cat=108&_nc_ohc=clxnVHzY-WEQ7kNvwHpgkJg&edm=ALGbJPMBAAAA&ccb=7-5&oh=00_Af0hERyaS869-oN1Yaj7nguLK_JN2-TtjvpJQ06sDCI--g&oe=69E6154E&_nc_sid=7d3ac5",
   },
 ]
 
@@ -79,7 +110,7 @@ const Testimonial19 = ({
   testimonials = defaultTestimonials,
 }: Testimonial19Props) => {
   return (
-    <section className={cn("py-32 px-4 md:px-0", className)}>
+    <section className={cn("py-16 px-4 md:px-0", className)}>
       <div className="container mx-auto">
         <div className="mb-14 flex flex-col items-center text-center">
           <h2 className="mb-3 text-4xl font-semibold lg:text-5xl">

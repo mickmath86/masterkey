@@ -17,6 +17,7 @@ import { Header } from "@/components/landing-pages/landing-page-v4/sections/head
 import VideoPlayer from "@/components/video-player";
 import { ArrowRightIcon } from "@heroicons/react/16/solid";
 import HowItWorksSection from "@/components/how-it-works-5";
+import { Testimonial19 } from "@/components/testimonial19"; 
 
 
 function VerifiedOfferHero() {
@@ -141,6 +142,7 @@ function VerifiedOfferPageInner() {
       </section>
    
     <HeroSection /> 
+    <Testimonial19 />
       <HowItWorksSection />
       <CTA3 />
       
