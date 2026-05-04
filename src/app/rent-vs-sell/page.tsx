@@ -27,6 +27,7 @@ export interface RVSFormData {
   homeValue: string;
   purchasePrice: string;
   purchaseYear: string;
+  residencyType: "primary" | "investment" | "";   // primary = IRC 121 eligible; investment = no exclusion
   mortgageBalance: string;
   interestRate: string;
   titleOwnership: "single" | "multiple" | "";
@@ -55,17 +56,89 @@ export const DEFAULTS = {
 // Exclusion: $250K single, $500K married/multiple on title
 // Rate: 15% for most sellers (taxable income $49K–$545K single / $98K–$613K joint)
 // Reference: IRS Section 121, Bankrate/NerdWallet 2025-2026 tables
+/**
+ * Capital gains calculation — IRC Section 121 + California FTB rules
+ *
+ * Federal (IRC 121):
+ *   - Primary residence owned AND lived in 2+ of last 5 years:
+ *     Exclusion = $250K (single) or $500K (married/joint)
+ *     Rate on taxable gain = 15% long-term (most CA sellers)
+ *   - Investment property or <2yr primary residence:
+ *     No exclusion — full 15% federal long-term rate applies
+ *
+ * California (FTB):
+ *   - CA does NOT recognize IRC 121 — no exclusion at the state level
+ *   - CA taxes entire gain (homeValue - purchasePrice) at ordinary income rates
+ *   - Effective CA rate used: 9.3% (bracket for ~$66K–$338K taxable income)
+ *   - Combined federal + CA rate on taxable federal gain: ~24.3%
+ *
+ * Note: Basis improvements are NOT factored in (actual tax may be lower).
+ * Consult a CPA for your specific situation.
+ */
 export function calcCapitalGains(
   homeValue: number,
   purchasePrice: number,
-  titleOwnership: "single" | "multiple" | ""
-): { taxableGain: number; capitalGainsTax: number; exclusion: number } {
-  const gain = homeValue - purchasePrice;
-  const exclusion = titleOwnership === "multiple" ? 500_000 : 250_000;
-  const taxableGain = Math.max(0, gain - exclusion);
-  // 15% long-term rate — appropriate for the vast majority of TO sellers
-  const capitalGainsTax = taxableGain * 0.15;
-  return { taxableGain, capitalGainsTax, exclusion };
+  titleOwnership: "single" | "multiple" | "",
+  residencyType: "primary" | "investment" | "",
+  purchaseYear: string
+): {
+  gain: number;
+  federalExclusion: number;
+  federalTaxableGain: number;
+  federalTax: number;
+  caTaxableGain: number;
+  caTax: number;
+  totalTax: number;
+  // legacy compat
+  taxableGain: number;
+  capitalGainsTax: number;
+  exclusion: number;
+  qualifiesForIRC121: boolean;
+  yearsOwned: number;
+} {
+  const gain = Math.max(0, homeValue - purchasePrice);
+  const yearsOwned = purchaseYear
+    ? new Date().getFullYear() - parseInt(purchaseYear)
+    : 0;
+
+  // IRC 121 qualification: primary residence + owned/lived in 2+ of last 5 years
+  const qualifiesForIRC121 =
+    residencyType === "primary" && yearsOwned >= 2;
+
+  // Federal exclusion
+  const federalExclusion = qualifiesForIRC121
+    ? titleOwnership === "multiple" ? 500_000 : 250_000
+    : 0;
+
+  const federalTaxableGain = Math.max(0, gain - federalExclusion);
+
+  // Federal long-term rate: 15% for most sellers (income $47K–$518K single / $94K–$583K joint, 2025)
+  const federalRate = 0.15;
+  const federalTax = federalTaxableGain * federalRate;
+
+  // California: no IRC 121 — taxes the full gain at ordinary income rates
+  // 9.3% = bracket for ~$66K–$338K CA taxable income (most Ventura County sellers)
+  const caRate = 0.093;
+  const caTaxableGain = gain; // CA taxes the whole gain, no exclusion
+  const caTax = caTaxableGain * caRate;
+
+  const totalTax = federalTax + caTax;
+
+  return {
+    gain,
+    federalExclusion,
+    federalTaxableGain,
+    federalTax,
+    caTaxableGain,
+    caTax,
+    totalTax,
+    // legacy aliases for existing code
+    taxableGain: federalTaxableGain,
+    capitalGainsTax: totalTax,
+    exclusion: federalExclusion,
+    qualifiesForIRC121,
+    yearsOwned,
+  };
 }
 
 // ─── Full calculation engine ──────────────────────────────────────────────────
@@ -78,6 +151,10 @@ export interface CalcResults {
   capitalGain: number;
   taxableGain: number;
   capitalGainsTax: number;
+  federalTax: number;
+  caTax: number;
+  qualifiesForIRC121: boolean;
+  yearsOwned: number;
   saleNetProceeds: number;
   saleAfterTax: number;
   saleInvested5yr: number;
@@ -114,9 +191,11 @@ export function calculate(form: RVSFormData, monthlyRentOverride?: number | null
   const saleNetProceeds = homeValue - agentFee - closingAndStagingCosts - mortgagePayoff;
 
   const capitalGain = homeValue - purchasePrice;
-  const { taxableGain, capitalGainsTax, exclusion } = calcCapitalGains(
-    homeValue, purchasePrice, form.titleOwnership
+  const cgResult = calcCapitalGains(
+    homeValue, purchasePrice, form.titleOwnership,
+    form.residencyType, form.purchaseYear
   );
+  const { taxableGain, capitalGainsTax, exclusion } = cgResult;
   const saleAfterTax = Math.max(0, saleNetProceeds - capitalGainsTax);
   const saleInvested5yr = saleAfterTax * Math.pow(1 + D.investReturnRate, 5);
   const saleInvested10yr = saleAfterTax * Math.pow(1 + D.investReturnRate, 10);
@@ -166,6 +245,10 @@ export function calculate(form: RVSFormData, monthlyRentOverride?: number | null
     capitalGain,
     taxableGain,
     capitalGainsTax,
+    federalTax: cgResult.federalTax,
+    caTax: cgResult.caTax,
+    qualifiesForIRC121: cgResult.qualifiesForIRC121,
+    yearsOwned: cgResult.yearsOwned,
     saleNetProceeds,
     saleAfterTax,
     saleInvested5yr,

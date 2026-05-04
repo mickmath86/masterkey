@@ -93,7 +93,7 @@ function QuizInner() {
   // ── Form data ──
   const [data, setData] = useState<RVSFormData>({
     address: "", addressValid: false, homeValue: "", purchasePrice: "",
-    purchaseYear: "", mortgageBalance: "", interestRate: "",
+    purchaseYear: "", residencyType: "", mortgageBalance: "", interestRate: "",
     titleOwnership: "", phone: "", email: "", firstName: "", lastName: "",
   });
 
@@ -340,7 +340,7 @@ function QuizInner() {
     switch (step) {
       case 1: return data.addressValid;
       case 2: return rentcastDone; // loading spinner handles the wait
-      case 3: return data.purchasePrice.trim() !== "" && data.purchaseYear.trim() !== "";
+      case 3: return data.purchasePrice.trim() !== "" && data.purchaseYear.trim() !== "" && data.residencyType !== "";
       case 4: return data.mortgageBalance.trim() !== "" && data.interestRate.trim() !== "";
       case 5: return data.titleOwnership !== ""; // auto-advances
       case 6: return data.phone.trim() !== "" && !phoneError && data.email.trim() !== "" && emailRegex.test(data.email) && !emailError;
@@ -446,6 +446,7 @@ function QuizInner() {
           mortgageBalance: finalData.mortgageBalance,
           interestRate: finalData.interestRate,
           titleOwnership: finalData.titleOwnership,
+            residencyType: finalData.residencyType,
           rentcastEstimatedValue: avm?.price ?? null,
           rentcastEstimatedRent: avm?.rent ?? null,
           rentcastConfirmedRent: confirmedRent || null,
@@ -901,6 +902,70 @@ function QuizInner() {
                       <option key={y} value={String(y)}>{y}</option>
                     ))}
                   </select>
+                </div>
+
+                {/* Residency type — shown once year is selected */}
+                {data.purchaseYear && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                      Is this your primary residence? <span className="text-red-400">*</span>
+                    </label>
+                    {(() => {
+                      const yearsOwned = new Date().getFullYear() - parseInt(data.purchaseYear);
+                      const qualifies = yearsOwned >= 2;
+                      return (
+                        <div className="space-y-2">
+                          <button
+                            type="button"
+                            onClick={() => set("residencyType", "primary")}
+                            className={`w-full flex items-start gap-3 px-4 py-3.5 rounded-xl border text-left transition-colors ${
+                              data.residencyType === "primary"
+                                ? "border-blue-400 bg-blue-50"
+                                : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
+                            }`}
+                          >
+                            <div className="flex-1">
+                              <p className={`text-sm font-semibold ${data.residencyType === "primary" ? "text-blue-700" : "text-gray-800"}`}>
+                                Yes — this is my primary residence
+                              </p>
+                              {qualifies ? (
+                                <p className="text-xs text-green-600 mt-0.5 font-medium">
+                                  ✓ You've owned {yearsOwned} year{yearsOwned !== 1 ? "s" : ""} — qualifies for IRC §121 federal exclusion
+                                </p>
+                              ) : (
+                                <p className="text-xs text-amber-600 mt-0.5">
+                                  ⚠ You've owned {yearsOwned} year{yearsOwned !== 1 ? "s" : ""} — IRC §121 requires 2+ years of primary residence to exclude gains
+                                </p>
+                              )}
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => set("residencyType", "investment")}
+                            className={`w-full flex items-start gap-3 px-4 py-3.5 rounded-xl border text-left transition-colors ${
+                              data.residencyType === "investment"
+                                ? "border-blue-400 bg-blue-50"
+                                : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
+                            }`}
+                          >
+                            <div className="flex-1">
+                              <p className={`text-sm font-semibold ${data.residencyType === "investment" ? "text-blue-700" : "text-gray-800"}`}>
+                                No — this is a rental or investment property
+                              </p>
+                              <p className="text-xs text-gray-400 mt-0.5">
+                                No federal exclusion applies — full capital gains tax on the entire profit
+                              </p>
+                            </div>
+                          </button>
+                          <p className="text-[11px] text-gray-400 leading-relaxed pt-1">
+                            Under IRS Section 121, homeowners who lived in the home as their primary residence for at least 2 of the last 5 years may exclude up to {data.titleOwnership === "multiple" ? "$500,000" : "$250,000"} of gain from federal tax. California does not recognize this exclusion and taxes the full gain at state ordinary income rates.
+                          </p>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+                <div className="hidden">{ /* dummy closing div */ }</div
                 </div>
               </div>
             </div>
