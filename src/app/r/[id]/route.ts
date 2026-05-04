@@ -65,7 +65,7 @@ export async function GET(
           .then(() => {
             // Append click event via raw SQL through a separate upsert on a clicks column
             // Simplest: just update a last_clicked_at column if it exists, else skip
-            return supabase.rpc("log_rvs_click", { report_id: id, clicked_at: clickedAt, user_agent: ua }).catch(() => null);
+            return supabase.rpc("log_rvs_click", { report_id: id, clicked_at: clickedAt, user_agent: ua }).then(() => null, () => null);
           })
       : Promise.resolve(),
 
