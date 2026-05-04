@@ -17,7 +17,7 @@ import { Header } from "@/components/landing-pages/landing-page-v4/sections/head
 import VideoPlayer from "@/components/video-player";
 import { ArrowRightIcon } from "@heroicons/react/16/solid";
 import HowItWorksSection from "@/components/how-it-works-5";
-import Testimonials8 from "@/components/testimonials-8";
+
 
 function VerifiedOfferHero() {
   const router = useRouter();
@@ -125,8 +125,8 @@ function VerifiedOfferHero() {
 function VerifiedOfferPageInner() {
   return (
     <>
-     <HeroSection6 />
-      {/* <VerifiedOfferHero /> */}
+     
+      <VerifiedOfferHero />
       {/* Video lives here — outside the stateful hero so keystrokes don't remount it */}
       <section className="border-foreground/10 relative border-y">
         <div className="relative z-10 mx-auto max-w-6xl border-x px-3">
@@ -140,12 +140,12 @@ function VerifiedOfferPageInner() {
         </div>
       </section>
    
-    {/* <HeroSection />  */}
+    <HeroSection /> 
       <HowItWorksSection />
       <CTA3 />
       
       <AboutUsSection />
-      <Testimonials8 />
+
       {/* <TestimonialsV4 /> */}
       <WhyThisWorksSection />
         <Content6 />
