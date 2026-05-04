@@ -313,18 +313,44 @@ function ResultsInner() {
                 <Row label="Net proceeds (before tax)" value={fmt(results.saleNetProceeds)} bold />
               </div>
               <div className="bg-white/60 rounded-lg p-2.5 space-y-1.5">
-                <p className="text-[11px] text-gray-500 font-medium mb-1">Capital gains tax (IRS Section 121)</p>
+                <p className="text-[11px] text-gray-500 font-medium mb-1">
+                  {results.qualifiesForIRC121
+                    ? "Capital gains tax (IRC §121 applied — primary residence)"
+                    : (results.yearsOwned ?? 0) > 0 && (results.yearsOwned ?? 0) < 2
+                    ? `Capital gains tax (IRC §121 not met — owned ${results.yearsOwned} yr)`
+                    : "Capital gains tax (investment property — no exclusion)"}
+                </p>
                 <Row label="Total gain" value={fmt(results.capitalGain)} />
+                {(results.exclusion ?? 0) > 0 ? (
+                  <Row
+                    label={`Federal exclusion (IRC §121 — ${form!.titleOwnership === "multiple" ? "joint $500K" : "single $250K"})`}
+                    value={`−${fmt(results.exclusion)}`}
+                    info="IRC §121 exclusion applies: you've owned and lived in the home as your primary residence for 2+ years. Excludes up to $250K (single) or $500K (married/joint) from federal capital gains tax."
+                  />
+                ) : (
+                  <Row
+                    label="Federal exclusion"
+                    value="$0 — not applicable"
+                    info={(results.yearsOwned ?? 0) < 2
+                      ? `IRC §121 requires 2+ years as primary residence. You've owned ${results.yearsOwned ?? 0} year(s).`
+                      : "Investment properties do not qualify for the IRC §121 exclusion."}
+                  />
+                )}
                 <Row
-                  label={`Exclusion (${form!.titleOwnership === "multiple" ? "joint — $500K" : "single — $250K"})`}
-                  value={`−${fmt(results.exclusion)}`}
-                  info="Under IRS Section 121, homeowners who lived in the home as their primary residence for 2 of the last 5 years can exclude up to $250,000 (single filer) or $500,000 (married/joint) of capital gains from federal tax. State taxes may still apply."
+                  label={`Federal tax on ${fmt(results.taxableGain)} (15%)`}
+                  value={(results.federalTax ?? 0) > 0 ? `−${fmt(results.federalTax)}` : "$0"}
+                  neg={(results.federalTax ?? 0) > 0}
+                  info="Federal long-term capital gains rate of 15% for most sellers in the $47K–$518K income range (2025)."
                 />
-                <Row label="Taxable gain" value={fmt(results.taxableGain)} />
-                <Row label="Cap gains tax (15%)" value={(results.capitalGainsTax ?? 0) > 0 ? `−${fmt(results.capitalGainsTax)}` : "$0"} neg={(results.capitalGainsTax ?? 0) > 0} />
+                <Row
+                  label={`California tax on ${fmt(results.capitalGain)} (9.3% — full gain)`}
+                  value={(results.caTax ?? 0) > 0 ? `−${fmt(results.caTax)}` : "$0"}
+                  neg={(results.caTax ?? 0) > 0}
+                  info="California (FTB) does not recognize the IRC §121 exclusion and taxes your entire gain at ordinary income rates. 9.3% is the effective rate for most Ventura County sellers. Consult a CPA for your specific rate."
+                />
               </div>
               <div className="border-t border-blue-200 pt-2">
-                <Row label="Net cash in pocket (after tax)" value={fmt(results.saleAfterTax)} bold />
+                <Row label="Net cash in pocket (after federal + CA tax)" value={fmt(results.saleAfterTax)} bold />
               </div>
               <div className="bg-white/60 rounded-lg p-2.5 space-y-1">
                 <p className="text-[11px] text-gray-500 font-medium mb-1">If you invest at 7%/yr:</p>
@@ -380,10 +406,14 @@ function ResultsInner() {
         <div className="bg-white border border-gray-100 rounded-xl p-4 text-xs text-gray-400 leading-relaxed mb-6 shadow-sm">
           <p className="font-semibold text-gray-500 mb-1.5">Assumptions &amp; methodology</p>
           <p>
-            <strong className="text-gray-600">Capital gains (IRS Section 121):</strong> Exclusion of{" "}
-            {form!.titleOwnership === "multiple" ? "$500,000 (joint ownership)" : "$250,000 (single owner)"}
-            . Taxable gain taxed at 15% long-term rate (2025/2026 bracket for most California sellers, per IRS Publication 523 and Bankrate).
-            Basis = original purchase price; improvements not factored in — actual tax may be lower.
+            <strong className="text-gray-600">Capital gains:</strong>{" "}
+            {results.qualifiesForIRC121
+              ? `Federal IRC §121 exclusion of ${form!.titleOwnership === "multiple" ? "$500,000 (joint)" : "$250,000 (single)"} applied. Federal taxable gain at 15% long-term rate.`
+              : results.yearsOwned < 2
+              ? `IRC §121 exclusion not applied — home owned ${results.yearsOwned} year(s), minimum 2 required.`
+              : "Investment property — no IRC §121 exclusion. Full federal long-term rate (15%) applies."}
+            {" "}California (FTB) taxes the full gain at 9.3% ordinary income rate — CA does not recognize the IRC §121 exclusion.
+            Basis = original purchase price; improvements are not factored in — actual tax may be lower. Consult a CPA.
           </p>
           <p className="mt-1.5">
             <strong className="text-gray-600">Rent scenario:</strong> Monthly rent {fmt(results.monthlyRent)}{monthlyRentUsed && monthlyRentUsed !== 3950 ? " (Rentcast estimate)" : " (Ventura County avg)"} ·
