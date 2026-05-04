@@ -981,7 +981,6 @@ function QuizInner() {
                     onChange={(v) => set("residencyType", v)}
                   />
                 )}
-                </div>
               </div>
             </div>
           )}
