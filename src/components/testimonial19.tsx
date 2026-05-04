@@ -42,7 +42,7 @@ const defaultTestimonials: Testimonial[] = [
     company: "Ventura County, CA",
     content: "MasterKey is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!",
     rating: 5,
-    avatar: "https://media.licdn.com/dms/image/v2/C5103AQES00pM4V_ulA/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1516247300532?e=1778112000&v=beta&t=3cgNUKyFz-7EUF2cTP7ZtDC4YPvBzRyMcSc6TwyDl2c",
+    avatar: "/testimonials/todd-shillington.png",
   },
   {
     name: "Kevin Marsden",
@@ -99,7 +99,7 @@ const defaultTestimonials: Testimonial[] = [
     company: "Ventura County, CA",
     content: "My husband and I had an absolutely amazing experience working with Mark at MasterKey. As first-time home buyers, we started out feeling overwhelmed, but Mark quickly put us at ease. He walked us through every step and made sure we always knew what to expect. We couldn't be happier with our new home.",
     rating: 5,
-    avatar: "https://scontent-lax3-1.cdninstagram.com/v/t51.2885-19/473732354_617963560819016_8008291265077624383_n.jpg?efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDgwLmMyIn0&_nc_ht=scontent-lax3-1.cdninstagram.com&_nc_cat=108&_nc_ohc=clxnVHzY-WEQ7kNvwHpgkJg&edm=ALGbJPMBAAAA&ccb=7-5&oh=00_Af0hERyaS869-oN1Yaj7nguLK_JN2-TtjvpJQ06sDCI--g&oe=69E6154E&_nc_sid=7d3ac5",
+    
   },
 ]
 
