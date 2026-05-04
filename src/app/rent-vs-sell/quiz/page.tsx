@@ -965,7 +965,6 @@ function QuizInner() {
                     })()}
                   </div>
                 )}
-                <div className="hidden">{ /* dummy closing div */ }</div
                 </div>
               </div>
             </div>
