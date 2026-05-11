@@ -2,7 +2,7 @@
 
 import { Wrench, Clock, Mail } from "lucide-react";
 
-export default function Home() {
+export default function MaintenancePage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
       <div className="max-w-2xl w-full text-center space-y-8">
