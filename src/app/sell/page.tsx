@@ -25,8 +25,8 @@ import Navbar3 from '@/components/navbar3'
 const sellerServices = [
     {
         title: "Get Your Home Value",
-        link:"/questionnaire/real-estate-sell", 
-        slug: "property-valuation",
+        link:"/homevalue/questionnaire", 
+        slug: "/homevalue/questionnaire",
         icon: DollarSign,
         excerpt: "Get an instant, accurate valuation of your home using our AI-powered analysis of recent sales, market trends, and property characteristics."
     },
@@ -136,12 +136,12 @@ const Hero = () => {
           
           <div className="mt-10 flex items-center gap-x-6">
             <a
-              href="/questionnaire/listing-presentation"
+              href="/homevalue/questionnaire"
               className="rounded-md bg-sky-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-sky-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 dark:focus-visible:outline-sky-500"
             >
            Get Your Home Value
             </a>
-            <a href="/questionnaire/real-estate-sell" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
+            <a href="/contact" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
               Schedule Consultation <span aria-hidden="true">→</span>
             </a>
           </div>
@@ -623,7 +623,7 @@ function ValuationCTA() {
               </ul>
               <div className="mt-10 flex">
                 <a
-                  href="/questionnaire/real-estate-sell"
+                  href="/homevalue/questionnaire"
                   className="text-sm/6 font-semibold text-sky-600 hover:text-sky-300 dark:text-sky-400 dark:hover:text-sky-300"
                 >
                   Get Your Property Valuation
