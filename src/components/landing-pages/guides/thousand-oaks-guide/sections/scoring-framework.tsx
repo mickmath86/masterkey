@@ -49,7 +49,7 @@ export function ScoringFramework() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-light text-[#29B6F6] mb-4">
-            MasterKey Scoring Framework
+            Mathias Real Estate Group Scoring Framework
           </h2>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto">
             Each area is evaluated across 8 categories, with each category scored on a 1–10 scale. 

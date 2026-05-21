@@ -149,7 +149,7 @@ function LandingHero() {
             Stress-Free Property Management
           </Heading>
           <Lead className="mt-6 max-w-3xl">
-             Whether you're a first-time landlord or experienced investor, <span className=" text-sky-500">MasterKey</span> provides comprehensive property management services to maximize your rental income and minimize your workload.
+             Whether you're a first-time landlord or experienced investor, <span className=" text-sky-500">Mathias Real Estate Group</span> provides comprehensive property management services to maximize your rental income and minimize your workload.
           </Lead>
         <div className="mt-16  pb-14">
         <div>
@@ -200,7 +200,7 @@ const testimonials = [
       link:"/questionnaire/property-management", 
       slug: "pm-testimonial-1",
       icon: Home,
-      quote: "MasterKey increased my rental income by 15% and handles everything seamlessly. I haven't had to deal with a single tenant issue in over a year!"
+      quote: "Mathias Real Estate Group increased my rental income by 15% and handles everything seamlessly. I haven't had to deal with a single tenant issue in over a year!"
   },
   {
       title: "Lisa Thompson",
@@ -227,7 +227,7 @@ function Testimonials() {
             Hear from our satisfied property owners
           </Heading>
           {/* <Lead className="mt-6 max-w-3xl">
-             From first-time buyers to seasoned investors, <span className=" text-sky-500">MasterKey</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
+             From first-time buyers to seasoned investors, <span className=" text-sky-500">Mathias Real Estate Group</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
           </Lead> */}
         <div className="mt-16  pb-14">
         <div>
@@ -388,7 +388,7 @@ function NextSteps() {
             Ready to Maximize Your Rental Income?
           </Heading>
           {/* <Lead className="mt-6 max-w-3xl">
-             From first-time buyers to seasoned investors, <span className=" text-sky-500">MasterKey</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
+             From first-time buyers to seasoned investors, <span className=" text-sky-500">Mathias Real Estate Group</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
           </Lead> */}
         <div className="mt-16  pb-14">
         <div>
@@ -445,7 +445,7 @@ function CallToAction() {
         </p>
       </hgroup>
       <p className="mx-auto mt-6 max-w-xs text-sm/6 text-gray-500">
-        Experience the MasterKey difference with our comprehensive property management services and
+        Experience the Mathias Real Estate Group difference with our comprehensive property management services and
         personalized approach.
       </p>
       <div className="mt-6">

@@ -35,7 +35,7 @@ const testimonials = [
     name: "Jennifer R.",
     role: "Westlake Village seller",
     quote:
-      "I was nervous about pricing my home in this market. MasterKey gave me real data and a clear strategy. We sold in 8 days with no contingencies.",
+      "I was nervous about pricing my home in this market. Mathias Real Estate Group gave me real data and a clear strategy. We sold in 8 days with no contingencies.",
     stars: 5,
     result: "Sold in 8 days, no contingencies",
   },
@@ -302,7 +302,7 @@ export default function SellerRetargetPage() {
                 Mike and Mark Mathias are licensed Ventura County brokers with deep roots in the Conejo Valley. Their backgrounds span Madison Avenue ad-tech, SaaS product management, and years of hands-on real estate transactions — giving them a rare combination of data intelligence and negotiation expertise.
               </p>
               <p className="text-gray-500 text-base leading-relaxed mb-8">
-                When you work with MasterKey, you work directly with Mike and Mark — not a team of junior agents. Every listing gets their personal attention, from initial pricing strategy to the final closing table.
+                When you work with Mathias Real Estate Group, you work directly with Mike and Mark — not a team of junior agents. Every listing gets their personal attention, from initial pricing strategy to the final closing table.
               </p>
 
               <div className="space-y-3">
@@ -438,7 +438,7 @@ export default function SellerRetargetPage() {
           <CTAButtons onSchedule={() => setCalendarOpen(true)} size="large" />
 
           <p className="text-gray-300 text-xs mt-6">
-            MasterKey Real Estate · 1000 Business Center Circle #112,
+            Mathias Real Estate Group · 1000 Business Center Circle #112,
             Thousand Oaks, CA · DRE #01892427
           </p>
         </div>

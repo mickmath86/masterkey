@@ -83,7 +83,7 @@ const agentData = {
   title: "Senior Real Estate Broker",
   license: "CA 01892427",
   phone: "805-262-9707",
-  company: "MasterKey Real Estate", 
+  company: "Mathias Real Estate Group", 
   yearsExperience: 8,
 }
 

@@ -188,7 +188,7 @@ const testimonials = [
 const faqItems = [
   {
     q: "What is MarketPulse?",
-    a: "MarketPulse is MasterKey's AI-powered market intelligence platform. It combines real-time MLS data, public records, and AI analysis to deliver instant insights about pricing trends, inventory, and neighborhood dynamics in the Conejo Valley.",
+    a: "MarketPulse is Mathias Real Estate Group's AI-powered market intelligence platform. It combines real-time MLS data, public records, and AI analysis to deliver instant insights about pricing trends, inventory, and neighborhood dynamics in the Conejo Valley.",
   },
   {
     q: "How is the data sourced and how current is it?",
@@ -196,7 +196,7 @@ const faqItems = [
   },
   {
     q: "Is MarketPulse free?",
-    a: "Yes — sign up to receive monthly market reports and basic neighborhood insights at no cost. Premium features including real-time alerts, investment scoring, and team access are available for MasterKey clients.",
+    a: "Yes — sign up to receive monthly market reports and basic neighborhood insights at no cost. Premium features including real-time alerts, investment scoring, and team access are available for Mathias Real Estate Group clients.",
   },
   {
     q: "What areas does MarketPulse cover?",
@@ -619,7 +619,7 @@ function FeatureRows() {
         <div className="text-center mb-16">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-50 border border-green-100 text-xs font-medium text-green-700 mb-5">
             <BarChart3 className="w-3.5 h-3.5" />
-            MasterKey MarketPulse
+            Mathias Real Estate Group MarketPulse
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-950 leading-tight max-w-2xl mx-auto">
             Accurate market data is just the start. What you do with it is

@@ -141,7 +141,7 @@ export function MasterKeyMark({ className }: { className?: string }) {
 export function MasterKeyLogoInlineBlack({ className }: { className?: string }) {
   return (
     <Image 
-        alt="MasterKey Logo"
+        alt="Mathias Real Estate Group Logo"
         src="/logos/masterkey-black-inline.png"
         width={150}
         height={40}

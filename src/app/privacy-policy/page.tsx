@@ -83,7 +83,7 @@ export default function PrivacyPolicyPage() {
                   <li>With your consent or at your direction</li>
                   <li>With third-party vendors, consultants, and service providers</li>
                   <li>To comply with laws, regulations, or legal requests</li>
-                  <li>To protect the rights, property, and safety of MasterKey and others</li>
+                  <li>To protect the rights, property, and safety of Mathias Real Estate Group and others</li>
                   <li>In connection with a merger, acquisition, or sale of assets</li>
                 </ul>
               </section>
@@ -165,7 +165,7 @@ export default function PrivacyPolicyPage() {
                 </p>
                 <div className="border border-gray-200 p-4 rounded-lg">
                   <p className="text-gray-700">
-                    <strong>MasterKey</strong><br />
+                    <strong>Mathias Real Estate Group</strong><br />
                     Email: info@masterkey.com<br />
                     Phone: 805-262-9707<br />
                     Address: 1000 Business Circle, Suite 112, Newbury Park, CA 91320

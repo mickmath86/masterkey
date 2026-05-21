@@ -1,6 +1,6 @@
 const testimonials = [
   {
-    body: "MasterKey is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!",
+    body: "Mathias Real Estate Group is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!",
     author: {
       name: 'Todd Shillington',
       handle: 'toddshillington',

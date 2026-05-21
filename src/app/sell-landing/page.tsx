@@ -10,7 +10,7 @@ import { FadeIn, FadeInUp } from '@/components/animations/fade-in'
 
 const testimonials = [
   {
-    quote: "MasterKey's AI valuation was spot-on with our appraisal, and we sold 15% above asking. Their technology made the whole process transparent and stress-free.",
+    quote: "Mathias Real Estate Group's AI valuation was spot-on with our appraisal, and we sold 15% above asking. Their technology made the whole process transparent and stress-free.",
     author: "Sarah Johnson",
     location: "Sold in Austin, TX",
     readMoreLink: "#"
@@ -34,7 +34,7 @@ const testimonials = [
     readMoreLink: "#"
   },
   {
-    quote: "We didn't want the stress of pricing guesswork. MasterKey's technology took the uncertainty out of selling our home.",
+    quote: "We didn't want the stress of pricing guesswork. Mathias Real Estate Group's technology took the uncertainty out of selling our home.",
     author: "Jennifer Martinez",
     location: "Sold in Miami, FL",
     readMoreLink: "#"
@@ -131,7 +131,7 @@ export default function SellLandingPage() {
                 Start your sale with an offer in hand
               </h2>
               <p className="text-xl text-gray-700 text-center mb-16 max-w-3xl mx-auto">
-                Skip the work with an AI-powered cash offer from MasterKey. Or list for more and use our offer as a backup plan.
+                Skip the work with an AI-powered cash offer from Mathias Real Estate Group. Or list for more and use our offer as a backup plan.
               </p>
             </FadeInUp>
 
@@ -152,7 +152,7 @@ export default function SellLandingPage() {
                   <span className="text-blue-600">2,500+</span> and counting
                 </h3>
                 <p className="text-lg text-gray-700 mb-6">
-                  Every 3 minutes, a homeowner requests an offer from MasterKey.
+                  Every 3 minutes, a homeowner requests an offer from Mathias Real Estate Group.
                 </p>
                 <Button
                   onClick={handleGetOffer}

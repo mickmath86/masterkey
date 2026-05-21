@@ -4,7 +4,7 @@ import MarketPulseWrapper from "@/components/marketpulse/MarketPulseWrapper";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "MarketPulse | MasterKey Real Estate",
+  title: "MarketPulse | Mathias Real Estate Group",
   description:
     "AI-powered market intelligence for Ventura County. Real-time pricing trends, neighborhood insights, and data-driven reports.",
 };

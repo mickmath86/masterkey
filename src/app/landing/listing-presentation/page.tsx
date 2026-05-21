@@ -101,7 +101,7 @@ function AddressTest() {
                         placeholder="Enter your property address..."
                         className="w-full px-4  bg-white py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-base"
                       />
-                      <p className="text-sm mt-2 text-gray-500 dark:text-gray-400 flex flex-col"><span className="font-semibold">MasterKey Real Estate</span> DRE# 02250486</p>
+                      <p className="text-sm mt-2 text-gray-500 dark:text-gray-400 flex flex-col"><span className="font-semibold">Mathias Real Estate Group</span> DRE# 02250486</p>
                   </div>
                   <Button
                     onClick={() => {
@@ -224,7 +224,7 @@ function LandingHero() {
             Sell Your Home with Confidence
           </Heading>
           <Lead className="mt-6 max-w-3xl">
-             Whether you're upgrading, downsizing, or relocating, <span className=" text-sky-500">MasterKey</span> provides expert guidance and proven marketing strategies to help you sell your home quickly and for maximum value.
+             Whether you're upgrading, downsizing, or relocating, <span className=" text-sky-500">Mathias Real Estate Group</span> provides expert guidance and proven marketing strategies to help you sell your home quickly and for maximum value.
           </Lead>
         <div className="mt-16  pb-14">
         <div>
@@ -275,7 +275,7 @@ const testimonials = [
       link:"/questionnaire/listing-presentation", 
       slug: "seller-testimonial-1",
       icon: Home,
-      quote: "MasterKey is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!"
+      quote: "Mathias Real Estate Group is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!"
   },
   {
       title: "Kevin Marsden",
@@ -304,7 +304,7 @@ function Testimonials() {
             Hear from our satisfied sellers
           </Heading>
           {/* <Lead className="mt-6 max-w-3xl">
-             From first-time buyers to seasoned investors, <span className=" text-sky-500">MasterKey</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
+             From first-time buyers to seasoned investors, <span className=" text-sky-500">Mathias Real Estate Group</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
           </Lead> */}
         <div className="mt-16  pb-14">
         <div>
@@ -466,7 +466,7 @@ function NextSteps() {
             Ready to Sell Your Home?
           </Heading>
           {/* <Lead className="mt-6 max-w-3xl">
-             From first-time buyers to seasoned investors, <span className=" text-sky-500">MasterKey</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
+             From first-time buyers to seasoned investors, <span className=" text-sky-500">Mathias Real Estate Group</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
           </Lead> */}
         <div className="mt-16  pb-14">
         <div>
@@ -533,7 +533,7 @@ function CallToAction() {
         </p>
       </hgroup>
       <p className="mx-auto mt-6 max-w-xs text-sm/6 text-gray-500">
-        Experience the MasterKey difference with our expert selling strategies and
+        Experience the Mathias Real Estate Group difference with our expert selling strategies and
         personalized marketing approach.
       </p>
       <div className="mt-6">

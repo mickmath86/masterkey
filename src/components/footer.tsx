@@ -18,7 +18,7 @@ function CallToAction() {
         </p>
       </hgroup>
       <p className="mx-auto mt-6 max-w-xs text-sm/6 text-gray-500">
-        Experience the MasterKey difference with our expert agents and
+        Experience the Mathias Real Estate Group difference with our expert agents and
         cutting-edge technology.
       </p>
       <div className="mt-6">
@@ -146,7 +146,7 @@ function SocialLinks() {
 function Copyright() {
   return (
     <div className="text-sm/6 text-gray-950">
-      &copy; {new Date().getFullYear()} MasterKey Real Estate. All rights reserved.
+      &copy; {new Date().getFullYear()} Mathias Real Estate Group. All rights reserved.
     </div>
   )
 }
@@ -164,7 +164,7 @@ export function Footer() {
                 <div className="col-span-2 flex">
                   <PlusGridItem className="pt-6 lg:pb-6">
                     {/* <Logo className="h-9" /> */}
-                    <h1 className="text-2xl font-bold text-gray-950">MasterKey</h1>
+                    <h1 className="text-2xl font-bold text-gray-950">Mathias Real Estate Group</h1>
                   </PlusGridItem>
                 </div>
                 <div className="col-span-2 grid grid-cols-2 gap-x-8 gap-y-12 lg:col-span-4 lg:grid-cols-subgrid lg:pt-6">

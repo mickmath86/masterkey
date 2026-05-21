@@ -1048,7 +1048,7 @@ function HomeValueResultsInner() {
                 <div>
                   <p className="font-semibold text-gray-950">Mike Mathias</p>
                   <p className="text-xs text-gray-500">
-                    Founder · MasterKey Real Estate
+                    Founder · Mathias Real Estate Group
                   </p>
                   <p className="text-xs text-blue-600 font-medium mt-0.5">
                     DRE #01892427

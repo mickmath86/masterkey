@@ -10,7 +10,7 @@ const faqs = [
   {
     question: 'Who pays for the appraisal?',
     answer:
-      "We do. As part of our process, MasterKey covers the cost of a professional third-party appraisal to establish your verified value. If the listing is cancelled early or the terms of the guarantee aren't met, the appraisal cost may be reimbursed.",
+      "We do. As part of our process, Mathias Real Estate Group covers the cost of a professional third-party appraisal to establish your verified value. If the listing is cancelled early or the terms of the guarantee aren't met, the appraisal cost may be reimbursed.",
   },
   {
     question: 'Who chooses the appraiser?',

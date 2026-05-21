@@ -62,7 +62,7 @@ export default function Content6() {
                   <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400 mr-3">A</h1>
                   <span>
                     <strong className="font-semibold text-gray-900 dark:text-white">Appraisal</strong> <br />
-                    <strong className="text-gray-900 dark:text-white">Independent, Third-Party Valuation (Paid for by MasterKey)</strong> <br />
+                    <strong className="text-gray-900 dark:text-white">Independent, Third-Party Valuation (Paid for by Mathias Real Estate Group)</strong> <br />
                     Next, we bring in a licensed, third-party appraiser — at our expense — to establish an objective baseline value for your home. This appraisal is independent, unbiased, and grounded in real market data. It removes guesswork and gives both you and potential buyers confidence in the value of the property.
                   </span>
                 </li>

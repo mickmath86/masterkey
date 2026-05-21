@@ -894,7 +894,7 @@ function HomeValueQuestionnaireContent() {
                 )}
               </div>
               <p className="text-xs text-gray-400 leading-relaxed">
-                By submitting, you agree to receive communications from MasterKey Real
+                By submitting, you agree to receive communications from Mathias Real Estate Group
                 Estate. We will never sell your information.
               </p>
             </div>

@@ -34,7 +34,7 @@ function Landing({ onStart }: { onStart: () => void }) {
         <div className="max-w-2xl mx-auto space-y-8">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-stone-500 border border-stone-200 px-3 py-1.5 rounded-full">
-            MasterKey · Conejo Valley
+            Mathias Real Estate Group · Conejo Valley
           </div>
 
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-950 leading-tight tracking-tight">

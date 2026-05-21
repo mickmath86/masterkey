@@ -146,7 +146,7 @@ export const TokenCounterIllustration = () => {
                                     {/* Message Bubble */}
                                     <div className={`flex flex-col ${message.sender === 'agent' ? 'items-end' : 'items-start'} max-w-[75%]`}>
                                         <div className="text-[10px] text-gray-500 mb-1 px-1">
-                                            {message.sender === 'buyer' ? 'Danny Postma' : 'MasterKey Agent'}
+                                            {message.sender === 'buyer' ? 'Danny Postma' : 'Mathias Real Estate Group Agent'}
                                         </div>
                                         <div
                                             className={`rounded-2xl px-4 py-2.5 ${

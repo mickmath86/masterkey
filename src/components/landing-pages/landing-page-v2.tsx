@@ -360,7 +360,7 @@ posthog.featureFlags.overrideFeatureFlags({ flags: {'vsl-video-display': 'test'}
                 </FadeIn>
                 <FadeIn >
                   <p className="my-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8 dark:text-gray-400">
-                      MasterKey analyzes your address, upgrades, market trends, and seller conditions to give you a clear, data-backed recommendation: sell now, or wait for a better market.
+                      Mathias Real Estate Group analyzes your address, upgrades, market trends, and seller conditions to give you a clear, data-backed recommendation: sell now, or wait for a better market.
                   </p>
                </FadeIn>
     
@@ -637,7 +637,7 @@ const data = [
     id: "seller-testimonial-1",
     title: "Todd Shillington",
     description:
-      "MasterKey is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!",
+      "Mathias Real Estate Group is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!",
     href: "/questionnaire/listing-presentation",
     image:
       "https://images.unsplash.com/photo-1560170412-0f7df0eb0fb1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2296",

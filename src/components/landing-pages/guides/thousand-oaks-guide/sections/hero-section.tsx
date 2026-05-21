@@ -26,7 +26,7 @@ export function HeroSection() {
           A Deep-Dive, Area-by-Area Buyer Comparison
         </p>
         <p className="text-lg text-white/80 mb-8">
-          MasterKey Real Estate & Property Management
+          Mathias Real Estate Group & Property Management
         </p>
         <button
           onClick={scrollToScorecard}

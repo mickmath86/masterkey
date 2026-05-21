@@ -9,9 +9,9 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'MasterKey Real Estate',
+  title: 'Mathias Real Estate Group',
   description:
-    'MasterKey is a full-service property management and real estate brokerage firm in Ventura County, helping investors maximize returns through tech-driven solutions.',
+    'Mathias Real Estate Group is a full-service property management and real estate brokerage firm in Ventura County, helping investors maximize returns through tech-driven solutions.',
 }
 
 function Header() {
@@ -25,13 +25,13 @@ function Header() {
         <div className="max-w-lg">
           <h2 className="text-2xl font-medium tracking-tight">Our mission</h2>
           <p className="mt-6 text-sm/6 text-gray-600">
-          MasterKey is a full-service property management and real estate brokerage firm based in Ventura County, dedicated to helping investors unlock the true potential of their real estate portfolios. We specialize in managing single-family homes and small multifamily properties with a modern, tech-forward approach that provides transparency, efficiency, and peace of mind.
+          Mathias Real Estate Group is a full-service property management and real estate brokerage firm based in Ventura County, dedicated to helping investors unlock the true potential of their real estate portfolios. We specialize in managing single-family homes and small multifamily properties with a modern, tech-forward approach that provides transparency, efficiency, and peace of mind.
 
           </p>
           <p className="mt-8 text-sm/6 text-gray-600">
           Our team combines deep local market expertise with cutting-edge technology to streamline every aspect of property ownership—from leasing and tenant relations to maintenance coordination and financial reporting. As licensed brokers, we also guide clients through acquisitions and sales, offering a comprehensive solution for building and managing wealth through real estate.
           </p>
-          <p className="mt-8 text-sm/6 text-gray-600">At MasterKey, we believe property ownership should be simple, profitable, and stress-free. By focusing on high-touch service, proactive communication, and investor-focused strategies, we help clients maximize returns while protecting their long-term investments.
+          <p className="mt-8 text-sm/6 text-gray-600">At Mathias Real Estate Group, we believe property ownership should be simple, profitable, and stress-free. By focusing on high-touch service, proactive communication, and investor-focused strategies, we help clients maximize returns while protecting their long-term investments.
           </p>
         </div>
         <div className="pt-20 lg:row-span-2 lg:-mr-16 xl:mr-auto">
@@ -151,7 +151,7 @@ function Team() {
         Founded by an all-star team.
       </Heading>
       <Lead className="mt-6 max-w-3xl">
-        MasterKey is founded by two brothers who bring together decades of technical expertise and real estate knowledge to revolutionize property transactions.
+        Mathias Real Estate Group is founded by two brothers who bring together decades of technical expertise and real estate knowledge to revolutionize property transactions.
       </Lead>
       <div className="mt-12 grid grid-cols-1 gap-12 lg:grid-cols-2">
         <div className="max-w-lg">
@@ -159,7 +159,7 @@ function Team() {
             Mike and Mark Mathias, both licensed brokers with strong technical backgrounds, recognized a fundamental gap in the real estate industry. Mark's experience as a sales lead and product manager for SaaS companies, combined with Mike's expertise from working at a Madison Avenue advertising tech company servicing major clients like Google, Nike, Samsung, and BBC, gave them unique insight into how technology could transform real estate.
           </p>
           <p className="mt-8 text-sm/6 text-gray-600">
-            Together, their mission is to harness the power of technology and apply it to the real estate industry, helping buyers and sellers have the tools to conduct transactions as efficiently as possible. MasterKey provides comprehensive property insights, market analysis, and valuation tools that empower informed decision-making in real estate transactions.
+            Together, their mission is to harness the power of technology and apply it to the real estate industry, helping buyers and sellers have the tools to conduct transactions as efficiently as possible. Mathias Real Estate Group provides comprehensive property insights, market analysis, and valuation tools that empower informed decision-making in real estate transactions.
           </p>
           <div className="mt-6">
             <Button className="w-full sm:w-auto" href="/contact">

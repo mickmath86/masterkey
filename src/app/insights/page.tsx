@@ -7,7 +7,7 @@ import { Footer } from '@/components/footer'
 export const metadata: Metadata = {
   title: 'Market Insights',
   description:
-    'Real estate market insights, trend analysis, and actionable advice for Thousand Oaks and Conejo Valley buyers and sellers from MasterKey.',
+    'Real estate market insights, trend analysis, and actionable advice for Thousand Oaks and Conejo Valley buyers and sellers from Mathias Real Estate Group.',
 }
 
 function AudienceBadge({ audience }: { audience: string }) {

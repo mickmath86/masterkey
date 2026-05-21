@@ -63,7 +63,7 @@ const CHART_METRICS: { key: string; label: string; unit: string; color: string }
 ];
 
 const SOURCES_METRICS: CitationSource[] = [
-  { name: "InfoSparks MLS", url: "https://www.infospacsinc.com", description: "Hard market data sourced from MLS InfoSparks, maintained and updated monthly by MasterKey." },
+  { name: "InfoSparks MLS", url: "https://www.infospacsinc.com", description: "Hard market data sourced from MLS InfoSparks, maintained and updated monthly by Mathias Real Estate Group." },
 ];
 const SOURCES_AI_SUMMARY: CitationSource[] = [
   { name: "Perplexity AI", url: "https://perplexity.ai", description: "AI-generated narrative using Perplexity sonar model with real-time web search" },

@@ -173,7 +173,7 @@ function TwoCard() {
             Buy and Sell with Confidence
           </Heading>
           <Lead className="mt-6 max-w-3xl">
-          Whether you're buying your first home or selling your current property, <span className=" text-green-500">MasterKey</span> provides expert guidance and cutting-edge technology to ensure a smooth, successful transaction at the best possible price.
+          Whether you're buying your first home or selling your current property, <span className=" text-green-500">Mathias Real Estate Group</span> provides expert guidance and cutting-edge technology to ensure a smooth, successful transaction at the best possible price.
           </Lead>
         <div className="mt-16  pb-14">
         <div>
@@ -234,7 +234,7 @@ function Testimonial() {
             </svg>
             <blockquote className="text-xl/8 font-semibold text-gray-900 sm:text-2xl/9 dark:text-white">
               <p>
-                MasterKey is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!
+                Mathias Real Estate Group is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!
               </p>
             </blockquote>
           </div>
@@ -1147,7 +1147,7 @@ const faqs = [
       "We provide property management services throughout Ventura County, including Thousand Oaks, Simi Valley, Camarillo, Oxnard, Ventura, and surrounding communities.",
   },
   {
-    question: "How do I get started with MasterKey?",
+    question: "How do I get started with Mathias Real Estate Group?",
     answer:
       "Simply contact us for a free consultation. We'll inspect your property, provide a market analysis, discuss our services, and create a customized management plan for your investment property.",
   },

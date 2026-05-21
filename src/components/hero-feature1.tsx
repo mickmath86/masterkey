@@ -92,7 +92,7 @@ export default function HeroFeature1() {
         Real Estate & Property Management Services
           </Heading>
           <Lead className="mt-6 max-w-3xl">
-          <span className=" text-sky-500">MasterKey</span> combines cutting-edge technology with expert real estate knowledge to deliver comprehensive brokerage and property management solutions. Our AI-powered platform transforms how you buy, sell, and manage properties.
+          <span className=" text-sky-500">Mathias Real Estate Group</span> combines cutting-edge technology with expert real estate knowledge to deliver comprehensive brokerage and property management solutions. Our AI-powered platform transforms how you buy, sell, and manage properties.
           </Lead>
          <FeaturedPosts/>
         </Container>

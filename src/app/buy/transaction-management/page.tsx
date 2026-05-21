@@ -305,10 +305,10 @@ function Cta() {
             </svg>
             <div className="mx-auto max-w-md text-center lg:mx-0 lg:flex-auto lg:py-32 lg:text-left">
               <h2 className="text-3xl font-semibold tracking-tight text-balance text-white sm:text-4xl">
-                Ready to transform your transactions? Start with MasterKey today.
+                Ready to transform your transactions? Start with Mathias Real Estate Group today.
               </h2>
               <p className="mt-6 text-lg/8 text-pretty text-gray-300">
-                Join thousands of agents and clients who trust MasterKey to guide them through seamless real estate transactions with complete transparency and peace of mind.
+                Join thousands of agents and clients who trust Mathias Real Estate Group to guide them through seamless real estate transactions with complete transparency and peace of mind.
               </p>
               <div className="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
                 <a

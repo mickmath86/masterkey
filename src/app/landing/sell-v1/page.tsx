@@ -153,7 +153,7 @@ function LandingHero() {
             Sell Your Home with Confidence
           </Heading>
           <Lead className="mt-6 max-w-3xl">
-             Whether you're upgrading, downsizing, or relocating, <span className=" text-sky-500">MasterKey</span> provides expert guidance and proven marketing strategies to help you sell your home quickly and for maximum value.
+             Whether you're upgrading, downsizing, or relocating, <span className=" text-sky-500">Mathias Real Estate Group</span> provides expert guidance and proven marketing strategies to help you sell your home quickly and for maximum value.
           </Lead>
         <div className="mt-16  pb-14">
         <div>
@@ -204,7 +204,7 @@ const testimonials = [
       link:"/questionnaire/real-estate-sell", 
       slug: "seller-testimonial-1",
       icon: Home,
-      quote: "MasterKey helped us sell our home in just 12 days for 8% above asking price! Their marketing strategy and expert guidance made all the difference."
+      quote: "Mathias Real Estate Group helped us sell our home in just 12 days for 8% above asking price! Their marketing strategy and expert guidance made all the difference."
   },
   {
       title: "David Chen",
@@ -231,7 +231,7 @@ function Testimonials() {
             Hear from our satisfied sellers
           </Heading>
           {/* <Lead className="mt-6 max-w-3xl">
-             From first-time buyers to seasoned investors, <span className=" text-sky-500">MasterKey</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
+             From first-time buyers to seasoned investors, <span className=" text-sky-500">Mathias Real Estate Group</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
           </Lead> */}
         <div className="mt-16  pb-14">
         <div>
@@ -392,7 +392,7 @@ function NextSteps() {
             Ready to Sell Your Home?
           </Heading>
           {/* <Lead className="mt-6 max-w-3xl">
-             From first-time buyers to seasoned investors, <span className=" text-sky-500">MasterKey</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
+             From first-time buyers to seasoned investors, <span className=" text-sky-500">Mathias Real Estate Group</span> provides expert guidance and cutting-edge technology to help you find and secure your dream home at the best possible price.
           </Lead> */}
         <div className="mt-16  pb-14">
         <div>
@@ -449,7 +449,7 @@ function CallToAction() {
         </p>
       </hgroup>
       <p className="mx-auto mt-6 max-w-xs text-sm/6 text-gray-500">
-        Experience the MasterKey difference with our expert selling strategies and
+        Experience the Mathias Real Estate Group difference with our expert selling strategies and
         personalized marketing approach.
       </p>
       <div className="mt-6">

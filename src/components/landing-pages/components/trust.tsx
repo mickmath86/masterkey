@@ -26,7 +26,7 @@ export default function Trust() {
         <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-2">
           <div className="lg:ml-auto lg:pt-4 lg:pl-4">
             <div className="lg:max-w-lg">
-              <h2 className="text-base/7 font-semibold text-sky-600 dark:text-sky-400">Why Choose MasterKey</h2>
+              <h2 className="text-base/7 font-semibold text-sky-600 dark:text-sky-400">Why Choose Mathias Real Estate Group</h2>
               <p className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl dark:text-white">
                 Built on Trust & Expertise
               </p>

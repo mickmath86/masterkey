@@ -63,7 +63,7 @@ function Hero() {
             </FadeInUp>
             <FadeInUp delay={0.4}>
               <p className="mt-8 max-w-lg text-xl/7 font-medium text-gray-950/75 sm:text-xl/8">
-                MasterKey combines expert agents with cutting-edge technology to help you buy, sell, and manage properties with confidence.
+                Mathias Real Estate Group combines expert agents with cutting-edge technology to help you buy, sell, and manage properties with confidence.
               </p>
             </FadeInUp>
             

@@ -58,7 +58,7 @@ export default function QuestionnairePage() {
         <div className="relative h-full flex items-center justify-center p-8">
           <div className="text-center text-white max-w-lg">
             <h1 className="text-4xl font-bold mb-4">
-              Welcome to MasterKey
+              Welcome to Mathias Real Estate Group
             </h1>
             <p className="text-lg text-white/90">
               Your trusted partner for all real estate needs. Let us help you achieve your property goals.

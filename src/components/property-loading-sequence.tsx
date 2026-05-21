@@ -198,7 +198,7 @@ export function PropertyLoadingSequence({ onComplete, address }: PropertyLoading
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Powered by MasterKey AI • Secure & Confidential
+            Powered by Mathias Real Estate Group AI • Secure & Confidential
           </p>
         </div>
       </div>

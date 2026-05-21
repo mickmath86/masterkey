@@ -15,6 +15,7 @@
  */
 
 import { MasterKeyLogo, MasterKeyLogoInlineWhite } from "./logo";
+import Image from "next/image";
 
 interface NavbarMinimalProps {
   /** "light" renders the standard dark logo on a white bar (default).
@@ -39,8 +40,8 @@ export default function NavbarMinimal({ theme = "light" }: NavbarMinimalProps) {
         className="mx-auto flex max-w-7xl items-center justify-center px-6 py-5 lg:px-8"
       >
         {/* Logo — no link, intentionally non-interactive on lead-capture pages */}
-        <span aria-label="MasterKey Real Estate">
-          {isDark ? <MasterKeyLogoInlineWhite /> : <MasterKeyLogo />}
+        <span aria-label="Mathias Real Estate Group">
+         <Image src="/logos/inline-mg-logo3.png" alt="Mathias Real Estate Group" width={200} height={32} />
         </span>
       </nav>
     </header>

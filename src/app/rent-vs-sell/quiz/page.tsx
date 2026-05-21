@@ -899,7 +899,7 @@ function QuizInner() {
                             ? <>The <strong>{fmt(avm.rent)}/mo</strong> figure is based on local area averages. Your home&apos;s actual rental value may be higher depending on upgrades, lot size, location, and condition.</>
                             : <>Enter your estimated monthly rent, or leave blank and we&apos;ll use local area averages. Your home&apos;s actual rental value may be higher depending on upgrades, lot size, location, and condition.</>
                           }
-                          {" "}<a href="/contact" className="text-blue-500 hover:underline font-medium whitespace-nowrap">Contact MasterKey</a> for a free, personalized rental analysis.
+                          {" "}<a href="/contact" className="text-blue-500 hover:underline font-medium whitespace-nowrap">Contact Mathias Real Estate Group</a> for a free, personalized rental analysis.
                         </p>
                       </div>
                     </div>
@@ -1114,7 +1114,7 @@ function QuizInner() {
       {/* ── Footer strip ── */}
       <footer className="border-t border-gray-100 px-6 py-4">
         <div className="max-w-lg mx-auto flex items-center justify-between text-xs text-gray-300">
-          <span>MasterKey Real Estate · Ventura County, CA</span>
+          <span>Mathias Real Estate Group · Ventura County, CA</span>
           <span>DRE #01892427</span>
         </div>
       </footer>

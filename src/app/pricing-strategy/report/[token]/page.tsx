@@ -43,7 +43,7 @@ function CalendarModal({ onClose }: { onClose: () => void }) {
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
             <div>
               <h3 className="text-base font-semibold text-gray-900">Schedule a Pricing Consultation</h3>
-              <p className="text-xs text-gray-400 mt-0.5">Discuss your strategy with a MasterKey advisor — no obligation.</p>
+              <p className="text-xs text-gray-400 mt-0.5">Discuss your strategy with a Mathias Real Estate Group advisor — no obligation.</p>
             </div>
             <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
               <XMarkIcon className="w-5 h-5" />
@@ -116,7 +116,7 @@ function ReportContent({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">
-                  MasterKey · Seller Strategy Assessment
+                  Mathias Real Estate Group · Seller Strategy Assessment
                 </p>
                 <h1 className="text-3xl font-bold text-gray-950 leading-tight">
                   {firstName ? `${firstName}'s` : "Your"} Pricing Strategy Report
@@ -200,7 +200,7 @@ function ReportContent({
           <div className="print:hidden bg-white border border-gray-100 rounded-2xl p-6 text-center space-y-4">
             <p className="font-semibold text-gray-900">Ready to talk through your strategy?</p>
             <p className="text-sm text-gray-500">
-              A MasterKey advisor can review your specific situation and give you a data-backed pricing recommendation — no cost, no obligation.
+              A Mathias Real Estate Group advisor can review your specific situation and give you a data-backed pricing recommendation — no cost, no obligation.
             </p>
             <button
               onClick={() => setCalendarOpen(true)}
@@ -219,7 +219,7 @@ function ReportContent({
 
           {/* Print footer */}
           <div className="hidden print:block mt-8 pt-4 border-t border-gray-200 text-xs text-gray-400">
-            <p>MasterKey Real Estate · Thousand Oaks, CA · DRE #01892427 · usemasterkey.com</p>
+            <p>Mathias Real Estate Group · Thousand Oaks, CA · DRE #01892427 · usemasterkey.com</p>
             <p className="mt-1">Report generated {formattedDate} · Token: {token}</p>
           </div>
         </div>

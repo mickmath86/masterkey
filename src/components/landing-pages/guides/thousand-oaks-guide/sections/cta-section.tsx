@@ -14,7 +14,7 @@ export function CTASection() {
         <div className="bg-gray-50 rounded-lg p-8 mb-8">
           <p className="text-lg text-gray-700 mb-6">
             Thinking about buying in Thousand Oaks? Schedule a free, no-obligation homebuyer 
-            consultation with MasterKey Real Estate & Property Management. We'll help you interpret 
+            consultation with Mathias Real Estate Group & Property Management. We'll help you interpret 
             these scores, narrow the right areas, and build a smart buying strategy.
           </p>
           <a

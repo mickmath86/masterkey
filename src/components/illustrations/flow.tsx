@@ -186,7 +186,7 @@ export const FlowIllustration = () => {
 
             <div className="relative z-10 mb-20 mt-24">
                 <div className="dark:bg-illustration/75 dark:ring-border-illustration relative flex size-14 items-center justify-center rounded-full bg-gray shadow-xl shadow-black/20 ring-1 ring-black backdrop-blur">
-                    <Image src="/logos/mark.svg" alt="MasterKey" width={24} height={24} />
+                    <Image src="/logos/mark.svg" alt="Mathias Real Estate Group" width={24} height={24} />
                 </div>
             </div>
 

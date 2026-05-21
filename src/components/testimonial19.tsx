@@ -32,7 +32,7 @@ const defaultTestimonials: Testimonial[] = [
     name: "Eric Etebari",
     role: "Property Owner",
     company: "Malibu / Ventura County, CA",
-    content: "Working with Mark, Mike, and Keith at MasterKey has been a great experience. Navigating a sale in Malibu can feel overwhelming, but their team has made everything clear and easy to understand. They came in with a thoughtful strategy, strong local knowledge, and communication that actually makes you feel supported.",
+    content: "Working with Mark, Mike, and Keith at Mathias Real Estate Group has been a great experience. Navigating a sale in Malibu can feel overwhelming, but their team has made everything clear and easy to understand. They came in with a thoughtful strategy, strong local knowledge, and communication that actually makes you feel supported.",
     rating: 5,
     avatar: "/testimonials/eric-etibari.jpeg",
   },
@@ -40,7 +40,7 @@ const defaultTestimonials: Testimonial[] = [
     name: "Todd Shillington",
     role: "Property Owner",
     company: "Ventura County, CA",
-    content: "MasterKey is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!",
+    content: "Mathias Real Estate Group is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!",
     rating: 5,
     avatar: "/testimonials/todd-shillington.png",
   },
@@ -97,7 +97,7 @@ const defaultTestimonials: Testimonial[] = [
     name: "Maria LaCanfora",
     role: "First-Time Buyer",
     company: "Ventura County, CA",
-    content: "My husband and I had an absolutely amazing experience working with Mark at MasterKey. As first-time home buyers, we started out feeling overwhelmed, but Mark quickly put us at ease. He walked us through every step and made sure we always knew what to expect. We couldn't be happier with our new home.",
+    content: "My husband and I had an absolutely amazing experience working with Mark at Mathias Real Estate Group. As first-time home buyers, we started out feeling overwhelmed, but Mark quickly put us at ease. He walked us through every step and made sure we always knew what to expect. We couldn't be happier with our new home.",
     rating: 5,
     
   },
@@ -106,7 +106,7 @@ const defaultTestimonials: Testimonial[] = [
 const Testimonial19 = ({
   className,
   heading = "What Our Clients Say",
-  description = "Don't just take our word for it. Here's what real estate professionals and homeowners have to say about their experience with MasterKey.",
+  description = "Don't just take our word for it. Here's what real estate professionals and homeowners have to say about their experience with Mathias Real Estate Group.",
   testimonials = defaultTestimonials,
 }: Testimonial19Props) => {
   return (

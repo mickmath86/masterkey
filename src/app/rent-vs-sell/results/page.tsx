@@ -52,7 +52,7 @@ const VERDICT_CONFIG = {
     accent: "text-green-600",
     bg: "bg-green-50 border-green-200",
     bar: "#16a34a",
-    cta: "MasterKey Property Management handles everything.",
+    cta: "Mathias Real Estate Group Property Management handles everything.",
     ctaSub: "Full-service management at 9% — passive income without the headaches.",
     btnClass: "bg-green-600 hover:bg-green-500",
   },
@@ -306,7 +306,7 @@ function ResultsInner() {
             </div>
             <div className="space-y-2.5">
               <Row label="Estimated sale price" value={fmt(results.salePrice)} />
-              <Row label="Agent commission (5.5%)" value={`−${fmt(results.agentFee)}`} neg info="Typical seller-paid agent commission in Ventura County, covering both listing and buyer's agent fees. This is negotiable — MasterKey's commission structure may differ." />
+              <Row label="Agent commission (5.5%)" value={`−${fmt(results.agentFee)}`} neg info="Typical seller-paid agent commission in Ventura County, covering both listing and buyer's agent fees. This is negotiable — Mathias Real Estate Group's commission structure may differ." />
               <Row label="Closing costs + staging" value={`−${fmt(results.closingAndStagingCosts)}`} neg info="Closing costs include escrow fees, title insurance, transfer tax, and misc. seller costs (~1% of sale price). Staging is estimated at $3,500 — actual cost depends on home size and condition." />
               <Row label="Mortgage payoff" value={`−${fmt(results.mortgagePayoff)}`} neg />
               <div className="border-t border-blue-200 pt-2">
@@ -374,14 +374,14 @@ function ResultsInner() {
                 value={`${fmt(results.monthlyRent)}/mo`}
                 info={monthlyRentUsed && monthlyRentUsed !== 3950
                   ? "Based on Rentcast's long-term rental AVM for your specific property. Actual rent may vary."
-                  : "Based on Ventura County SFR averages. Your home's actual rent may be higher. Contact MasterKey for a personalized rental analysis."}
+                  : "Based on Ventura County SFR averages. Your home's actual rent may be higher. Contact Mathias Real Estate Group for a personalized rental analysis."}
               />
               <div className="bg-white/60 rounded-lg p-2.5 space-y-1.5">
                 <p className="text-[11px] text-gray-500 font-medium mb-1">Monthly expenses</p>
                 {(results.monthlyMortgage ?? 0) > 0 && <Row label="Mortgage P&I" value={`−${fmt(results.monthlyMortgage)}/mo`} neg />}
                 <Row label="Property tax (0.7%)" value={`−${fmt(results.monthlyPropertyTax)}/mo`} neg />
                 <Row label="Insurance" value={`−${fmt(results.monthlyInsurance)}/mo`} neg />
-                <Row label="Mgmt fee (9%)" value={`−${fmt(results.monthlyMgmtFee)}/mo`} neg info="MasterKey charges 8–10% of monthly rent for full-service property management, including tenant screening, maintenance coordination, and monthly reporting. We used 9% (midpoint) here." />
+                <Row label="Mgmt fee (9%)" value={`−${fmt(results.monthlyMgmtFee)}/mo`} neg info="Mathias Real Estate Group charges 8–10% of monthly rent for full-service property management, including tenant screening, maintenance coordination, and monthly reporting. We used 9% (midpoint) here." />
                 <Row label="Maintenance (1%/yr)" value={`−${fmt(results.monthlyMaintenance)}/mo`} neg />
                 <Row label="Vacancy reserve (5%)" value={`−${fmt(results.monthlyVacancy)}/mo`} neg />
               </div>

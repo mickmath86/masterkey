@@ -179,7 +179,7 @@ function ThreeCard() {
             Maximize Your Home's Value
           </Heading>
           <Lead className="mt-6 max-w-3xl">
-          From first-time sellers to experienced investors, <span className=" text-sky-500">MasterKey</span> provides proven marketing strategies and cutting-edge technology to help you sell your home quickly and for the highest possible price.
+          From first-time sellers to experienced investors, <span className=" text-sky-500">Mathias Real Estate Group</span> provides proven marketing strategies and cutting-edge technology to help you sell your home quickly and for the highest possible price.
           </Lead>
         <div className="mt-16  pb-14">
         <div>
@@ -406,7 +406,7 @@ function Testimonial() {
                 </svg>
                 <blockquote className="text-xl/8 font-semibold text-white sm:text-2xl/9 dark:text-gray-100">
                   <p>
-                  MasterKey is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!
+                  Mathias Real Estate Group is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!
                   </p>
                 </blockquote>
                 <figcaption className="mt-8 text-base">

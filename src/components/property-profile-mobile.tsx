@@ -62,7 +62,7 @@ export default function PropertyProfileMobile() {
             <div className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
               <div className="flex items-center justify-between">
                 <div className="text-sm font-semibold text-gray-900">Property Report</div>
-                <div className="text-xs text-gray-500">MasterKey</div>
+                <div className="text-xs text-gray-500">Mathias Real Estate Group</div>
               </div>
             </div>
 

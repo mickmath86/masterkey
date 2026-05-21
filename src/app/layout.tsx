@@ -8,8 +8,8 @@ import { PostHogProvider } from '@/components/PostHogProvider'
 
 export const metadata: Metadata = {
   title: {
-    template: '%s - MasterKey',
-    default: 'MasterKey - Real Estate & Property Management',
+    template: '%s - Mathias Real Estate Group',
+    default: 'Mathias Real Estate Group - Real Estate & Property Management',
   },
 }
 

@@ -157,7 +157,7 @@ export default function Iphone15Pro({
           <div className={`w-full h-full bg-gray-50 flex flex-col transition-opacity duration-300 ${isAnimating ? 'opacity-0' : 'opacity-100'}`}>
             {/* Header */}
             <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-              <div className="text-xs font-medium text-gray-900">MasterKey</div>
+              <div className="text-xs font-medium text-gray-900">Mathias Real Estate Group</div>
               <div className="text-xs text-gray-500">Step {currentStepData.step} of 5</div>
             </div>
             

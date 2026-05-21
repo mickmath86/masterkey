@@ -150,7 +150,7 @@ export default function HomeValuePage() {
         <div className="max-w-6xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-950">
-              How MasterKey estimates your home
+              How Mathias Real Estate Group estimates your home
             </h2>
             <p className="text-gray-500 mt-3 max-w-xl mx-auto">
               Our valuation combines three data sources with your specific home

@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     'Real-time market data for Thousand Oaks, Westlake Village, and the greater Conejo Valley. Track median prices, inventory, days on market, and mortgage rates.',
   openGraph: {
-    title: 'Conejo Valley Market Pulse | MasterKey',
+    title: 'Conejo Valley Market Pulse | Mathias Real Estate Group',
     description:
       'Real-time market data for Thousand Oaks, Westlake Village, and the greater Conejo Valley. Track median prices, inventory, days on market, and mortgage rates.',
     type: 'website',

@@ -178,7 +178,7 @@ function AppSidebar({
           <div className="group-data-[collapsible=icon]:hidden">
             <Image
               src={isDark ? '/logos/masterkey-inline-white.png' : '/logos/masterkey-black-inline.png'}
-              alt="MasterKey"
+              alt="Mathias Real Estate Group"
               width={140}
               height={32}
               className="h-8 w-auto"

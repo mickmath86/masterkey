@@ -180,7 +180,7 @@ function ConfirmationInner() {
       {/* Footer */}
       <footer className="border-t border-border px-6 py-4">
         <div className="max-w-lg mx-auto flex items-center justify-between text-xs text-muted-foreground/50">
-          <span>MasterKey Real Estate · Thousand Oaks, CA</span>
+          <span>Mathias Real Estate Group · Thousand Oaks, CA</span>
           <span>DRE #01892427</span>
         </div>
       </footer>

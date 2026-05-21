@@ -235,7 +235,7 @@ export default function Blog() {
                             <div className="max-w-lg px-6 pb-6 pt-12 md:pt-24">
                                 <span className="text-white/40">Blog</span>
                                 <h2 className="text-white/60 mt-4 text-balance text-4xl font-semibold">
-                                    News, insights and more from <strong className="text-white font-semibold">MasterKey</strong>
+                                    News, insights and more from <strong className="text-white font-semibold">Mathias Real Estate Group</strong>
                                 </h2>
                             </div>
                         </div>

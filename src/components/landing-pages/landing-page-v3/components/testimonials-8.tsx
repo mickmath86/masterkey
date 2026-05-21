@@ -8,7 +8,7 @@ const TESTIMONIALS = [
         name: 'Todd Shillington',
         role: 'Property Owner',
         avatar: 'https://images.unsplash.com/photo-1560170412-0f7df0eb0fb1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2296',
-        testimonial: 'MasterKey is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!',
+        testimonial: 'Mathias Real Estate Group is an amazing company. Their talent extends well past property management into construction and Real Estate Brokerage as well. They gave me all the consulting I needed to help me get the highest return I could ask for on my property. Highly recommend!!',
     },
     {
         name: 'Kevin Marsden',
@@ -49,8 +49,8 @@ export function Testimonials() {
             className="bg-muted/50 py-12 md:py-24">
             <div className="mx-auto max-w-5xl px-6">
                 <div className="mx-auto max-w-2xl text-balance text-center">
-                    <h2 className="text-foreground mb-4 text-3xl font-semibold tracking-tight md:text-4xl">What our clients are saying about MasterKey</h2>
-                    <p className="text-muted-foreground mb-6 md:mb-12 lg:mb-16">Join the growing number of property owners who trust MasterKey for their real estate and property management needs.</p>
+                    <h2 className="text-foreground mb-4 text-3xl font-semibold tracking-tight md:text-4xl">What our clients are saying about Mathias Real Estate Group</h2>
+                    <p className="text-muted-foreground mb-6 md:mb-12 lg:mb-16">Join the growing number of property owners who trust Mathias Real Estate Group for their real estate and property management needs.</p>
                 </div>
                 <div className="rounded-(--radius) border-border/50 relative lg:border">
                     <div className="lg:*:nth-4:rounded-r-none lg:*:nth-5:rounded-br-none lg:*:nth-6:rounded-b-none lg:*:nth-5:rounded-tl-none lg:*:nth-3:rounded-l-none lg:*:nth-2:rounded-tl-none lg:*:nth-2:rounded-br-none lg:*:nth-1:rounded-t-none grid gap-4 sm:grid-cols-2 sm:grid-rows-4 lg:grid-cols-3 lg:grid-rows-3 lg:gap-px">
@@ -70,7 +70,7 @@ export function Testimonials() {
                                     height={20}
                                     width={136}
                                 />
-                                <p>"MasterKey transformed our property investment strategy. Their comprehensive market analysis and professional guidance helped us maximize our returns while minimizing our stress throughout the entire process."</p>
+                                <p>"Mathias Real Estate Group transformed our property investment strategy. Their comprehensive market analysis and professional guidance helped us maximize our returns while minimizing our stress throughout the entire process."</p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="ring-foreground/10 aspect-square size-9 overflow-hidden rounded-lg border border-transparent shadow-md shadow-black/15 ring-1">
@@ -95,7 +95,7 @@ export function Testimonials() {
                                     height={20}
                                     width={56}
                                 />
-                                <p>"Working with MasterKey was a game-changer for our property portfolio. Their expertise in both management and sales helped us make informed decisions that significantly increased our property values."</p>
+                                <p>"Working with Mathias Real Estate Group was a game-changer for our property portfolio. Their expertise in both management and sales helped us make informed decisions that significantly increased our property values."</p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="ring-foreground/10 aspect-square size-9 overflow-hidden rounded-lg border border-transparent shadow-md shadow-black/15 ring-1">
@@ -120,7 +120,7 @@ export function Testimonials() {
                                     height={24}
                                     width={56}
                                 />
-                                <p>"MasterKey's market analysis tools gave us unprecedented insight into local property trends. We were able to time our sale perfectly and achieved 15% above our initial asking price."</p>
+                                <p>"Mathias Real Estate Group's market analysis tools gave us unprecedented insight into local property trends. We were able to time our sale perfectly and achieved 15% above our initial asking price."</p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="ring-foreground/10 aspect-square size-9 overflow-hidden rounded-lg border border-transparent shadow-md shadow-black/15 ring-1">

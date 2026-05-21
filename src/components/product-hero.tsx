@@ -133,7 +133,7 @@ export default function ProductHero() {
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="h-6 w-20 rounded bg-sky-500 flex items-center justify-center">
-                  <span className="text-xs font-medium text-white">MasterKey</span>
+                  <span className="text-xs font-medium text-white">Mathias Real Estate Group</span>
                 </div>
                 <div className="text-xs text-gray-500">Step 2 of 9</div>
               </div>
@@ -186,7 +186,7 @@ export default function ProductHero() {
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="h-6 w-20 rounded bg-sky-500 flex items-center justify-center">
-                  <span className="text-xs font-medium text-white">MasterKey</span>
+                  <span className="text-xs font-medium text-white">Mathias Real Estate Group</span>
                 </div>
                 <div className="text-xs text-gray-500">Step 3 of 9</div>
               </div>
@@ -254,7 +254,7 @@ export default function ProductHero() {
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="h-6 w-20 rounded bg-sky-500 flex items-center justify-center">
-                  <span className="text-xs font-medium text-white">MasterKey</span>
+                  <span className="text-xs font-medium text-white">Mathias Real Estate Group</span>
                 </div>
                 <div className="text-xs text-gray-500">Step 4 of 9</div>
               </div>
@@ -296,7 +296,7 @@ export default function ProductHero() {
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="h-6 w-20 rounded bg-sky-500 flex items-center justify-center">
-                  <span className="text-xs font-medium text-white">MasterKey</span>
+                  <span className="text-xs font-medium text-white">Mathias Real Estate Group</span>
                 </div>
                 <div className="text-xs text-gray-500">Processing...</div>
               </div>

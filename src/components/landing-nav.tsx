@@ -347,7 +347,7 @@ export default function LandingNav() {
       <nav aria-label="Global" className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-0">
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5">
-            <span className="sr-only">MasterKey</span>
+            <span className="sr-only">Mathias Real Estate Group</span>
        
             {/* <Image
               alt=""

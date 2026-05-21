@@ -10,7 +10,7 @@ const faqs = [
   {
     question: 'Who pays for the market analysis and evaluation?',
     answer:
-      "We do. As part of our process, MasterKey covers the cost of comprehensive market analysis and professional evaluation to establish your target price point. This is included in our service at no additional cost to you.",
+      "We do. As part of our process, Mathias Real Estate Group covers the cost of comprehensive market analysis and professional evaluation to establish your target price point. This is included in our service at no additional cost to you.",
   },
   {
     question: 'How is the target price determined?',

@@ -69,7 +69,7 @@ export default function MarketAnalysisPage() {
             </h1>
             <div className="mt-6 max-w-xl lg:mt-0 xl:col-end-1 xl:row-start-1">
               <p className="text-lg leading-8 text-gray-600">
-                Leverage MasterKey's sophisticated analytics platform to make data-driven real estate decisions. Our proprietary tools analyze market trends, comparable sales, and pricing strategies to give you the competitive edge.
+                Leverage Mathias Real Estate Group's sophisticated analytics platform to make data-driven real estate decisions. Our proprietary tools analyze market trends, comparable sales, and pricing strategies to give you the competitive edge.
               </p>
               <div className="mt-10 flex items-center gap-x-6">
                 <Button size="lg" className="bg-sky-600 hover:bg-sky-500">
@@ -385,7 +385,7 @@ export default function MarketAnalysisPage() {
               Ready to gain your competitive advantage?
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-gray-600">
-              Join thousands of real estate professionals who rely on MasterKey's market intelligence to close more deals and maximize profits.
+              Join thousands of real estate professionals who rely on Mathias Real Estate Group's market intelligence to close more deals and maximize profits.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Button size="lg" className="bg-sky-600 hover:bg-sky-500">

@@ -121,7 +121,7 @@ export default function ValueSection() {
                     <svg className="size-6 text-sky-600 mr-3 flex-shrink-0 dark:text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span><strong className="text-gray-900 dark:text-white">Local insights</strong> from MasterKey's experienced real estate team</span>
+                    <span><strong className="text-gray-900 dark:text-white">Local insights</strong> from Mathias Real Estate Group's experienced real estate team</span>
                   </li>
                 </ul>
               </div>

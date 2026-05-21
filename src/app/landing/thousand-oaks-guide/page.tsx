@@ -16,12 +16,12 @@ export const metadata: Metadata = {
     'Thousand Oaks home buying',
     'Thousand Oaks relocation guide'
   ],
-  authors: [{ name: 'MasterKey Real Estate' }],
+  authors: [{ name: 'Mathias Real Estate Group' }],
   openGraph: {
     title: 'Free Thousand Oaks Neighborhood Guide | Expert Area Ratings',
     description: 'Get expert video reviews and detailed ratings for 10 Thousand Oaks neighborhoods. Compare schools, amenities, transit, crime, and more.',
     url: 'https://masterkeyrealestate.com/landing/thousand-oaks',
-    siteName: 'MasterKey Real Estate',
+    siteName: 'Mathias Real Estate Group',
     images: [
       {
         url: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80',
