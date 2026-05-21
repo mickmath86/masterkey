@@ -356,7 +356,7 @@ export default function Navbar3() {
               height={100}
               className="h-8 w-auto dark:hidden"
             /> */}
-            <MasterKeyLogo/>
+            <Image src="/logos/inline-mg-logo3.png" alt="Mathias Group Logo" width={200} height={100} />
        
           </Link>
         </div>

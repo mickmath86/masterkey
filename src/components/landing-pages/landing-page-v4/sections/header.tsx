@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Logo } from '@/components/logo'
 import { MasterKeyLogoInlineBlack } from '@/components/logo'
 import { Button } from '@/components/ui/button'
@@ -179,7 +180,7 @@ export function Header() {
                                 href="/"
                                 aria-label="home"
                                 className="flex items-center space-x-2">
-                                <MasterKeyLogoInlineBlack className="h-8 w-auto" />
+                                <Image src="/logos/inline-mg-logo3.png" alt="Mathias Group Logo" width={200} height={100} />    
                             </Link>
 
                             {isLarge && <NavMenu />}
