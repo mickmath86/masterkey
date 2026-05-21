@@ -24,7 +24,7 @@ import PropertyProfileCTA from '@/components/property-profile-cta'
 
 export const metadata: Metadata = {
   description:
-    'Radiant helps you sell more by revealing sensitive information about your customers.',
+    'Mathias Real Estate Group combines expert agents with cutting-edge technology to help you buy, sell, and manage properties in Ventura County with confidence.',
 }
 
 function Hero() {
@@ -39,7 +39,7 @@ function Hero() {
         }}
       />
       {/* Gradient overlay */}
-      <Gradient className="absolute inset-2 bottom-0 rounded-4xl ring-1 ring-black/5 ring-inset opacity-60" />
+      <Gradient className="absolute inset-2 bottom-0 rounded-4xl ring-1 ring-black/5 ring-inset opacity-80" />
       <Container className="relative">
         {/* <Navbar
           banner={
