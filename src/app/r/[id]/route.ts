@@ -13,7 +13,7 @@
  * If the ID is unknown, redirect to the rent-vs-sell landing page.
  *
  * Usage in GHL SMS template:
- *   "Your Sell vs. Rent report: https://www.usemasterkey.com/r/{{reportId}}"
+ *   "Your Sell vs. Rent report: https://www.mathiasregroup.com/r/{{reportId}}"
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -35,7 +35,7 @@ export async function GET(
 ) {
   const { id: rawId } = await params;
   const id = rawId?.trim();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.usemasterkey.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.mathiasregroup.com";
   const fallback = `${siteUrl}/rent-vs-sell`;
 
   if (!id) {

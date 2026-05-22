@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!error) {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.usemasterkey.com";
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.mathiasregroup.com";
       const reportUrl = `${siteUrl}/rent-vs-sell/results?id=${id}`;
       return NextResponse.json({ id, url: reportUrl, expiresAt });
     }

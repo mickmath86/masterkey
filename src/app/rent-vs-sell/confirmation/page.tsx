@@ -28,7 +28,7 @@ function ConfirmationInner() {
   // All data passed as URL params (no PII in path, confirmation is ephemeral)
   const reportId      = searchParams.get("id") ?? "";
   const reportUrl     = reportId
-    ? `https://www.usemasterkey.com/rent-vs-sell/results?id=${reportId}`
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/rent-vs-sell/results?id=${reportId}`
     : "";
   const origEmail     = searchParams.get("email") ?? "";
   const origPhone     = searchParams.get("phone") ?? "";
