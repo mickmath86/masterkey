@@ -6,8 +6,26 @@
 
 @theme {
   --font-sans: Switzer, system-ui, sans-serif;
+  --font-display: 'Instrument Serif', Georgia, serif;
 
   --radius-4xl: 2rem;
+
+  /* ── Olive scale (used by market-updates deck) ── */
+  --color-olive-50:  oklch(97% 0.008 107);
+  --color-olive-100: oklch(94% 0.012 107);
+  --color-olive-200: oklch(88% 0.018 107);
+  --color-olive-300: oklch(79% 0.025 107);
+  --color-olive-400: oklch(68% 0.032 107);
+  --color-olive-500: oklch(57% 0.033 107);
+  --color-olive-600: oklch(48% 0.030 107);
+  --color-olive-700: oklch(40% 0.026 107);
+  --color-olive-800: oklch(32% 0.020 107);
+  --color-olive-900: oklch(24% 0.015 107);
+  --color-olive-950: oklch(17% 0.010 107);
+
+  /* ── Mist scale ── */
+  --color-mist-100: oklch(96% 0.004 107);
+  --color-mist-950: oklch(13% 0.006 107);
 }
 
 @keyframes move-x {

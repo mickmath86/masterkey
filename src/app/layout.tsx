@@ -33,6 +33,10 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://api.fontshare.com/css?f%5B%5D=switzer@400,500,600,700&amp;display=swap"
         />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
+        />
       </head>
       <body className="text-gray-950 antialiased">
         <noscript>
