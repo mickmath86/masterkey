@@ -19,6 +19,7 @@ import {
   Percent,
   Phone,
   Globe,
+  TrendingUp,
 } from 'lucide-react'
 import {
   BarChart,
@@ -107,133 +108,249 @@ function fmtFull(n: number | null | undefined): string {
   return `$${n.toLocaleString('en-US')}`
 }
 
-function delta(current: number | null | undefined, prior: number | null | undefined): number | null {
+function delta(
+  current: number | null | undefined,
+  prior: number | null | undefined
+): number | null {
   if (current == null || prior == null || prior === 0) return null
   return Math.round(((current - prior) / prior) * 100 * 10) / 10
 }
 
-function DeltaBadge({ pct, invert = false, size = 'sm' }: { pct: number | null; invert?: boolean; size?: 'xs' | 'sm' }) {
-  if (pct == null) return <span className="text-gray-300 text-xs">—</span>
+/** Kickbord-style delta badge — uses olive/emerald/red */
+function DeltaBadge({
+  pct,
+  invert = false,
+  size = 'sm',
+}: {
+  pct: number | null
+  invert?: boolean
+  size?: 'xs' | 'sm'
+}) {
+  if (pct == null) return <span className="text-olive-400 text-xs">—</span>
   const positive = invert ? pct < 0 : pct > 0
   const zero = pct === 0
-  const base = size === 'xs' ? 'text-[10px]' : 'text-xs'
-  if (zero) return <span className={`inline-flex items-center gap-0.5 ${base} text-gray-400`}><Minus className="w-3 h-3" />0%</span>
+  const cls = size === 'xs' ? 'text-[10px]' : 'text-xs'
+  if (zero)
+    return (
+      <span className={`inline-flex items-center gap-0.5 ${cls} text-olive-500`}>
+        <Minus className="w-3 h-3" />0%
+      </span>
+    )
   return (
-    <span className={`inline-flex items-center gap-0.5 ${base} font-semibold ${positive ? 'text-emerald-600' : 'text-red-500'}`}>
+    <span
+      className={`inline-flex items-center gap-0.5 ${cls} font-semibold ${
+        positive ? 'text-emerald-700' : 'text-red-600'
+      }`}
+    >
       {positive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
       {Math.abs(pct)}%
     </span>
   )
 }
 
-function MarketConditionMeter({ mos }: { mos: number | null }) {
-  if (mos == null) return null
-  const isSeller = mos < 3
-  const isBalanced = mos >= 3 && mos <= 6
-  const label = isSeller ? "Seller's Market" : isBalanced ? 'Balanced Market' : "Buyer's Market"
-  const pct = Math.min(100, Math.max(0, (mos / 9) * 100))
-  const dotColor = isSeller ? 'bg-orange-500' : isBalanced ? 'bg-amber-400' : 'bg-emerald-500'
-  const textColor = isSeller ? 'text-orange-600' : isBalanced ? 'text-amber-600' : 'text-emerald-600'
-
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <span className="text-xs text-gray-400">Seller's</span>
-        <span className={`text-sm font-bold ${textColor}`}>{label}</span>
-        <span className="text-xs text-gray-400">Buyer's</span>
-      </div>
-      <div className="relative h-2 rounded-full bg-gray-100">
-        <div className={`absolute top-0 left-0 h-2 rounded-full bg-gradient-to-r from-orange-400 via-amber-300 to-emerald-400`} style={{ width: '100%', opacity: 0.25 }} />
-        <div className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white shadow-md ${dotColor}`} style={{ left: `calc(${pct}% - 8px)` }} />
-      </div>
-      <p className="text-center text-xs text-gray-400">{mos} months of supply</p>
-    </div>
-  )
-}
-
-// ─── Shared layout pieces ─────────────────────────────────────────────────────
-
-function SlideFooter({ city, date }: { city: string; date: string }) {
-  return (
-    <div className="absolute bottom-0 left-0 right-0 h-10 flex items-center justify-between px-8 bg-white border-t border-gray-100">
-      {/* Logo */}
-      <div className="flex items-center gap-2">
-        <Image
-          src="/images/masterkey-black-logo.png"
-          alt="MasterKey"
-          width={88}
-          height={22}
-          className="opacity-60 object-contain"
-          onError={() => {}}
-        />
-      </div>
-      <span className="text-[10px] text-gray-300 uppercase tracking-widest hidden sm:block">
-        {city} · {date}
-      </span>
-      <span className="text-[10px] text-gray-300">mathiasregroup.com · DRE 01892427</span>
-    </div>
-  )
-}
-
-/** Full-bleed image pane — right half of a split slide */
-function ImagePane({ src, alt, overlay = true }: { src: string; alt: string; overlay?: boolean }) {
-  return (
-    <div className="relative w-full h-full overflow-hidden">
-      <Image src={src} alt={alt} fill className="object-cover" sizes="(max-width: 900px) 100vw, 50vw" />
-      {overlay && (
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10" />
-      )}
-    </div>
-  )
-}
-
-/** Eyebrow label above a section title */
+/** Kickbord eyebrow — small olive-700 uppercase label */
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-orange-500 mb-1">
+    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-olive-600 mb-1">
       {children}
     </p>
   )
 }
 
-/** Orange accent pill badge */
-function TagBadge({ children }: { children: React.ReactNode }) {
+/** Orange-tinted announcement-style badge pill */
+function TagPill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-full">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-olive-950/10 bg-olive-950/5 px-3 py-1 text-xs font-semibold text-olive-700">
       {children}
     </span>
   )
 }
 
-// ─── Slide 1 — Cover (split: left = content, right = hero home image) ────────
+/** Subtle top accent rule — replaces orange gradient stripe */
+function AccentRule() {
+  return <div className="h-px w-full bg-gradient-to-r from-transparent via-olive-300 to-transparent" />
+}
+
+/** Market condition sliding dot meter */
+function MarketConditionMeter({ mos }: { mos: number | null }) {
+  if (mos == null) return null
+  const isSeller = mos < 3
+  const isBalanced = mos >= 3 && mos <= 6
+  const label = isSeller ? "Seller's Market" : isBalanced ? 'Balanced Market' : "Buyer's Market"
+  const textColor = isSeller ? 'text-amber-700' : isBalanced ? 'text-olive-700' : 'text-emerald-700'
+  const dotColor = isSeller ? 'bg-amber-500' : isBalanced ? 'bg-olive-600' : 'bg-emerald-600'
+  const pct = Math.min(100, Math.max(0, (mos / 9) * 100))
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <span className="text-[10px] text-olive-500">Seller&apos;s</span>
+        <span className={`text-sm font-semibold font-display italic ${textColor}`}>{label}</span>
+        <span className="text-[10px] text-olive-500">Buyer&apos;s</span>
+      </div>
+      <div className="relative h-1.5 rounded-full bg-olive-100">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-300 via-olive-300 to-emerald-400 opacity-40" />
+        <div
+          className={`absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full border-2 border-white shadow ${dotColor}`}
+          style={{ left: `calc(${pct}% - 7px)` }}
+        />
+      </div>
+      <p className="text-center text-[10px] text-olive-500">{mos} months of supply</p>
+    </div>
+  )
+}
+
+/** Full-bleed image panel for split slides */
+function ImagePanel({
+  src,
+  alt,
+  gradientDir = 'left',
+}: {
+  src: string
+  alt: string
+  gradientDir?: 'left' | 'bottom' | 'top'
+}) {
+  const gradMap = {
+    left: 'bg-gradient-to-r from-white/50 via-transparent to-transparent',
+    bottom: 'bg-gradient-to-t from-olive-950/70 via-olive-950/20 to-transparent',
+    top: 'bg-gradient-to-b from-olive-950/30 via-transparent to-transparent',
+  }
+  return (
+    <div className="relative w-full h-full overflow-hidden">
+      <Image src={src} alt={alt} fill className="object-cover" sizes="50vw" />
+      <div className={`absolute inset-0 ${gradMap[gradientDir]}`} />
+    </div>
+  )
+}
+
+/** Stat card — Kickbord style: olive-50 bg, serif value */
+function StatCard({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  accent = false,
+  mom,
+  yoy,
+  invertDelta,
+}: {
+  label: string
+  value: string
+  sub?: string
+  icon?: React.ComponentType<{ className?: string }>
+  accent?: boolean
+  mom?: number | null
+  yoy?: number | null
+  invertDelta?: boolean
+}) {
+  return (
+    <div
+      className={`rounded-2xl border p-5 flex flex-col ${
+        accent
+          ? 'bg-olive-950 border-olive-900 text-white'
+          : 'bg-olive-50 border-olive-100'
+      }`}
+    >
+      {Icon && (
+        <div
+          className={`w-8 h-8 rounded-xl flex items-center justify-center mb-3 ${
+            accent ? 'bg-white/10' : 'bg-white border border-olive-100'
+          }`}
+        >
+          <Icon className={`w-4 h-4 ${accent ? 'text-olive-300' : 'text-olive-600'}`} />
+        </div>
+      )}
+      <p
+        className={`font-display text-3xl leading-tight mb-0.5 ${
+          accent ? 'text-white' : 'text-olive-950'
+        }`}
+      >
+        {value}
+      </p>
+      {sub && (
+        <p className={`text-xs mb-auto ${accent ? 'text-olive-300' : 'text-olive-500'}`}>{sub}</p>
+      )}
+      <p
+        className={`text-[10px] font-semibold uppercase tracking-wider mt-3 mb-1.5 ${
+          accent ? 'text-olive-400' : 'text-olive-500'
+        }`}
+      >
+        {label}
+      </p>
+      {(mom !== undefined || yoy !== undefined) && (
+        <div
+          className={`flex items-center gap-4 pt-2 border-t ${
+            accent ? 'border-white/10' : 'border-olive-100'
+          }`}
+        >
+          {mom !== undefined && (
+            <div>
+              <p className={`text-[9px] mb-0.5 ${accent ? 'text-olive-500' : 'text-olive-400'}`}>MoM</p>
+              <DeltaBadge pct={mom} invert={invertDelta} size="xs" />
+            </div>
+          )}
+          {yoy !== undefined && (
+            <div>
+              <p className={`text-[9px] mb-0.5 ${accent ? 'text-olive-500' : 'text-olive-400'}`}>YoY</p>
+              <DeltaBadge pct={yoy} invert={invertDelta} size="xs" />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Shared footer strip — every slide */
+function SlideFooter({ city, date }: { city: string; date: string }) {
+  return (
+    <div className="absolute bottom-0 left-0 right-0 h-9 flex items-center justify-between px-7 border-t border-olive-100 bg-white">
+      <span className="font-display italic text-[11px] text-olive-600">Mathias Real Estate Group</span>
+      <span className="text-[9px] text-olive-400 uppercase tracking-widest hidden sm:block">
+        {city} · {date}
+      </span>
+      <span className="text-[9px] text-olive-400">mathiasregroup.com · DRE 01892427</span>
+    </div>
+  )
+}
+
+// ─── Slide 1 — Cover ─────────────────────────────────────────────────────────
+// Wallpaper green left panel + home exterior right
 
 function SlideCover({ data }: { data: MarketData }) {
   return (
-    <div className="relative w-full h-full bg-white flex">
-      {/* Left panel */}
-      <div className="flex flex-col justify-between w-[52%] px-10 py-10 pb-14">
-        {/* Top brand strip */}
-        <div className="flex items-center gap-2">
-          <Image src="/images/masterkey-black-logo.png" alt="MasterKey" width={100} height={26} className="object-contain opacity-80" onError={() => {}} />
+    <div className="relative w-full h-full flex bg-white">
+      {/* Left — wallpaper green panel */}
+      <div
+        className="flex flex-col justify-between w-[48%] px-9 py-9 pb-13 text-white"
+        style={{ background: 'linear-gradient(160deg, #9ca88f 0%, #596352 100%)' }}
+      >
+        {/* Brand */}
+        <div>
+          <p className="font-display italic text-white/70 text-sm tracking-wide mb-1">
+            Mathias Real Estate Group
+          </p>
+          <div className="h-px bg-white/20 mb-6" />
         </div>
 
-        {/* Main content */}
-        <div>
-          <TagBadge><MapPin className="w-3 h-3" />Monthly Market Report</TagBadge>
-          <h1 className="mt-4 text-5xl font-bold text-gray-950 leading-tight">{data.city}</h1>
-          <p className="text-gray-400 text-lg mt-1 font-medium">{data.reportMonth}</p>
+        {/* Hero text */}
+        <div className="flex-1 flex flex-col justify-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-white/60 mb-3">
+            Monthly Market Report
+          </p>
+          <h1 className="font-display text-5xl leading-none text-white mb-2">{data.city}</h1>
+          <p className="font-display italic text-white/60 text-xl">{data.reportMonth}</p>
 
-          {/* 3 key stats */}
-          <div className="mt-6 grid grid-cols-3 gap-3">
+          {/* 3 hero stats */}
+          <div className="mt-7 grid grid-cols-3 gap-2.5">
             {[
-              { label: 'Homes Sold', value: fmt(data.closedSales), icon: Home },
-              { label: 'Median Price', value: fmtPrice(data.medSoldPrice), icon: DollarSign },
-              { label: 'Active Listings', value: fmt(data.activeListings), icon: Building2 },
-            ].map(({ label, value, icon: Icon }) => (
-              <div key={label} className="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-center">
-                <Icon className="w-4 h-4 text-orange-500 mx-auto mb-1.5" />
-                <p className="text-xl font-bold text-gray-950">{value}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{label}</p>
+              { label: 'Homes Sold', value: fmt(data.closedSales) },
+              { label: 'Median Price', value: fmtPrice(data.medSoldPrice) },
+              { label: 'Active', value: fmt(data.activeListings) },
+            ].map(({ label, value }) => (
+              <div key={label} className="rounded-xl bg-white/10 border border-white/15 p-3 text-center">
+                <p className="font-display text-2xl text-white leading-none">{value}</p>
+                <p className="text-[9px] text-white/50 mt-1 uppercase tracking-widest">{label}</p>
               </div>
             ))}
           </div>
@@ -241,23 +358,27 @@ function SlideCover({ data }: { data: MarketData }) {
 
         {/* Agent */}
         <div className="flex items-center gap-3">
-          <Image src="/mike-avatar.png" alt="Mike Mathias" width={44} height={44} className="rounded-full border-2 border-orange-100 object-cover" />
+          <Image
+            src="/mike-avatar.png"
+            alt="Mike Mathias"
+            width={40}
+            height={40}
+            className="rounded-full border border-white/25 object-cover"
+          />
           <div>
-            <p className="text-sm font-semibold text-gray-900">Mike Mathias</p>
-            <p className="text-xs text-gray-400">Mathias Real Estate Group · 805.262.9707</p>
+            <p className="text-sm font-semibold text-white">Mike Mathias</p>
+            <p className="text-[11px] text-white/50">805.262.9707</p>
           </div>
         </div>
       </div>
 
-      {/* Right — full bleed lifestyle image */}
-      <div className="flex-1 relative overflow-hidden rounded-l-3xl">
-        <Image src="/modern-home-exterior.png" alt="Thousand Oaks home" fill className="object-cover" />
-        {/* Gradient fade to left */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-transparent to-transparent" />
-        {/* Month badge overlay */}
-        <div className="absolute bottom-14 right-5 bg-white/90 backdrop-blur-sm border border-gray-100 rounded-2xl px-4 py-3 text-right shadow-lg">
-          <p className="text-[10px] uppercase tracking-widest text-orange-500 font-semibold">Report Month</p>
-          <p className="text-base font-bold text-gray-950 mt-0.5">{data.reportMonth}</p>
+      {/* Right — home exterior */}
+      <div className="flex-1 relative overflow-hidden">
+        <ImagePanel src="/modern-home-exterior.png" alt="Thousand Oaks home" gradientDir="left" />
+        {/* Month tag */}
+        <div className="absolute bottom-12 right-5 bg-white/95 border border-olive-100 rounded-2xl px-4 py-3 text-right shadow-md">
+          <p className="text-[9px] uppercase tracking-[0.12em] text-olive-500 font-semibold">Report</p>
+          <p className="font-display text-base text-olive-950 leading-tight">{data.reportMonth}</p>
         </div>
       </div>
 
@@ -269,80 +390,48 @@ function SlideCover({ data }: { data: MarketData }) {
 // ─── Slide 2 — Market Snapshot ────────────────────────────────────────────────
 
 function SlideSnapshot({ data }: { data: MarketData }) {
-  const stats = [
-    {
-      label: 'Median Sale Price',
-      value: fmtPrice(data.medSoldPrice),
-      sub: fmtFull(data.medSoldPrice),
-      mom: delta(data.medSoldPrice, data.mom.medSoldPrice),
-      yoy: delta(data.medSoldPrice, data.yoy.medSoldPrice),
-      icon: DollarSign,
-      accent: true,
-    },
-    {
-      label: 'Homes Sold',
-      value: fmt(data.closedSales),
-      sub: data.reportMonth,
-      mom: delta(data.closedSales, data.mom.closedSales),
-      yoy: delta(data.closedSales, data.yoy.closedSales),
-      icon: Home,
-    },
-    {
-      label: 'Median Days on Market',
-      value: fmt(data.medDaysOnMarket),
-      sub: 'days',
-      mom: delta(data.medDaysOnMarket, data.mom.medDaysOnMarket),
-      yoy: delta(data.medDaysOnMarket, data.yoy.medDaysOnMarket),
-      icon: Clock,
-      invert: true,
-    },
-    {
-      label: 'Avg. Price / Sq Ft',
-      value: data.avgPricePerSqft ? `$${fmt(data.avgPricePerSqft)}` : '—',
-      sub: 'per sq ft',
-      mom: delta(data.avgPricePerSqft, data.mom.avgPricePerSqft),
-      yoy: delta(data.avgPricePerSqft, data.yoy.avgPricePerSqft),
-      icon: Percent,
-    },
-  ]
-
   return (
-    <div className="relative w-full h-full bg-white flex flex-col pb-10">
-      {/* Top color bar */}
-      <div className="h-1.5 w-full bg-gradient-to-r from-orange-400 via-orange-300 to-amber-200" />
-
+    <div className="relative w-full h-full flex flex-col bg-mist-100 pb-9">
+      <AccentRule />
       <div className="flex flex-col flex-1 px-10 py-7">
-        <Eyebrow>{data.reportMonth}</Eyebrow>
-        <h2 className="text-3xl font-bold text-gray-950 mb-6">Market at a Glance</h2>
+        <Eyebrow>{data.reportMonth} · {data.city}</Eyebrow>
+        <h2 className="font-display text-4xl text-olive-950 mb-6">Market at a Glance</h2>
 
         <div className="grid grid-cols-4 gap-4 flex-1">
-          {stats.map(({ label, value, sub, mom, yoy, icon: Icon, accent, invert }) => (
-            <div
-              key={label}
-              className={`rounded-2xl border p-5 flex flex-col ${
-                accent
-                  ? 'bg-orange-50 border-orange-100'
-                  : 'bg-gray-50 border-gray-100'
-              }`}
-            >
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-4 ${accent ? 'bg-orange-100' : 'bg-white border border-gray-100'}`}>
-                <Icon className={`w-4 h-4 ${accent ? 'text-orange-500' : 'text-gray-500'}`} />
-              </div>
-              <p className={`text-3xl font-bold mb-1 ${accent ? 'text-orange-600' : 'text-gray-950'}`}>{value}</p>
-              <p className="text-xs text-gray-400 mb-auto">{sub}</p>
-              <p className="text-[10px] text-gray-400 font-medium mt-3 mb-1">{label}</p>
-              <div className="flex items-center gap-3 pt-2 border-t border-gray-200/60">
-                <div>
-                  <p className="text-[9px] text-gray-300 mb-0.5">MoM</p>
-                  <DeltaBadge pct={mom} invert={invert} size="xs" />
-                </div>
-                <div>
-                  <p className="text-[9px] text-gray-300 mb-0.5">YoY</p>
-                  <DeltaBadge pct={yoy} invert={invert} size="xs" />
-                </div>
-              </div>
-            </div>
-          ))}
+          <StatCard
+            label="Median Sale Price"
+            value={fmtPrice(data.medSoldPrice)}
+            sub={fmtFull(data.medSoldPrice)}
+            icon={DollarSign}
+            accent
+            mom={delta(data.medSoldPrice, data.mom.medSoldPrice)}
+            yoy={delta(data.medSoldPrice, data.yoy.medSoldPrice)}
+          />
+          <StatCard
+            label="Homes Sold"
+            value={fmt(data.closedSales)}
+            sub={data.reportMonth}
+            icon={Home}
+            mom={delta(data.closedSales, data.mom.closedSales)}
+            yoy={delta(data.closedSales, data.yoy.closedSales)}
+          />
+          <StatCard
+            label="Median Days on Market"
+            value={fmt(data.medDaysOnMarket)}
+            sub="days"
+            icon={Clock}
+            mom={delta(data.medDaysOnMarket, data.mom.medDaysOnMarket)}
+            yoy={delta(data.medDaysOnMarket, data.yoy.medDaysOnMarket)}
+            invertDelta
+          />
+          <StatCard
+            label="Avg. Price / Sq Ft"
+            value={data.avgPricePerSqft ? `$${fmt(data.avgPricePerSqft)}` : '—'}
+            sub="per sq ft"
+            icon={Percent}
+            mom={delta(data.avgPricePerSqft, data.mom.avgPricePerSqft)}
+            yoy={delta(data.avgPricePerSqft, data.yoy.avgPricePerSqft)}
+          />
         </div>
       </div>
       <SlideFooter city={data.city} date={data.date} />
@@ -350,49 +439,49 @@ function SlideSnapshot({ data }: { data: MarketData }) {
   )
 }
 
-// ─── Slide 3 — Inventory (split: stats left, living room right) ────────────────
+// ─── Slide 3 — Inventory (split: stats + living room) ─────────────────────────
 
 function SlideInventory({ data }: { data: MarketData }) {
   return (
-    <div className="relative w-full h-full bg-white flex pb-10">
+    <div className="relative w-full h-full flex bg-white pb-9">
       {/* Left */}
-      <div className="flex flex-col w-[55%] px-10 py-8">
+      <div className="flex flex-col w-[56%] px-10 py-8">
         <Eyebrow>Inventory · {data.reportMonth}</Eyebrow>
-        <h2 className="text-3xl font-bold text-gray-950 mb-6">What&apos;s on the Market</h2>
+        <h2 className="font-display text-4xl text-olive-950 mb-5">What&apos;s on the Market</h2>
 
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="grid grid-cols-3 gap-3 mb-4">
           {[
             { label: 'Active Listings', value: fmt(data.activeListings), sub: 'available today', icon: Building2 },
             { label: 'New This Month', value: fmt(data.newListings), sub: 'recently listed', icon: Calendar },
             { label: 'Months of Supply', value: data.monthsOfSupply != null ? String(data.monthsOfSupply) : '—', sub: 'active ÷ sold', icon: Activity },
           ].map(({ label, value, sub, icon: Icon }) => (
-            <div key={label} className="bg-gray-50 border border-gray-100 rounded-2xl p-4">
-              <Icon className="w-4 h-4 text-orange-500 mb-2" />
-              <p className="text-3xl font-bold text-gray-950">{value}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{label}</p>
-              <p className="text-[10px] text-gray-300 mt-0.5">{sub}</p>
+            <div key={label} className="rounded-2xl border border-olive-100 bg-olive-50 p-4">
+              <Icon className="w-4 h-4 text-olive-600 mb-2" />
+              <p className="font-display text-3xl text-olive-950 leading-none">{value}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-olive-500 mt-1">{label}</p>
+              <p className="text-[10px] text-olive-400 mt-0.5">{sub}</p>
             </div>
           ))}
         </div>
 
-        <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 flex-1">
-          <p className="text-xs font-semibold text-gray-700 mb-4">Market Condition</p>
+        <div className="rounded-2xl border border-olive-100 bg-olive-50 p-5 flex-1">
+          <p className="text-xs font-semibold text-olive-700 mb-4">Market Condition</p>
           <MarketConditionMeter mos={data.monthsOfSupply} />
-          <p className="text-xs text-gray-400 mt-5 leading-relaxed">
-            Months of supply = active listings ÷ homes closed last month.{' '}
-            <span className="text-orange-500 font-medium">Under 3</span> favors sellers.{' '}
-            <span className="text-amber-500 font-medium">3–6</span> is balanced.{' '}
-            <span className="text-emerald-500 font-medium">Over 6</span> favors buyers.
+          <p className="text-xs text-olive-500 mt-4 leading-relaxed">
+            Months of supply = active listings ÷ homes sold last month.{' '}
+            <span className="text-amber-700 font-medium">Under 3</span> favors sellers.{' '}
+            <span className="text-olive-600 font-medium">3–6</span> is balanced.{' '}
+            <span className="text-emerald-700 font-medium">Over 6</span> favors buyers.
           </p>
         </div>
       </div>
 
-      {/* Right — lifestyle image */}
-      <div className="flex-1 relative overflow-hidden rounded-l-3xl mx-0 my-4 mr-4">
-        <ImagePane src="/bright-living-room-with-hardwood-floors.png" alt="Bright living room" />
-        <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl px-4 py-3 border border-gray-100">
-          <p className="text-[10px] uppercase tracking-widest text-orange-500 font-semibold">Active Listings</p>
-          <p className="text-xl font-bold text-gray-950">{fmt(data.activeListings)} homes available</p>
+      {/* Right — bright living room */}
+      <div className="flex-1 relative overflow-hidden rounded-l-3xl my-4 mr-4">
+        <ImagePanel src="/bright-living-room-with-hardwood-floors.png" alt="Bright living room" gradientDir="left" />
+        <div className="absolute bottom-4 left-4 right-4 bg-white/95 rounded-xl px-4 py-3 border border-olive-100 shadow-sm">
+          <p className="text-[9px] font-semibold uppercase tracking-widest text-olive-500">Currently Active</p>
+          <p className="font-display text-xl text-olive-950">{fmt(data.activeListings)} homes available</p>
         </div>
       </div>
 
@@ -401,7 +490,7 @@ function SlideInventory({ data }: { data: MarketData }) {
   )
 }
 
-// ─── Slide 4 — Pricing ────────────────────────────────────────────────────────
+// ─── Slide 4 — Pricing (image left, stats right) ──────────────────────────────
 
 function SlidePricing({ data }: { data: MarketData }) {
   const spreadPct =
@@ -410,62 +499,61 @@ function SlidePricing({ data }: { data: MarketData }) {
       : null
 
   return (
-    <div className="relative w-full h-full bg-white flex pb-10">
-      {/* Left: kitchen lifestyle */}
-      <div className="w-[40%] relative overflow-hidden rounded-r-3xl my-4 ml-4">
-        <ImagePane src="/updated-kitchen-with-granite-countertops.png" alt="Upgraded kitchen" overlay={false} />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/60 via-transparent to-transparent" />
-        <div className="absolute bottom-4 left-4 right-4">
-          <p className="text-[10px] uppercase tracking-widest text-orange-400 font-semibold mb-1">Median Sale Price</p>
-          <p className="text-3xl font-bold text-white">{fmtPrice(data.medSoldPrice)}</p>
-          <p className="text-xs text-white/60">{fmtFull(data.medSoldPrice)}</p>
+    <div className="relative w-full h-full flex bg-white pb-9">
+      {/* Left — kitchen image */}
+      <div className="w-[38%] relative overflow-hidden rounded-r-3xl my-4 ml-4">
+        <ImagePanel src="/updated-kitchen-with-granite-countertops.png" alt="Upgraded kitchen" gradientDir="bottom" />
+        <div className="absolute bottom-5 left-5 right-5">
+          <p className="text-[9px] font-semibold uppercase tracking-widest text-white/60 mb-1">Median Sale Price</p>
+          <p className="font-display text-3xl text-white leading-none">{fmtPrice(data.medSoldPrice)}</p>
+          <p className="text-xs text-white/50">{fmtFull(data.medSoldPrice)}</p>
         </div>
       </div>
 
-      {/* Right: stats */}
+      {/* Right */}
       <div className="flex-1 flex flex-col px-8 py-8">
         <Eyebrow>Pricing · {data.reportMonth}</Eyebrow>
-        <h2 className="text-3xl font-bold text-gray-950 mb-5">How Homes Are Pricing</h2>
+        <h2 className="font-display text-4xl text-olive-950 mb-5">How Homes Are Pricing</h2>
 
         <div className="grid grid-cols-2 gap-3 mb-3">
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5">
-            <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Median List Price</p>
-            <p className="text-3xl font-bold text-gray-950">{fmtPrice(data.medListPrice)}</p>
-            <p className="text-xs text-gray-400 mt-1">{fmtFull(data.medListPrice)}</p>
+          <div className="rounded-2xl border border-olive-100 bg-olive-50 p-5">
+            <p className="text-[10px] uppercase tracking-widest text-olive-500 mb-2">Median List</p>
+            <p className="font-display text-3xl text-olive-950">{fmtPrice(data.medListPrice)}</p>
+            <p className="text-xs text-olive-400 mt-1">{fmtFull(data.medListPrice)}</p>
           </div>
-          <div className="bg-orange-50 border border-orange-100 rounded-2xl p-5">
-            <p className="text-[10px] uppercase tracking-widest text-orange-400 mb-2">Median Sale Price</p>
-            <p className="text-3xl font-bold text-orange-600">{fmtPrice(data.medSoldPrice)}</p>
+          <div className="rounded-2xl border border-olive-200 bg-olive-950 p-5">
+            <p className="text-[10px] uppercase tracking-widest text-olive-400 mb-2">Median Sale</p>
+            <p className="font-display text-3xl text-white">{fmtPrice(data.medSoldPrice)}</p>
             <div className="flex items-center gap-2 mt-1">
-              <p className="text-xs text-gray-400">{fmtFull(data.medSoldPrice)}</p>
+              <p className="text-xs text-olive-400">{fmtFull(data.medSoldPrice)}</p>
               <DeltaBadge pct={delta(data.medSoldPrice, data.yoy.medSoldPrice)} size="xs" />
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3 flex-1">
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col justify-between">
-            <p className="text-[10px] uppercase tracking-widest text-gray-400">List-to-Sale</p>
-            <p className={`text-2xl font-bold ${spreadPct != null && spreadPct >= 0 ? 'text-emerald-600' : 'text-orange-500'}`}>
+          <div className="rounded-2xl border border-olive-100 bg-olive-50 p-4 flex flex-col justify-between">
+            <p className="text-[10px] uppercase tracking-widest text-olive-500">List-to-Sale</p>
+            <p className={`font-display text-2xl ${spreadPct != null && spreadPct >= 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
               {spreadPct != null ? `${spreadPct > 0 ? '+' : ''}${spreadPct}%` : '—'}
             </p>
           </div>
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col justify-between">
-            <p className="text-[10px] uppercase tracking-widest text-gray-400">Above List</p>
-            <p className="text-2xl font-bold text-emerald-600">{data.aboveList ?? '—'}</p>
-            <p className="text-[10px] text-gray-300">homes</p>
+          <div className="rounded-2xl border border-olive-100 bg-olive-50 p-4 flex flex-col justify-between">
+            <p className="text-[10px] uppercase tracking-widest text-olive-500">Above List</p>
+            <p className="font-display text-2xl text-emerald-700">{data.aboveList ?? '—'}</p>
+            <p className="text-[10px] text-olive-400">homes</p>
           </div>
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col justify-between">
-            <p className="text-[10px] uppercase tracking-widest text-gray-400">Below List</p>
-            <p className="text-2xl font-bold text-orange-500">{data.belowList ?? '—'}</p>
-            <p className="text-[10px] text-gray-300">homes</p>
+          <div className="rounded-2xl border border-olive-100 bg-olive-50 p-4 flex flex-col justify-between">
+            <p className="text-[10px] uppercase tracking-widest text-olive-500">Below List</p>
+            <p className="font-display text-2xl text-amber-700">{data.belowList ?? '—'}</p>
+            <p className="text-[10px] text-olive-400">homes</p>
           </div>
         </div>
 
-        <div className="bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3 mt-3 flex items-center justify-between">
-          <p className="text-xs text-gray-500 font-medium">Avg. Price per Sq Ft</p>
+        <div className="rounded-2xl border border-olive-100 bg-olive-50 px-5 py-3 mt-3 flex items-center justify-between">
+          <p className="text-xs font-medium text-olive-700">Avg. Price per Sq Ft</p>
           <div className="flex items-center gap-2">
-            <p className="text-xl font-bold text-gray-950">{data.avgPricePerSqft ? `$${fmt(data.avgPricePerSqft)}` : '—'}</p>
+            <p className="font-display text-xl text-olive-950">{data.avgPricePerSqft ? `$${fmt(data.avgPricePerSqft)}` : '—'}</p>
             <DeltaBadge pct={delta(data.avgPricePerSqft, data.yoy.avgPricePerSqft)} size="xs" />
           </div>
         </div>
@@ -476,56 +564,51 @@ function SlidePricing({ data }: { data: MarketData }) {
   )
 }
 
-// ─── Slide 5 — Days on Market (split: stats left, master bedroom right) ───────
+// ─── Slide 5 — Days on Market ─────────────────────────────────────────────────
 
 function SlideDaysOnMarket({ data }: { data: MarketData }) {
-  const speedLabel = (dom: number | null) => {
+  const badge = (() => {
+    const dom = data.medDaysOnMarket
     if (dom == null) return null
-    if (dom <= 14) return { text: 'Hot market — homes moving in under 2 weeks.', color: 'text-orange-600', bg: 'bg-orange-50 border-orange-100' }
-    if (dom <= 30) return { text: 'Active market — most homes sell within a month.', color: 'text-amber-600', bg: 'bg-amber-50 border-amber-100' }
-    return { text: 'Measured pace — buyers have more time to evaluate.', color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' }
-  }
-  const badge = speedLabel(data.medDaysOnMarket)
+    if (dom <= 14) return { text: 'Hot market — homes going under contract in under 2 weeks.', cls: 'bg-amber-50 border-amber-100 text-amber-800' }
+    if (dom <= 30) return { text: 'Active market — most well-priced homes sell within a month.', cls: 'bg-olive-50 border-olive-100 text-olive-800' }
+    return { text: 'Measured pace — buyers have more time to evaluate and negotiate.', cls: 'bg-emerald-50 border-emerald-100 text-emerald-800' }
+  })()
 
   return (
-    <div className="relative w-full h-full bg-white flex pb-10">
+    <div className="relative w-full h-full flex bg-white pb-9">
       {/* Left */}
-      <div className="flex flex-col w-[55%] px-10 py-8">
+      <div className="flex flex-col w-[56%] px-10 py-8">
         <Eyebrow>Speed · {data.reportMonth}</Eyebrow>
-        <h2 className="text-3xl font-bold text-gray-950 mb-6">How Fast Are Homes Selling?</h2>
+        <h2 className="font-display text-4xl text-olive-950 mb-6">How Fast Are Homes Selling?</h2>
 
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="bg-orange-50 border border-orange-100 rounded-2xl p-6 text-center">
-            <Clock className="w-6 h-6 text-orange-500 mx-auto mb-2" />
-            <p className="text-5xl font-bold text-orange-600 mb-1">{fmt(data.medDaysOnMarket)}</p>
-            <p className="text-xs text-gray-500 font-medium">Median Days on Market</p>
-            <div className="flex justify-center gap-4 mt-3 pt-3 border-t border-orange-100">
-              <div><p className="text-[9px] text-gray-300">MoM</p><DeltaBadge pct={delta(data.medDaysOnMarket, data.mom.medDaysOnMarket)} invert size="xs" /></div>
-              <div><p className="text-[9px] text-gray-300">YoY</p><DeltaBadge pct={delta(data.medDaysOnMarket, data.yoy.medDaysOnMarket)} invert size="xs" /></div>
+          {[
+            { label: 'Median Days on Market', value: fmt(data.medDaysOnMarket), icon: Clock, mom: delta(data.medDaysOnMarket, data.mom.medDaysOnMarket), yoy: delta(data.medDaysOnMarket, data.yoy.medDaysOnMarket), accent: true },
+            { label: 'Average Days on Market', value: fmt(data.avgDaysOnMarket), icon: Activity, mom: delta(data.avgDaysOnMarket, data.mom.avgDaysOnMarket), yoy: delta(data.avgDaysOnMarket, data.yoy.avgDaysOnMarket), accent: false },
+          ].map(({ label, value, icon: Icon, mom, yoy, accent }) => (
+            <div key={label} className={`rounded-2xl border p-6 text-center ${accent ? 'bg-olive-950 border-olive-900' : 'bg-olive-50 border-olive-100'}`}>
+              <Icon className={`w-5 h-5 mx-auto mb-2 ${accent ? 'text-olive-400' : 'text-olive-600'}`} />
+              <p className={`font-display text-5xl leading-none mb-1 ${accent ? 'text-white' : 'text-olive-950'}`}>{value}</p>
+              <p className={`text-[11px] font-medium ${accent ? 'text-olive-400' : 'text-olive-500'}`}>{label}</p>
+              <div className={`flex justify-center gap-4 mt-3 pt-3 border-t ${accent ? 'border-white/10' : 'border-olive-100'}`}>
+                <div><p className={`text-[9px] mb-0.5 ${accent ? 'text-olive-500' : 'text-olive-400'}`}>MoM</p><DeltaBadge pct={mom} invert size="xs" /></div>
+                <div><p className={`text-[9px] mb-0.5 ${accent ? 'text-olive-500' : 'text-olive-400'}`}>YoY</p><DeltaBadge pct={yoy} invert size="xs" /></div>
+              </div>
             </div>
-          </div>
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 text-center">
-            <Activity className="w-6 h-6 text-gray-400 mx-auto mb-2" />
-            <p className="text-5xl font-bold text-gray-950 mb-1">{fmt(data.avgDaysOnMarket)}</p>
-            <p className="text-xs text-gray-500 font-medium">Average Days on Market</p>
-            <div className="flex justify-center gap-4 mt-3 pt-3 border-t border-gray-100">
-              <div><p className="text-[9px] text-gray-300">MoM</p><DeltaBadge pct={delta(data.avgDaysOnMarket, data.mom.avgDaysOnMarket)} invert size="xs" /></div>
-              <div><p className="text-[9px] text-gray-300">YoY</p><DeltaBadge pct={delta(data.avgDaysOnMarket, data.yoy.avgDaysOnMarket)} invert size="xs" /></div>
-            </div>
-          </div>
+          ))}
         </div>
 
         {badge && (
-          <div className={`rounded-2xl border px-5 py-4 ${badge.bg}`}>
-            <p className={`text-sm font-semibold ${badge.color}`}>{badge.text}</p>
+          <div className={`rounded-2xl border px-5 py-4 ${badge.cls}`}>
+            <p className="text-sm font-medium">{badge.text}</p>
           </div>
         )}
       </div>
 
       {/* Right — master bedroom */}
       <div className="flex-1 relative overflow-hidden rounded-l-3xl my-4 mr-4">
-        <ImagePane src="/large-window-master-bedroom.png" alt="Master bedroom with large windows" overlay={false} />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/50 via-transparent to-transparent" />
+        <ImagePanel src="/large-window-master-bedroom.png" alt="Master bedroom" gradientDir="bottom" />
       </div>
 
       <SlideFooter city={data.city} date={data.date} />
@@ -533,13 +616,13 @@ function SlideDaysOnMarket({ data }: { data: MarketData }) {
   )
 }
 
-// ─── Slide 6 — 12-Month Trend Chart ───────────────────────────────────────────
+// ─── Slide 6 — 12-Month Trend ─────────────────────────────────────────────────
 
 function SlideTrend({ data }: { data: MarketData }) {
   if (!data.trend || data.trend.length === 0) {
     return (
-      <div className="relative w-full h-full bg-white flex items-center justify-center pb-10">
-        <p className="text-gray-400">No trend data available</p>
+      <div className="relative w-full h-full bg-mist-100 flex items-center justify-center pb-9">
+        <p className="text-olive-400">No trend data available</p>
         <SlideFooter city={data.city} date={data.date} />
       </div>
     )
@@ -547,37 +630,49 @@ function SlideTrend({ data }: { data: MarketData }) {
 
   const total = data.trend.reduce((s, t) => s + t.closedSales, 0)
   const avg = Math.round(total / data.trend.length)
-  const peak = data.trend.reduce((best, t) => (t.closedSales > best.closedSales ? t : best), data.trend[0])
+  const peak = data.trend.reduce((b, t) => (t.closedSales > b.closedSales ? t : b), data.trend[0])
 
   return (
-    <div className="relative w-full h-full bg-white flex flex-col pb-10">
-      <div className="h-1.5 w-full bg-gradient-to-r from-orange-400 via-orange-300 to-amber-200" />
+    <div className="relative w-full h-full flex flex-col bg-mist-100 pb-9">
+      <AccentRule />
       <div className="flex flex-col flex-1 px-10 py-7">
-        <Eyebrow>Trend</Eyebrow>
-        <div className="flex items-end justify-between mb-4">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-950 leading-tight">12-Month Sales Volume</h2>
-            <p className="text-sm text-gray-400 mt-0.5">Homes closed per month · {data.city}</p>
-          </div>
-          <div className="flex gap-5 text-right">
-            <div><p className="text-[10px] text-gray-300 uppercase tracking-widest">12-Mo Total</p><p className="text-xl font-bold text-gray-950">{fmt(total)}</p></div>
-            <div><p className="text-[10px] text-gray-300 uppercase tracking-widest">Monthly Avg</p><p className="text-xl font-bold text-gray-950">{avg}</p></div>
-            <div><p className="text-[10px] text-gray-300 uppercase tracking-widest">Peak Month</p><p className="text-xl font-bold text-orange-500">{peak.label}</p></div>
+        <Eyebrow>Trend · 12 Months</Eyebrow>
+        <div className="flex items-end justify-between mb-5">
+          <h2 className="font-display text-4xl text-olive-950 leading-tight">Sales Volume</h2>
+          <div className="flex gap-6 text-right">
+            {[
+              { label: '12-Mo Total', value: fmt(total) },
+              { label: 'Monthly Avg', value: String(avg) },
+              { label: 'Peak', value: peak.label },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <p className="text-[9px] uppercase tracking-widest text-olive-400">{label}</p>
+                <p className="font-display text-xl text-olive-950">{value}</p>
+              </div>
+            ))}
           </div>
         </div>
 
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data.trend} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
-              <XAxis dataKey="label" tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(94,96,78,0.08)" vertical={false} />
+              <XAxis dataKey="label" tick={{ fill: '#7e8068', fontSize: 11, fontFamily: 'Inter, sans-serif' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#7e8068', fontSize: 11, fontFamily: 'Inter, sans-serif' }} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '10px', color: '#111827', fontSize: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}
-                cursor={{ fill: 'rgba(249,115,22,0.04)' }}
+                contentStyle={{
+                  background: '#fff',
+                  border: '1px solid rgba(24,25,16,0.08)',
+                  borderRadius: '12px',
+                  color: '#181910',
+                  fontSize: 12,
+                  fontFamily: 'Inter, sans-serif',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                }}
+                cursor={{ fill: 'rgba(24,25,16,0.03)' }}
                 formatter={(val: number) => [val, 'Homes Sold']}
               />
-              <Bar dataKey="closedSales" fill="#f97316" radius={[4, 4, 0, 0]} maxBarSize={40} />
+              <Bar dataKey="closedSales" fill="#596352" radius={[4, 4, 0, 0]} maxBarSize={36} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -593,40 +688,36 @@ function SlideRecentSales({ data }: { data: MarketData }) {
   const sales = data.recentSales?.slice(0, 6) || []
 
   return (
-    <div className="relative w-full h-full bg-white flex flex-col pb-10">
-      <div className="h-1.5 w-full bg-gradient-to-r from-orange-400 via-orange-300 to-amber-200" />
+    <div className="relative w-full h-full flex flex-col bg-mist-100 pb-9">
+      <AccentRule />
       <div className="flex flex-col flex-1 px-10 py-7">
-        <Eyebrow>Recent Transactions</Eyebrow>
-        <h2 className="text-3xl font-bold text-gray-950 mb-5">What Sold in {data.reportMonth}</h2>
+        <Eyebrow>Recent Transactions · {data.reportMonth}</Eyebrow>
+        <h2 className="font-display text-4xl text-olive-950 mb-5">What Sold This Month</h2>
 
         <div className="grid grid-cols-2 gap-3 flex-1">
           {sales.map((s, i) => (
-            <div key={i} className="bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden flex">
-              {/* Property image or placeholder */}
-              <div className="w-20 flex-shrink-0 relative bg-gray-100">
+            <div key={i} className="bg-white rounded-2xl border border-olive-100 overflow-hidden flex">
+              <div className="w-[72px] flex-shrink-0 relative bg-olive-50">
                 {s.image ? (
                   <img src={s.image} alt={s.address} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Home className="w-6 h-6 text-gray-200" />
+                    <Home className="w-5 h-5 text-olive-200" />
                   </div>
                 )}
               </div>
               <div className="flex-1 p-3 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate leading-tight">{s.address}</p>
-                {s.neighborhood && <p className="text-[10px] text-gray-400 truncate">{s.neighborhood}</p>}
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[11px] text-gray-400">{s.beds}bd · {s.baths}ba</span>
-                  {s.sqft && <span className="text-[11px] text-gray-300">{fmt(s.sqft)} sf</span>}
-                </div>
+                <p className="text-sm font-semibold text-olive-950 truncate leading-tight">{s.address}</p>
+                {s.neighborhood && <p className="text-[10px] text-olive-400 truncate">{s.neighborhood}</p>}
+                <p className="text-[11px] text-olive-500 mt-1">{s.beds}bd · {s.baths}ba{s.sqft ? ` · ${fmt(s.sqft)} sf` : ''}</p>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-sm font-bold text-orange-600">{fmtFull(s.soldPrice)}</span>
+                  <span className="font-display text-sm text-olive-950">{fmtFull(s.soldPrice)}</span>
                   {s.overUnder != null && (
-                    <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${s.overUnder > 0 ? 'bg-emerald-50 text-emerald-600' : s.overUnder < 0 ? 'bg-red-50 text-red-500' : 'text-gray-400'}`}>
+                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${s.overUnder > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : s.overUnder < 0 ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'text-olive-400'}`}>
                       {s.overUnder > 0 ? `+${s.overUnder}%` : `${s.overUnder}%`}
                     </span>
                   )}
-                  {s.daysOnMarket != null && <span className="text-[11px] text-gray-300 ml-auto">{s.daysOnMarket}d</span>}
+                  {s.daysOnMarket != null && <span className="text-[10px] text-olive-400 ml-auto">{s.daysOnMarket}d</span>}
                 </div>
               </div>
             </div>
@@ -638,7 +729,7 @@ function SlideRecentSales({ data }: { data: MarketData }) {
   )
 }
 
-// ─── Slide 8 — Month/Month Comparison ─────────────────────────────────────────
+// ─── Slide 8 — Month/Month (table + sold home image) ─────────────────────────
 
 function SlideMoMComparison({ data }: { data: MarketData }) {
   const prevDate = new Date(data.date + '-01')
@@ -649,30 +740,30 @@ function SlideMoMComparison({ data }: { data: MarketData }) {
     { label: 'Homes Sold', current: fmt(data.closedSales), prev: fmt(data.mom.closedSales), d: delta(data.closedSales, data.mom.closedSales) },
     { label: 'Median Sale Price', current: fmtPrice(data.medSoldPrice), prev: fmtPrice(data.mom.medSoldPrice), d: delta(data.medSoldPrice, data.mom.medSoldPrice) },
     { label: 'Median Days on Market', current: fmt(data.medDaysOnMarket), prev: fmt(data.mom.medDaysOnMarket), d: delta(data.medDaysOnMarket, data.mom.medDaysOnMarket), invert: true },
-    { label: 'Sold Above List Price', current: fmt(data.aboveList), prev: fmt(data.mom.aboveList), d: delta(data.aboveList, data.mom.aboveList) },
-    { label: 'Avg. Price / Sq Ft', current: data.avgPricePerSqft ? `$${fmt(data.avgPricePerSqft)}` : '—', prev: data.mom.avgPricePerSqft ? `$${fmt(data.mom.avgPricePerSqft)}` : '—', d: delta(data.avgPricePerSqft, data.mom.avgPricePerSqft) },
+    { label: 'Sold Above List', current: fmt(data.aboveList), prev: fmt(data.mom.aboveList), d: delta(data.aboveList, data.mom.aboveList) },
+    { label: 'Avg. $/Sq Ft', current: data.avgPricePerSqft ? `$${fmt(data.avgPricePerSqft)}` : '—', prev: data.mom.avgPricePerSqft ? `$${fmt(data.mom.avgPricePerSqft)}` : '—', d: delta(data.avgPricePerSqft, data.mom.avgPricePerSqft) },
   ]
 
   return (
-    <div className="relative w-full h-full bg-white flex pb-10">
-      {/* Left: table */}
-      <div className="flex flex-col w-[58%] px-10 py-8">
+    <div className="relative w-full h-full flex bg-white pb-9">
+      {/* Left */}
+      <div className="flex flex-col w-[57%] px-10 py-8">
         <Eyebrow>Month over Month</Eyebrow>
-        <h2 className="text-3xl font-bold text-gray-950 mb-6">{data.reportMonth} vs. {prevLabel}</h2>
+        <h2 className="font-display text-4xl text-olive-950 mb-6">{data.reportMonth} vs. {prevLabel}</h2>
 
         <div className="flex-1">
-          <div className="grid grid-cols-4 text-[10px] font-semibold uppercase tracking-widest text-gray-300 px-4 mb-2">
+          <div className="grid grid-cols-4 text-[9px] font-semibold uppercase tracking-widest text-olive-400 px-4 mb-2">
             <span className="col-span-2">Metric</span>
             <span className="text-right">{prevLabel.split(' ')[0]}</span>
             <span className="text-right">{data.reportMonth.split(' ')[0]}</span>
           </div>
           <div className="space-y-2">
             {rows.map(({ label, current, prev, d, invert }) => (
-              <div key={label} className="grid grid-cols-4 items-center bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
-                <span className="col-span-2 text-sm text-gray-600">{label}</span>
-                <span className="text-sm text-gray-400 text-right">{prev}</span>
+              <div key={label} className="grid grid-cols-4 items-center rounded-xl border border-olive-100 bg-olive-50 px-4 py-3">
+                <span className="col-span-2 text-sm text-olive-700">{label}</span>
+                <span className="text-sm text-olive-400 text-right">{prev}</span>
                 <div className="flex items-center justify-end gap-2">
-                  <span className="text-sm font-semibold text-gray-950">{current}</span>
+                  <span className="text-sm font-semibold text-olive-950">{current}</span>
                   <DeltaBadge pct={d} invert={invert} size="xs" />
                 </div>
               </div>
@@ -680,22 +771,20 @@ function SlideMoMComparison({ data }: { data: MarketData }) {
           </div>
         </div>
 
-        <div className="mt-4 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
-          <p className="text-[11px] text-gray-400 leading-relaxed">
+        <div className="mt-4 rounded-xl border border-olive-100 bg-olive-50 px-4 py-3">
+          <p className="text-[11px] text-olive-500 leading-relaxed">
             Data sourced from CRMLS via Repliers MLS. Stats reflect residential transactions within {data.city} city limits.
           </p>
         </div>
       </div>
 
-      {/* Right: sold home lifestyle */}
+      {/* Right — sold home */}
       <div className="flex-1 relative overflow-hidden rounded-l-3xl my-4 mr-4">
         <Image src="/images/mk-sold.jpg" alt="Sold home" fill className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/70 via-gray-950/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-olive-950/80 via-olive-950/20 to-transparent" />
         <div className="absolute bottom-5 left-5 right-5">
-          <p className="text-[10px] uppercase tracking-widest text-orange-400 font-semibold mb-1">Month over Month</p>
-          <p className="text-2xl font-bold text-white leading-tight">
-            {data.closedSales} homes closed<br />in {data.reportMonth}
-          </p>
+          <p className="text-[9px] font-semibold uppercase tracking-widest text-white/50 mb-1">Closed This Month</p>
+          <p className="font-display text-2xl text-white leading-tight">{data.closedSales} homes sold<br />in {data.reportMonth}</p>
         </div>
       </div>
 
@@ -708,41 +797,53 @@ function SlideMoMComparison({ data }: { data: MarketData }) {
 
 function SlideCTA({ data }: { data: MarketData }) {
   return (
-    <div className="relative w-full h-full flex pb-10">
-      {/* Left: full-bleed exterior hero */}
-      <div className="w-[45%] relative overflow-hidden rounded-r-3xl my-4 ml-4">
+    <div className="relative w-full h-full flex pb-9">
+      {/* Left — wallpaper green with exterior image overlay */}
+      <div className="w-[44%] relative overflow-hidden rounded-r-3xl my-4 ml-4">
         <Image src="/modern-home-exterior.png" alt="Home exterior" fill className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/80 via-gray-950/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-olive-950/90 via-olive-950/40 to-olive-950/10" />
         <div className="absolute bottom-6 left-6 right-6">
-          <p className="text-white/50 text-xs mb-1">{data.reportMonth} · {data.city}</p>
-          <p className="text-2xl font-bold text-white leading-tight">Thinking About<br />Making a Move?</p>
+          <p className="text-[9px] uppercase tracking-widest text-white/40 font-semibold mb-2">{data.reportMonth} · {data.city}</p>
+          <p className="font-display italic text-2xl text-white leading-snug">Thinking About<br />Making a Move?</p>
         </div>
       </div>
 
-      {/* Right: CTA content */}
+      {/* Right — CTA */}
       <div className="flex-1 bg-white flex flex-col justify-center px-10">
         <Eyebrow>Let&apos;s Connect</Eyebrow>
-        <h2 className="text-3xl font-bold text-gray-950 leading-tight mb-3 mt-1">
-          Get expert guidance<br />on your next step.
+        <h2 className="font-display text-4xl text-olive-950 leading-tight mb-3 mt-1">
+          Expert guidance<br />on your next step.
         </h2>
-        <p className="text-sm text-gray-500 leading-relaxed mb-7 max-w-xs">
-          Whether you&apos;re buying, selling, or just curious about your home&apos;s value — let&apos;s talk numbers. No obligation.
+        <p className="text-sm text-olive-600 leading-relaxed mb-7 max-w-xs">
+          Whether you&apos;re buying, selling, or curious about your home&apos;s value — let&apos;s talk numbers. No obligation.
         </p>
 
         <div className="flex items-center gap-3 mb-6">
-          <Image src="/mike-avatar.png" alt="Mike Mathias" width={52} height={52} className="rounded-full border-2 border-orange-100 object-cover" />
+          <Image
+            src="/mike-avatar.png"
+            alt="Mike Mathias"
+            width={52}
+            height={52}
+            className="rounded-full border border-olive-100 object-cover"
+          />
           <div>
-            <p className="font-bold text-gray-950">Mike Mathias</p>
-            <p className="text-xs text-gray-400">Mathias Real Estate Group · DRE 01892427</p>
+            <p className="font-semibold text-olive-950">Mike Mathias</p>
+            <p className="text-xs text-olive-500">Mathias Real Estate Group · DRE 01892427</p>
           </div>
         </div>
 
         <div className="space-y-3 max-w-xs">
-          <a href="tel:8052629707" className="flex items-center gap-3 bg-orange-500 hover:bg-orange-400 text-white font-semibold py-3 px-5 rounded-xl transition-colors text-sm">
+          <a
+            href="tel:8052629707"
+            className="flex items-center gap-3 rounded-full bg-olive-950 px-5 py-2.5 text-sm font-medium text-white hover:bg-olive-800 transition-colors"
+          >
             <Phone className="w-4 h-4" /> 805.262.9707
           </a>
-          <a href="https://mathiasregroup.com" className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-semibold py-3 px-5 rounded-xl transition-colors text-sm">
-            <Globe className="w-4 h-4 text-orange-500" /> mathiasregroup.com
+          <a
+            href="https://mathiasregroup.com"
+            className="flex items-center gap-3 rounded-full border border-olive-950/10 bg-olive-950/5 px-5 py-2.5 text-sm font-medium text-olive-950 hover:bg-olive-950/10 transition-colors"
+          >
+            <Globe className="w-4 h-4 text-olive-600" /> mathiasregroup.com
           </a>
         </div>
       </div>
@@ -752,11 +853,9 @@ function SlideCTA({ data }: { data: MarketData }) {
   )
 }
 
-// ─── Slide registry & labels ──────────────────────────────────────────────────
+// ─── Slide labels ─────────────────────────────────────────────────────────────
 
-const SLIDE_LABELS = [
-  'Cover', 'Snapshot', 'Inventory', 'Pricing', 'Speed', 'Trend', 'Recent Sales', 'Month/Month', 'Contact',
-]
+const SLIDE_LABELS = ['Cover', 'Snapshot', 'Inventory', 'Pricing', 'Speed', 'Trend', 'Recent Sales', 'Month/Month', 'Contact']
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
@@ -764,7 +863,6 @@ export default function MarketUpdatePage() {
   const params = useParams<{ city: string; date: string }>()
   const citySlug = params.city ?? 'thousand-oaks'
   const date = params.date ?? new Date().toISOString().slice(0, 7)
-
   const cityName = citySlug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 
   const [data, setData] = useState<MarketData | null>(null)
@@ -790,8 +888,8 @@ export default function MarketUpdatePage() {
       if (e.key === 'ArrowRight' || e.key === ' ') next()
       if (e.key === 'ArrowLeft') prev()
       if (e.key === 'f' || e.key === 'F') {
-        if (!document.fullscreenElement) { deckRef.current?.requestFullscreen() }
-        else { document.exitFullscreen() }
+        if (!document.fullscreenElement) deckRef.current?.requestFullscreen()
+        else document.exitFullscreen()
       }
     }
     window.addEventListener('keydown', onKey)
@@ -800,10 +898,10 @@ export default function MarketUpdatePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-mist-100 flex items-center justify-center">
         <div className="text-center space-y-3">
-          <div className="w-10 h-10 rounded-full border-2 border-orange-200 border-t-orange-500 animate-spin mx-auto" />
-          <p className="text-gray-400 text-sm">Loading market data…</p>
+          <div className="w-8 h-8 rounded-full border-2 border-olive-200 border-t-olive-600 animate-spin mx-auto" />
+          <p className="text-olive-500 text-sm font-display italic">Loading market data…</p>
         </div>
       </div>
     )
@@ -811,10 +909,10 @@ export default function MarketUpdatePage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
+      <div className="min-h-screen bg-mist-100 flex items-center justify-center px-6">
         <div className="text-center max-w-sm">
-          <p className="text-orange-500 font-semibold mb-2">Failed to load market data</p>
-          <p className="text-gray-400 text-sm">{error}</p>
+          <p className="font-display text-xl text-olive-950 mb-2">Failed to load market data</p>
+          <p className="text-olive-500 text-sm">{error}</p>
         </div>
       </div>
     )
@@ -833,70 +931,64 @@ export default function MarketUpdatePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Top nav bar */}
-      <div className="flex items-center justify-between px-5 py-2.5 bg-white border-b border-gray-100 shadow-sm">
+    <div className="min-h-screen bg-mist-100 flex flex-col" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+      {/* Top nav */}
+      <div className="flex items-center justify-between px-5 py-2.5 bg-white border-b border-olive-100">
         <div className="flex items-center gap-2.5">
-          <div className="w-2 h-2 rounded-full bg-orange-400" />
-          <span className="text-xs text-gray-600 font-medium">{data.city} · {data.reportMonth}</span>
+          <span className="font-display italic text-sm text-olive-700">Mathias Real Estate Group</span>
+          <span className="text-olive-200">·</span>
+          <span className="text-xs text-olive-500">{data.city} · {data.reportMonth}</span>
         </div>
-        {/* Dot nav */}
+        {/* Pill dots */}
         <div className="flex items-center gap-1.5">
           {SLIDE_LABELS.map((label, i) => (
             <button
               key={i}
               onClick={() => setSlide(i)}
               title={label}
-              className={`rounded-full transition-all ${
-                i === slide
-                  ? 'bg-orange-500 w-5 h-2'
-                  : 'bg-gray-200 hover:bg-gray-300 w-2 h-2'
+              className={`rounded-full transition-all duration-200 ${
+                i === slide ? 'bg-olive-950 w-5 h-2' : 'bg-olive-200 hover:bg-olive-400 w-2 h-2'
               }`}
             />
           ))}
         </div>
-        <span className="text-xs text-gray-400">{slide + 1} / {SLIDE_LABELS.length}</span>
+        <span className="text-xs text-olive-400">{slide + 1} / {SLIDE_LABELS.length}</span>
       </div>
 
-      {/* Slide */}
+      {/* Deck */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
         <div
           ref={deckRef}
-          className="relative w-full max-w-5xl bg-white rounded-2xl overflow-hidden shadow-xl border border-gray-100"
+          className="relative w-full max-w-5xl bg-white rounded-2xl overflow-hidden shadow-lg border border-olive-100"
           style={{ aspectRatio: '16/9' }}
         >
           {slides[slide]}
 
-          {/* Arrow overlays */}
-          <button
-            onClick={prev}
-            disabled={slide === 0}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 disabled:opacity-20 shadow-sm transition-all z-10"
-          >
+          <button onClick={prev} disabled={slide === 0}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 border border-olive-100 flex items-center justify-center text-olive-400 hover:text-olive-950 disabled:opacity-20 shadow-sm transition-all z-10">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button
-            onClick={next}
-            disabled={slide === slides.length - 1}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 disabled:opacity-20 shadow-sm transition-all z-10"
-          >
+          <button onClick={next} disabled={slide === slides.length - 1}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 border border-olive-100 flex items-center justify-center text-olive-400 hover:text-olive-950 disabled:opacity-20 shadow-sm transition-all z-10">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Bottom bar */}
-      <div className="flex items-center justify-between px-5 py-2.5 bg-white border-t border-gray-100">
+      <div className="flex items-center justify-between px-5 py-2.5 bg-white border-t border-olive-100">
         <div className="flex gap-2">
-          <button onClick={prev} disabled={slide === 0} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 disabled:opacity-30 transition-colors px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-100">
+          <button onClick={prev} disabled={slide === 0}
+            className="flex items-center gap-1.5 text-xs text-olive-500 hover:text-olive-950 disabled:opacity-30 transition-colors px-3 py-1.5 rounded-full bg-olive-950/5 hover:bg-olive-950/10 border border-olive-950/10">
             <ChevronLeft className="w-3.5 h-3.5" /> Prev
           </button>
-          <button onClick={next} disabled={slide === slides.length - 1} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 disabled:opacity-30 transition-colors px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-100">
+          <button onClick={next} disabled={slide === slides.length - 1}
+            className="flex items-center gap-1.5 text-xs text-olive-500 hover:text-olive-950 disabled:opacity-30 transition-colors px-3 py-1.5 rounded-full bg-olive-950/5 hover:bg-olive-950/10 border border-olive-950/10">
             Next <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
-        <span className="text-xs text-gray-300 hidden sm:block">← → to navigate · F for fullscreen</span>
-        <span className="text-xs font-medium text-gray-400">{SLIDE_LABELS[slide]}</span>
+        <span className="text-xs text-olive-300 hidden sm:block">← → navigate · F fullscreen</span>
+        <span className="text-xs font-medium text-olive-500">{SLIDE_LABELS[slide]}</span>
       </div>
     </div>
   )
