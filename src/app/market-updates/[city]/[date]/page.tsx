@@ -931,12 +931,15 @@ export default function MarketUpdatePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-mist-100 flex flex-col" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-      {/* Top nav */}
-      <div className="flex items-center justify-between px-5 py-2.5 bg-white border-b border-olive-100">
-        <div className="flex items-center gap-2.5">
+    <div
+      className="bg-mist-100"
+      style={{ fontFamily: 'Inter, system-ui, sans-serif', width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+    >
+      {/* ── Top bar (fixed height) ── */}
+      <div className="flex-none flex items-center justify-between px-5 bg-white border-b border-olive-100" style={{ height: 44 }}>
+        <div className="flex items-center gap-2">
           <span className="font-display italic text-sm text-olive-700">Mathias Real Estate Group</span>
-          <span className="text-olive-200">·</span>
+          <span className="text-olive-200 text-xs">·</span>
           <span className="text-xs text-olive-500">{data.city} · {data.reportMonth}</span>
         </div>
         {/* Pill dots */}
@@ -955,35 +958,55 @@ export default function MarketUpdatePage() {
         <span className="text-xs text-olive-400">{slide + 1} / {SLIDE_LABELS.length}</span>
       </div>
 
-      {/* Deck */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+      {/* ── Slide area — fills remaining space ── */}
+      <div className="flex-1 flex items-center justify-center overflow-hidden" style={{ minHeight: 0 }}>
+        {/* 16:9 container — shrinks to fit the available space */}
         <div
           ref={deckRef}
-          className="relative w-full max-w-5xl bg-white rounded-2xl overflow-hidden shadow-lg border border-olive-100"
-          style={{ aspectRatio: '16/9' }}
+          className="relative bg-white shadow-xl border border-olive-100"
+          style={{
+            /* Use CSS container queries via aspect-ratio + max dimensions */
+            aspectRatio: '16 / 9',
+            width: 'min(100%, calc((100vh - 88px) * 16 / 9))',
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}
         >
           {slides[slide]}
 
-          <button onClick={prev} disabled={slide === 0}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 border border-olive-100 flex items-center justify-center text-olive-400 hover:text-olive-950 disabled:opacity-20 shadow-sm transition-all z-10">
+          {/* Prev / Next arrow overlays */}
+          <button
+            onClick={prev}
+            disabled={slide === 0}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 border border-olive-100 flex items-center justify-center text-olive-400 hover:text-olive-950 disabled:opacity-20 shadow-sm transition-all z-10"
+          >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button onClick={next} disabled={slide === slides.length - 1}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 border border-olive-100 flex items-center justify-center text-olive-400 hover:text-olive-950 disabled:opacity-20 shadow-sm transition-all z-10">
+          <button
+            onClick={next}
+            disabled={slide === slides.length - 1}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 border border-olive-100 flex items-center justify-center text-olive-400 hover:text-olive-950 disabled:opacity-20 shadow-sm transition-all z-10"
+          >
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Bottom bar */}
-      <div className="flex items-center justify-between px-5 py-2.5 bg-white border-t border-olive-100">
+      {/* ── Bottom bar (fixed height) ── */}
+      <div className="flex-none flex items-center justify-between px-5 bg-white border-t border-olive-100" style={{ height: 44 }}>
         <div className="flex gap-2">
-          <button onClick={prev} disabled={slide === 0}
-            className="flex items-center gap-1.5 text-xs text-olive-500 hover:text-olive-950 disabled:opacity-30 transition-colors px-3 py-1.5 rounded-full bg-olive-950/5 hover:bg-olive-950/10 border border-olive-950/10">
+          <button
+            onClick={prev}
+            disabled={slide === 0}
+            className="flex items-center gap-1.5 text-xs text-olive-500 hover:text-olive-950 disabled:opacity-30 transition-colors px-3 py-1.5 rounded-full bg-olive-950/5 hover:bg-olive-950/10 border border-olive-950/10"
+          >
             <ChevronLeft className="w-3.5 h-3.5" /> Prev
           </button>
-          <button onClick={next} disabled={slide === slides.length - 1}
-            className="flex items-center gap-1.5 text-xs text-olive-500 hover:text-olive-950 disabled:opacity-30 transition-colors px-3 py-1.5 rounded-full bg-olive-950/5 hover:bg-olive-950/10 border border-olive-950/10">
+          <button
+            onClick={next}
+            disabled={slide === slides.length - 1}
+            className="flex items-center gap-1.5 text-xs text-olive-500 hover:text-olive-950 disabled:opacity-30 transition-colors px-3 py-1.5 rounded-full bg-olive-950/5 hover:bg-olive-950/10 border border-olive-950/10"
+          >
             Next <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
