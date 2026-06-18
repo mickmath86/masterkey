@@ -10,21 +10,17 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
-  TrendingUp,
-  TrendingDown,
   Clock,
-  BarChart2,
-  DollarSign,
   Activity,
-  Users,
+  DollarSign,
   Calendar,
   MapPin,
   Building2,
   Percent,
+  Phone,
+  Globe,
 } from 'lucide-react'
 import {
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   XAxis,
@@ -95,16 +91,14 @@ interface MarketData {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function fmt(n: number | null | undefined, opts?: Intl.NumberFormatOptions): string {
+function fmt(n: number | null | undefined): string {
   if (n == null) return '—'
-  return n.toLocaleString('en-US', opts)
+  return n.toLocaleString('en-US')
 }
 
 function fmtPrice(n: number | null | undefined): string {
   if (n == null) return '—'
-  if (n >= 1_000_000) {
-    return `$${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 2)}M`
-  }
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 2)}M`
   return `$${(n / 1000).toFixed(0)}K`
 }
 
@@ -113,231 +107,238 @@ function fmtFull(n: number | null | undefined): string {
   return `$${n.toLocaleString('en-US')}`
 }
 
-function delta(
-  current: number | null | undefined,
-  prior: number | null | undefined
-): number | null {
+function delta(current: number | null | undefined, prior: number | null | undefined): number | null {
   if (current == null || prior == null || prior === 0) return null
   return Math.round(((current - prior) / prior) * 100 * 10) / 10
 }
 
-function DeltaBadge({
-  pct,
-  label,
-  invert = false,
-}: {
-  pct: number | null
-  label?: string
-  invert?: boolean
-}) {
-  if (pct == null) return <span className="text-white/30 text-xs">—</span>
+function DeltaBadge({ pct, invert = false, size = 'sm' }: { pct: number | null; invert?: boolean; size?: 'xs' | 'sm' }) {
+  if (pct == null) return <span className="text-gray-300 text-xs">—</span>
   const positive = invert ? pct < 0 : pct > 0
   const zero = pct === 0
-  if (zero) {
-    return (
-      <span className="inline-flex items-center gap-0.5 text-xs text-white/40">
-        <Minus className="w-3 h-3" />
-        {label || '0%'}
-      </span>
-    )
-  }
+  const base = size === 'xs' ? 'text-[10px]' : 'text-xs'
+  if (zero) return <span className={`inline-flex items-center gap-0.5 ${base} text-gray-400`}><Minus className="w-3 h-3" />0%</span>
   return (
-    <span
-      className={`inline-flex items-center gap-0.5 text-xs font-semibold ${
-        positive ? 'text-green-400' : 'text-red-400'
-      }`}
-    >
+    <span className={`inline-flex items-center gap-0.5 ${base} font-semibold ${positive ? 'text-emerald-600' : 'text-red-500'}`}>
       {positive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-      {Math.abs(pct)}%{label ? ` ${label}` : ''}
+      {Math.abs(pct)}%
     </span>
   )
 }
 
-function MarketConditionBar({ mos }: { mos: number | null }) {
+function MarketConditionMeter({ mos }: { mos: number | null }) {
   if (mos == null) return null
-  // < 3 = seller, 3-6 = balanced, > 6 = buyer
   const isSeller = mos < 3
   const isBalanced = mos >= 3 && mos <= 6
-  const isBuyer = mos > 6
   const label = isSeller ? "Seller's Market" : isBalanced ? 'Balanced Market' : "Buyer's Market"
-  const color = isSeller ? 'text-orange-400' : isBalanced ? 'text-yellow-400' : 'text-green-400'
-  const barColor = isSeller ? 'bg-orange-400' : isBalanced ? 'bg-yellow-400' : 'bg-green-400'
-  // position: 0 = full seller, 100% = full buyer, midpoint at ~4.5mo
   const pct = Math.min(100, Math.max(0, (mos / 9) * 100))
+  const dotColor = isSeller ? 'bg-orange-500' : isBalanced ? 'bg-amber-400' : 'bg-emerald-500'
+  const textColor = isSeller ? 'text-orange-600' : isBalanced ? 'text-amber-600' : 'text-emerald-600'
 
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <span className="text-xs text-white/40">Seller's</span>
-        <span className={`text-sm font-bold ${color}`}>{label}</span>
-        <span className="text-xs text-white/40">Buyer's</span>
+        <span className="text-xs text-gray-400">Seller's</span>
+        <span className={`text-sm font-bold ${textColor}`}>{label}</span>
+        <span className="text-xs text-gray-400">Buyer's</span>
       </div>
-      <div className="relative h-2 rounded-full bg-white/10">
-        <div
-          className={`absolute top-0 left-0 h-2 rounded-full transition-all ${barColor}`}
-          style={{ width: `${pct}%` }}
-        />
+      <div className="relative h-2 rounded-full bg-gray-100">
+        <div className={`absolute top-0 left-0 h-2 rounded-full bg-gradient-to-r from-orange-400 via-amber-300 to-emerald-400`} style={{ width: '100%', opacity: 0.25 }} />
+        <div className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white shadow-md ${dotColor}`} style={{ left: `calc(${pct}% - 8px)` }} />
       </div>
-      <p className="text-center text-xs text-white/40">{mos} months of supply</p>
+      <p className="text-center text-xs text-gray-400">{mos} months of supply</p>
     </div>
   )
 }
 
-// ─── Slide components ─────────────────────────────────────────────────────────
-
-function SlideWrapper({
-  children,
-  className = '',
-}: {
-  children: React.ReactNode
-  className?: string
-}) {
-  return (
-    <div
-      className={`relative w-full h-full flex flex-col overflow-hidden bg-gray-950 ${className}`}
-    >
-      {/* ambient glow */}
-      <div className="pointer-events-none absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-orange-500/8 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-amber-500/5 blur-3xl" />
-      {children}
-    </div>
-  )
-}
+// ─── Shared layout pieces ─────────────────────────────────────────────────────
 
 function SlideFooter({ city, date }: { city: string; date: string }) {
   return (
-    <div className="absolute bottom-0 left-0 right-0 px-8 py-3 flex items-center justify-between border-t border-white/5">
-      <Image src="/mk-logo-white.png" alt="MasterKey" width={90} height={24} className="opacity-50" onError={() => {}} />
-      <span className="text-[10px] text-white/25 uppercase tracking-widest">
+    <div className="absolute bottom-0 left-0 right-0 h-10 flex items-center justify-between px-8 bg-white border-t border-gray-100">
+      {/* Logo */}
+      <div className="flex items-center gap-2">
+        <Image
+          src="/images/masterkey-black-logo.png"
+          alt="MasterKey"
+          width={88}
+          height={22}
+          className="opacity-60 object-contain"
+          onError={() => {}}
+        />
+      </div>
+      <span className="text-[10px] text-gray-300 uppercase tracking-widest hidden sm:block">
         {city} · {date}
       </span>
-      <span className="text-[10px] text-white/25">mathiasregroup.com · DRE 01892427</span>
+      <span className="text-[10px] text-gray-300">mathiasregroup.com · DRE 01892427</span>
     </div>
   )
 }
 
-// Slide 1 — Cover
-function SlideCover({ data }: { data: MarketData }) {
+/** Full-bleed image pane — right half of a split slide */
+function ImagePane({ src, alt, overlay = true }: { src: string; alt: string; overlay?: boolean }) {
   return (
-    <SlideWrapper>
-      <div className="flex flex-col items-center justify-center flex-1 px-10 text-center py-16">
-        <div className="inline-flex items-center gap-2 text-xs font-semibold text-orange-400 bg-orange-400/10 border border-orange-400/20 px-3 py-1.5 rounded-full mb-6">
-          <MapPin className="w-3 h-3" />
-          MONTHLY MARKET REPORT
-        </div>
-        <h1 className="text-5xl sm:text-6xl font-bold text-white leading-tight mb-3">
-          {data.city}
-        </h1>
-        <p className="text-white/50 text-xl mb-8">{data.reportMonth}</p>
-        <div className="grid grid-cols-3 gap-4 w-full max-w-lg mt-4">
-          {[
-            { label: 'Homes Sold', value: fmt(data.closedSales), icon: Home },
-            { label: 'Median Price', value: fmtPrice(data.medSoldPrice), icon: DollarSign },
-            { label: 'Active Listings', value: fmt(data.activeListings), icon: Building2 },
-          ].map(({ label, value, icon: Icon }) => (
-            <div key={label} className="bg-white/5 border border-white/10 rounded-2xl p-4">
-              <Icon className="w-4 h-4 text-orange-400 mb-2 mx-auto" />
-              <p className="text-xl font-bold text-white">{value}</p>
-              <p className="text-xs text-white/40 mt-1">{label}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-8 flex items-center gap-3">
-          <Image
-            src="/mike-avatar.png"
-            alt="Mike Mathias"
-            width={40}
-            height={40}
-            className="rounded-full border border-white/10"
-          />
-          <div className="text-left">
-            <p className="text-sm font-semibold text-white">Mike Mathias</p>
-            <p className="text-xs text-white/40">Mathias Real Estate Group · 805.262.9707</p>
-          </div>
-        </div>
-      </div>
-      <SlideFooter city={data.city} date={data.date} />
-    </SlideWrapper>
+    <div className="relative w-full h-full overflow-hidden">
+      <Image src={src} alt={alt} fill className="object-cover" sizes="(max-width: 900px) 100vw, 50vw" />
+      {overlay && (
+        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10" />
+      )}
+    </div>
   )
 }
 
-// Slide 2 — Market at a Glance (key stats)
-function SlideSnapshot({ data }: { data: MarketData }) {
-  const momMedian = delta(data.medSoldPrice, data.mom.medSoldPrice)
-  const yoyMedian = delta(data.medSoldPrice, data.yoy.medSoldPrice)
-  const momDom = delta(data.medDaysOnMarket, data.mom.medDaysOnMarket)
-  const yoyClosed = delta(data.closedSales, data.yoy.closedSales)
+/** Eyebrow label above a section title */
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-orange-500 mb-1">
+      {children}
+    </p>
+  )
+}
 
+/** Orange accent pill badge */
+function TagBadge({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-full">
+      {children}
+    </span>
+  )
+}
+
+// ─── Slide 1 — Cover (split: left = content, right = hero home image) ────────
+
+function SlideCover({ data }: { data: MarketData }) {
+  return (
+    <div className="relative w-full h-full bg-white flex">
+      {/* Left panel */}
+      <div className="flex flex-col justify-between w-[52%] px-10 py-10 pb-14">
+        {/* Top brand strip */}
+        <div className="flex items-center gap-2">
+          <Image src="/images/masterkey-black-logo.png" alt="MasterKey" width={100} height={26} className="object-contain opacity-80" onError={() => {}} />
+        </div>
+
+        {/* Main content */}
+        <div>
+          <TagBadge><MapPin className="w-3 h-3" />Monthly Market Report</TagBadge>
+          <h1 className="mt-4 text-5xl font-bold text-gray-950 leading-tight">{data.city}</h1>
+          <p className="text-gray-400 text-lg mt-1 font-medium">{data.reportMonth}</p>
+
+          {/* 3 key stats */}
+          <div className="mt-6 grid grid-cols-3 gap-3">
+            {[
+              { label: 'Homes Sold', value: fmt(data.closedSales), icon: Home },
+              { label: 'Median Price', value: fmtPrice(data.medSoldPrice), icon: DollarSign },
+              { label: 'Active Listings', value: fmt(data.activeListings), icon: Building2 },
+            ].map(({ label, value, icon: Icon }) => (
+              <div key={label} className="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-center">
+                <Icon className="w-4 h-4 text-orange-500 mx-auto mb-1.5" />
+                <p className="text-xl font-bold text-gray-950">{value}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Agent */}
+        <div className="flex items-center gap-3">
+          <Image src="/mike-avatar.png" alt="Mike Mathias" width={44} height={44} className="rounded-full border-2 border-orange-100 object-cover" />
+          <div>
+            <p className="text-sm font-semibold text-gray-900">Mike Mathias</p>
+            <p className="text-xs text-gray-400">Mathias Real Estate Group · 805.262.9707</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Right — full bleed lifestyle image */}
+      <div className="flex-1 relative overflow-hidden rounded-l-3xl">
+        <Image src="/modern-home-exterior.png" alt="Thousand Oaks home" fill className="object-cover" />
+        {/* Gradient fade to left */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-transparent to-transparent" />
+        {/* Month badge overlay */}
+        <div className="absolute bottom-14 right-5 bg-white/90 backdrop-blur-sm border border-gray-100 rounded-2xl px-4 py-3 text-right shadow-lg">
+          <p className="text-[10px] uppercase tracking-widest text-orange-500 font-semibold">Report Month</p>
+          <p className="text-base font-bold text-gray-950 mt-0.5">{data.reportMonth}</p>
+        </div>
+      </div>
+
+      <SlideFooter city={data.city} date={data.date} />
+    </div>
+  )
+}
+
+// ─── Slide 2 — Market Snapshot ────────────────────────────────────────────────
+
+function SlideSnapshot({ data }: { data: MarketData }) {
   const stats = [
     {
       label: 'Median Sale Price',
       value: fmtPrice(data.medSoldPrice),
-      full: fmtFull(data.medSoldPrice),
-      mom: momMedian,
-      yoy: yoyMedian,
+      sub: fmtFull(data.medSoldPrice),
+      mom: delta(data.medSoldPrice, data.mom.medSoldPrice),
+      yoy: delta(data.medSoldPrice, data.yoy.medSoldPrice),
       icon: DollarSign,
-      accent: 'orange',
+      accent: true,
     },
     {
       label: 'Homes Sold',
       value: fmt(data.closedSales),
-      full: null,
+      sub: data.reportMonth,
       mom: delta(data.closedSales, data.mom.closedSales),
-      yoy: yoyClosed,
+      yoy: delta(data.closedSales, data.yoy.closedSales),
       icon: Home,
-      accent: 'blue',
     },
     {
       label: 'Median Days on Market',
       value: fmt(data.medDaysOnMarket),
-      full: null,
-      mom: momDom,
+      sub: 'days',
+      mom: delta(data.medDaysOnMarket, data.mom.medDaysOnMarket),
       yoy: delta(data.medDaysOnMarket, data.yoy.medDaysOnMarket),
       icon: Clock,
-      accent: 'green',
-      invertDelta: true,
+      invert: true,
     },
     {
       label: 'Avg. Price / Sq Ft',
       value: data.avgPricePerSqft ? `$${fmt(data.avgPricePerSqft)}` : '—',
-      full: null,
+      sub: 'per sq ft',
       mom: delta(data.avgPricePerSqft, data.mom.avgPricePerSqft),
       yoy: delta(data.avgPricePerSqft, data.yoy.avgPricePerSqft),
       icon: Percent,
-      accent: 'purple',
     },
   ]
 
   return (
-    <SlideWrapper>
-      <div className="flex flex-col flex-1 px-10 py-10 pb-16">
-        <p className="text-xs font-semibold uppercase tracking-widest text-orange-400 mb-1">
-          {data.reportMonth}
-        </p>
-        <h2 className="text-3xl font-bold text-white mb-8">Market at a Glance</h2>
+    <div className="relative w-full h-full bg-white flex flex-col pb-10">
+      {/* Top color bar */}
+      <div className="h-1.5 w-full bg-gradient-to-r from-orange-400 via-orange-300 to-amber-200" />
 
-        <div className="grid grid-cols-2 gap-4 flex-1">
-          {stats.map(({ label, value, full, mom, yoy, icon: Icon, invertDelta }) => (
+      <div className="flex flex-col flex-1 px-10 py-7">
+        <Eyebrow>{data.reportMonth}</Eyebrow>
+        <h2 className="text-3xl font-bold text-gray-950 mb-6">Market at a Glance</h2>
+
+        <div className="grid grid-cols-4 gap-4 flex-1">
+          {stats.map(({ label, value, sub, mom, yoy, icon: Icon, accent, invert }) => (
             <div
               key={label}
-              className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col"
+              className={`rounded-2xl border p-5 flex flex-col ${
+                accent
+                  ? 'bg-orange-50 border-orange-100'
+                  : 'bg-gray-50 border-gray-100'
+              }`}
             >
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center">
-                  <Icon className="w-4 h-4 text-orange-400" />
-                </div>
-                <p className="text-xs text-white/50 font-medium">{label}</p>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-4 ${accent ? 'bg-orange-100' : 'bg-white border border-gray-100'}`}>
+                <Icon className={`w-4 h-4 ${accent ? 'text-orange-500' : 'text-gray-500'}`} />
               </div>
-              <p className="text-4xl font-bold text-white mb-1">{value}</p>
-              {full && <p className="text-xs text-white/30 mb-3">{full}</p>}
-              <div className="mt-auto flex items-center gap-4 pt-3 border-t border-white/5">
+              <p className={`text-3xl font-bold mb-1 ${accent ? 'text-orange-600' : 'text-gray-950'}`}>{value}</p>
+              <p className="text-xs text-gray-400 mb-auto">{sub}</p>
+              <p className="text-[10px] text-gray-400 font-medium mt-3 mb-1">{label}</p>
+              <div className="flex items-center gap-3 pt-2 border-t border-gray-200/60">
                 <div>
-                  <p className="text-[10px] text-white/30 mb-0.5">vs. Last Month</p>
-                  <DeltaBadge pct={mom} invert={invertDelta} />
+                  <p className="text-[9px] text-gray-300 mb-0.5">MoM</p>
+                  <DeltaBadge pct={mom} invert={invert} size="xs" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-white/30 mb-0.5">vs. Last Year</p>
-                  <DeltaBadge pct={yoy} invert={invertDelta} />
+                  <p className="text-[9px] text-gray-300 mb-0.5">YoY</p>
+                  <DeltaBadge pct={yoy} invert={invert} size="xs" />
                 </div>
               </div>
             </div>
@@ -345,69 +346,63 @@ function SlideSnapshot({ data }: { data: MarketData }) {
         </div>
       </div>
       <SlideFooter city={data.city} date={data.date} />
-    </SlideWrapper>
+    </div>
   )
 }
 
-// Slide 3 — Inventory & Supply
+// ─── Slide 3 — Inventory (split: stats left, living room right) ────────────────
+
 function SlideInventory({ data }: { data: MarketData }) {
   return (
-    <SlideWrapper>
-      <div className="flex flex-col flex-1 px-10 py-10 pb-16">
-        <p className="text-xs font-semibold uppercase tracking-widest text-orange-400 mb-1">
-          Inventory
-        </p>
-        <h2 className="text-3xl font-bold text-white mb-8">What&apos;s on the Market</h2>
+    <div className="relative w-full h-full bg-white flex pb-10">
+      {/* Left */}
+      <div className="flex flex-col w-[55%] px-10 py-8">
+        <Eyebrow>Inventory · {data.reportMonth}</Eyebrow>
+        <h2 className="text-3xl font-bold text-gray-950 mb-6">What&apos;s on the Market</h2>
 
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-3 mb-5">
           {[
-            {
-              label: 'Active Listings',
-              value: fmt(data.activeListings),
-              sub: 'Homes available today',
-              icon: Building2,
-            },
-            {
-              label: 'New This Month',
-              value: fmt(data.newListings),
-              sub: 'Listed in ' + data.reportMonth,
-              icon: Calendar,
-            },
-            {
-              label: 'Months of Supply',
-              value: data.monthsOfSupply != null ? String(data.monthsOfSupply) : '—',
-              sub: 'Active ÷ last month sold',
-              icon: Activity,
-            },
+            { label: 'Active Listings', value: fmt(data.activeListings), sub: 'available today', icon: Building2 },
+            { label: 'New This Month', value: fmt(data.newListings), sub: 'recently listed', icon: Calendar },
+            { label: 'Months of Supply', value: data.monthsOfSupply != null ? String(data.monthsOfSupply) : '—', sub: 'active ÷ sold', icon: Activity },
           ].map(({ label, value, sub, icon: Icon }) => (
-            <div key={label} className="bg-white/5 border border-white/10 rounded-2xl p-5">
-              <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center mb-3">
-                <Icon className="w-4 h-4 text-orange-400" />
-              </div>
-              <p className="text-4xl font-bold text-white mb-1">{value}</p>
-              <p className="text-xs text-white/40">{label}</p>
-              <p className="text-[11px] text-white/25 mt-1">{sub}</p>
+            <div key={label} className="bg-gray-50 border border-gray-100 rounded-2xl p-4">
+              <Icon className="w-4 h-4 text-orange-500 mb-2" />
+              <p className="text-3xl font-bold text-gray-950">{value}</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">{label}</p>
+              <p className="text-[10px] text-gray-300 mt-0.5">{sub}</p>
             </div>
           ))}
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <p className="text-sm font-semibold text-white mb-4">Market Condition</p>
-          <MarketConditionBar mos={data.monthsOfSupply} />
-          <p className="text-xs text-white/30 mt-4 leading-relaxed">
-            Months of supply = active listings ÷ homes sold last month.{' '}
-            <span className="text-orange-400">Under 3 months</span> favors sellers.{' '}
-            <span className="text-yellow-400">3–6 months</span> is balanced.{' '}
-            <span className="text-green-400">Over 6 months</span> favors buyers.
+        <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 flex-1">
+          <p className="text-xs font-semibold text-gray-700 mb-4">Market Condition</p>
+          <MarketConditionMeter mos={data.monthsOfSupply} />
+          <p className="text-xs text-gray-400 mt-5 leading-relaxed">
+            Months of supply = active listings ÷ homes closed last month.{' '}
+            <span className="text-orange-500 font-medium">Under 3</span> favors sellers.{' '}
+            <span className="text-amber-500 font-medium">3–6</span> is balanced.{' '}
+            <span className="text-emerald-500 font-medium">Over 6</span> favors buyers.
           </p>
         </div>
       </div>
+
+      {/* Right — lifestyle image */}
+      <div className="flex-1 relative overflow-hidden rounded-l-3xl mx-0 my-4 mr-4">
+        <ImagePane src="/bright-living-room-with-hardwood-floors.png" alt="Bright living room" />
+        <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl px-4 py-3 border border-gray-100">
+          <p className="text-[10px] uppercase tracking-widest text-orange-500 font-semibold">Active Listings</p>
+          <p className="text-xl font-bold text-gray-950">{fmt(data.activeListings)} homes available</p>
+        </div>
+      </div>
+
       <SlideFooter city={data.city} date={data.date} />
-    </SlideWrapper>
+    </div>
   )
 }
 
-// Slide 4 — Pricing Breakdown
+// ─── Slide 4 — Pricing ────────────────────────────────────────────────────────
+
 function SlidePricing({ data }: { data: MarketData }) {
   const spreadPct =
     data.medListPrice && data.medSoldPrice
@@ -415,445 +410,352 @@ function SlidePricing({ data }: { data: MarketData }) {
       : null
 
   return (
-    <SlideWrapper>
-      <div className="flex flex-col flex-1 px-10 py-10 pb-16">
-        <p className="text-xs font-semibold uppercase tracking-widest text-orange-400 mb-1">
-          Pricing
-        </p>
-        <h2 className="text-3xl font-bold text-white mb-8">How Homes Are Pricing</h2>
+    <div className="relative w-full h-full bg-white flex pb-10">
+      {/* Left: kitchen lifestyle */}
+      <div className="w-[40%] relative overflow-hidden rounded-r-3xl my-4 ml-4">
+        <ImagePane src="/updated-kitchen-with-granite-countertops.png" alt="Upgraded kitchen" overlay={false} />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/60 via-transparent to-transparent" />
+        <div className="absolute bottom-4 left-4 right-4">
+          <p className="text-[10px] uppercase tracking-widest text-orange-400 font-semibold mb-1">Median Sale Price</p>
+          <p className="text-3xl font-bold text-white">{fmtPrice(data.medSoldPrice)}</p>
+          <p className="text-xs text-white/60">{fmtFull(data.medSoldPrice)}</p>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-3">
-              Median List Price
-            </p>
-            <p className="text-4xl font-bold text-white">{fmtPrice(data.medListPrice)}</p>
-            <p className="text-xs text-white/30 mt-1">{fmtFull(data.medListPrice)}</p>
+      {/* Right: stats */}
+      <div className="flex-1 flex flex-col px-8 py-8">
+        <Eyebrow>Pricing · {data.reportMonth}</Eyebrow>
+        <h2 className="text-3xl font-bold text-gray-950 mb-5">How Homes Are Pricing</h2>
+
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5">
+            <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Median List Price</p>
+            <p className="text-3xl font-bold text-gray-950">{fmtPrice(data.medListPrice)}</p>
+            <p className="text-xs text-gray-400 mt-1">{fmtFull(data.medListPrice)}</p>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-3">
-              Median Sale Price
-            </p>
-            <p className="text-4xl font-bold text-orange-400">{fmtPrice(data.medSoldPrice)}</p>
-            <p className="text-xs text-white/30 mt-1">{fmtFull(data.medSoldPrice)}</p>
+          <div className="bg-orange-50 border border-orange-100 rounded-2xl p-5">
+            <p className="text-[10px] uppercase tracking-widest text-orange-400 mb-2">Median Sale Price</p>
+            <p className="text-3xl font-bold text-orange-600">{fmtPrice(data.medSoldPrice)}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-xs text-gray-400">{fmtFull(data.medSoldPrice)}</p>
+              <DeltaBadge pct={delta(data.medSoldPrice, data.yoy.medSoldPrice)} size="xs" />
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-2">
-              List-to-Sale
-            </p>
-            <p className={`text-3xl font-bold ${spreadPct && spreadPct >= 0 ? 'text-green-400' : 'text-orange-400'}`}>
+        <div className="grid grid-cols-3 gap-3 flex-1">
+          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col justify-between">
+            <p className="text-[10px] uppercase tracking-widest text-gray-400">List-to-Sale</p>
+            <p className={`text-2xl font-bold ${spreadPct != null && spreadPct >= 0 ? 'text-emerald-600' : 'text-orange-500'}`}>
               {spreadPct != null ? `${spreadPct > 0 ? '+' : ''}${spreadPct}%` : '—'}
             </p>
-            <p className="text-[11px] text-white/30 mt-1">Sale vs. list</p>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-2">
-              Sold Above List
-            </p>
-            <p className="text-3xl font-bold text-green-400">
-              {data.aboveList != null ? `${data.aboveList}` : '—'}
-            </p>
-            <p className="text-[11px] text-white/30 mt-1">homes</p>
+          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col justify-between">
+            <p className="text-[10px] uppercase tracking-widest text-gray-400">Above List</p>
+            <p className="text-2xl font-bold text-emerald-600">{data.aboveList ?? '—'}</p>
+            <p className="text-[10px] text-gray-300">homes</p>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-2">
-              Sold Below List
-            </p>
-            <p className="text-3xl font-bold text-orange-400">
-              {data.belowList != null ? `${data.belowList}` : '—'}
-            </p>
-            <p className="text-[11px] text-white/30 mt-1">homes</p>
+          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col justify-between">
+            <p className="text-[10px] uppercase tracking-widest text-gray-400">Below List</p>
+            <p className="text-2xl font-bold text-orange-500">{data.belowList ?? '—'}</p>
+            <p className="text-[10px] text-gray-300">homes</p>
           </div>
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-          <p className="text-xs font-semibold text-white/50 mb-1">Avg. Price per Sq Ft</p>
-          <div className="flex items-end gap-3">
-            <p className="text-3xl font-bold text-white">
-              {data.avgPricePerSqft ? `$${fmt(data.avgPricePerSqft)}` : '—'}
-            </p>
-            <DeltaBadge pct={delta(data.avgPricePerSqft, data.yoy.avgPricePerSqft)} label="YoY" />
+        <div className="bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3 mt-3 flex items-center justify-between">
+          <p className="text-xs text-gray-500 font-medium">Avg. Price per Sq Ft</p>
+          <div className="flex items-center gap-2">
+            <p className="text-xl font-bold text-gray-950">{data.avgPricePerSqft ? `$${fmt(data.avgPricePerSqft)}` : '—'}</p>
+            <DeltaBadge pct={delta(data.avgPricePerSqft, data.yoy.avgPricePerSqft)} size="xs" />
           </div>
         </div>
       </div>
+
       <SlideFooter city={data.city} date={data.date} />
-    </SlideWrapper>
+    </div>
   )
 }
 
-// Slide 5 — Days on Market
+// ─── Slide 5 — Days on Market (split: stats left, master bedroom right) ───────
+
 function SlideDaysOnMarket({ data }: { data: MarketData }) {
+  const speedLabel = (dom: number | null) => {
+    if (dom == null) return null
+    if (dom <= 14) return { text: 'Hot market — homes moving in under 2 weeks.', color: 'text-orange-600', bg: 'bg-orange-50 border-orange-100' }
+    if (dom <= 30) return { text: 'Active market — most homes sell within a month.', color: 'text-amber-600', bg: 'bg-amber-50 border-amber-100' }
+    return { text: 'Measured pace — buyers have more time to evaluate.', color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' }
+  }
+  const badge = speedLabel(data.medDaysOnMarket)
+
   return (
-    <SlideWrapper>
-      <div className="flex flex-col flex-1 px-10 py-10 pb-16">
-        <p className="text-xs font-semibold uppercase tracking-widest text-orange-400 mb-1">
-          Speed
-        </p>
-        <h2 className="text-3xl font-bold text-white mb-8">How Fast Are Homes Selling?</h2>
+    <div className="relative w-full h-full bg-white flex pb-10">
+      {/* Left */}
+      <div className="flex flex-col w-[55%] px-10 py-8">
+        <Eyebrow>Speed · {data.reportMonth}</Eyebrow>
+        <h2 className="text-3xl font-bold text-gray-950 mb-6">How Fast Are Homes Selling?</h2>
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center">
-            <Clock className="w-8 h-8 text-orange-400 mb-3" />
-            <p className="text-6xl font-bold text-white mb-2">{fmt(data.medDaysOnMarket)}</p>
-            <p className="text-sm text-white/50">Median Days on Market</p>
-            <div className="mt-4 flex gap-4">
-              <div>
-                <p className="text-[10px] text-white/30">vs. Last Mo</p>
-                <DeltaBadge
-                  pct={delta(data.medDaysOnMarket, data.mom.medDaysOnMarket)}
-                  invert={true}
-                />
-              </div>
-              <div>
-                <p className="text-[10px] text-white/30">vs. Last Yr</p>
-                <DeltaBadge
-                  pct={delta(data.medDaysOnMarket, data.yoy.medDaysOnMarket)}
-                  invert={true}
-                />
-              </div>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="bg-orange-50 border border-orange-100 rounded-2xl p-6 text-center">
+            <Clock className="w-6 h-6 text-orange-500 mx-auto mb-2" />
+            <p className="text-5xl font-bold text-orange-600 mb-1">{fmt(data.medDaysOnMarket)}</p>
+            <p className="text-xs text-gray-500 font-medium">Median Days on Market</p>
+            <div className="flex justify-center gap-4 mt-3 pt-3 border-t border-orange-100">
+              <div><p className="text-[9px] text-gray-300">MoM</p><DeltaBadge pct={delta(data.medDaysOnMarket, data.mom.medDaysOnMarket)} invert size="xs" /></div>
+              <div><p className="text-[9px] text-gray-300">YoY</p><DeltaBadge pct={delta(data.medDaysOnMarket, data.yoy.medDaysOnMarket)} invert size="xs" /></div>
             </div>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center">
-            <Activity className="w-8 h-8 text-orange-400 mb-3" />
-            <p className="text-6xl font-bold text-white mb-2">{fmt(data.avgDaysOnMarket)}</p>
-            <p className="text-sm text-white/50">Average Days on Market</p>
-            <div className="mt-4 flex gap-4">
-              <div>
-                <p className="text-[10px] text-white/30">vs. Last Mo</p>
-                <DeltaBadge
-                  pct={delta(data.avgDaysOnMarket, data.mom.avgDaysOnMarket)}
-                  invert={true}
-                />
-              </div>
-              <div>
-                <p className="text-[10px] text-white/30">vs. Last Yr</p>
-                <DeltaBadge
-                  pct={delta(data.avgDaysOnMarket, data.yoy.avgDaysOnMarket)}
-                  invert={true}
-                />
-              </div>
+          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 text-center">
+            <Activity className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+            <p className="text-5xl font-bold text-gray-950 mb-1">{fmt(data.avgDaysOnMarket)}</p>
+            <p className="text-xs text-gray-500 font-medium">Average Days on Market</p>
+            <div className="flex justify-center gap-4 mt-3 pt-3 border-t border-gray-100">
+              <div><p className="text-[9px] text-gray-300">MoM</p><DeltaBadge pct={delta(data.avgDaysOnMarket, data.mom.avgDaysOnMarket)} invert size="xs" /></div>
+              <div><p className="text-[9px] text-gray-300">YoY</p><DeltaBadge pct={delta(data.avgDaysOnMarket, data.yoy.avgDaysOnMarket)} invert size="xs" /></div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-          <p className="text-xs font-semibold text-white/50 mb-3">Context</p>
-          <div className="space-y-2 text-sm text-white/60 leading-relaxed">
-            {(data.medDaysOnMarket ?? 99) <= 14 && (
-              <p>
-                <span className="text-orange-400 font-semibold">Hot market.</span> Homes are going
-                under contract in 2 weeks or less — buyers need to move fast with strong offers.
-              </p>
-            )}
-            {(data.medDaysOnMarket ?? 0) > 14 && (data.medDaysOnMarket ?? 0) <= 30 && (
-              <p>
-                <span className="text-yellow-400 font-semibold">Active market.</span> Most
-                well-priced homes are selling within a month. Negotiating room is limited.
-              </p>
-            )}
-            {(data.medDaysOnMarket ?? 0) > 30 && (
-              <p>
-                <span className="text-green-400 font-semibold">Measured pace.</span> Buyers have
-                more time to evaluate and negotiate. Sellers benefit from strategic pricing and
-                staging.
-              </p>
-            )}
+        {badge && (
+          <div className={`rounded-2xl border px-5 py-4 ${badge.bg}`}>
+            <p className={`text-sm font-semibold ${badge.color}`}>{badge.text}</p>
           </div>
-        </div>
+        )}
       </div>
+
+      {/* Right — master bedroom */}
+      <div className="flex-1 relative overflow-hidden rounded-l-3xl my-4 mr-4">
+        <ImagePane src="/large-window-master-bedroom.png" alt="Master bedroom with large windows" overlay={false} />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/50 via-transparent to-transparent" />
+      </div>
+
       <SlideFooter city={data.city} date={data.date} />
-    </SlideWrapper>
+    </div>
   )
 }
 
-// Slide 6 — 12-Month Sales Trend Chart
+// ─── Slide 6 — 12-Month Trend Chart ───────────────────────────────────────────
+
 function SlideTrend({ data }: { data: MarketData }) {
   if (!data.trend || data.trend.length === 0) {
     return (
-      <SlideWrapper>
-        <div className="flex items-center justify-center flex-1">
-          <p className="text-white/40">No trend data available</p>
-        </div>
+      <div className="relative w-full h-full bg-white flex items-center justify-center pb-10">
+        <p className="text-gray-400">No trend data available</p>
         <SlideFooter city={data.city} date={data.date} />
-      </SlideWrapper>
+      </div>
     )
   }
 
+  const total = data.trend.reduce((s, t) => s + t.closedSales, 0)
+  const avg = Math.round(total / data.trend.length)
+  const peak = data.trend.reduce((best, t) => (t.closedSales > best.closedSales ? t : best), data.trend[0])
+
   return (
-    <SlideWrapper>
-      <div className="flex flex-col flex-1 px-10 py-10 pb-16">
-        <p className="text-xs font-semibold uppercase tracking-widest text-orange-400 mb-1">
-          Trend
-        </p>
-        <h2 className="text-3xl font-bold text-white mb-2">12-Month Sales Volume</h2>
-        <p className="text-sm text-white/40 mb-6">Homes closed per month · {data.city}</p>
+    <div className="relative w-full h-full bg-white flex flex-col pb-10">
+      <div className="h-1.5 w-full bg-gradient-to-r from-orange-400 via-orange-300 to-amber-200" />
+      <div className="flex flex-col flex-1 px-10 py-7">
+        <Eyebrow>Trend</Eyebrow>
+        <div className="flex items-end justify-between mb-4">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-950 leading-tight">12-Month Sales Volume</h2>
+            <p className="text-sm text-gray-400 mt-0.5">Homes closed per month · {data.city}</p>
+          </div>
+          <div className="flex gap-5 text-right">
+            <div><p className="text-[10px] text-gray-300 uppercase tracking-widest">12-Mo Total</p><p className="text-xl font-bold text-gray-950">{fmt(total)}</p></div>
+            <div><p className="text-[10px] text-gray-300 uppercase tracking-widest">Monthly Avg</p><p className="text-xl font-bold text-gray-950">{avg}</p></div>
+            <div><p className="text-[10px] text-gray-300 uppercase tracking-widest">Peak Month</p><p className="text-xl font-bold text-orange-500">{peak.label}</p></div>
+          </div>
+        </div>
 
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data.trend} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis
-                dataKey="label"
-                tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-              />
+            <BarChart data={data.trend} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
+              <XAxis dataKey="label" tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{
-                  background: '#111827',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                  color: '#fff',
-                  fontSize: 12,
-                }}
-                cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                contentStyle={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '10px', color: '#111827', fontSize: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}
+                cursor={{ fill: 'rgba(249,115,22,0.04)' }}
                 formatter={(val: number) => [val, 'Homes Sold']}
               />
-              <Bar
-                dataKey="closedSales"
-                fill="rgba(249,115,22,0.7)"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={40}
-              />
+              <Bar dataKey="closedSales" fill="#f97316" radius={[4, 4, 0, 0]} maxBarSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-
-        <div className="mt-4 flex gap-6 text-xs text-white/40">
-          <span>Total (12 mo): <strong className="text-white">{fmt(data.trend.reduce((s, t) => s + t.closedSales, 0))}</strong> homes</span>
-          <span>Avg/mo: <strong className="text-white">{Math.round(data.trend.reduce((s, t) => s + t.closedSales, 0) / data.trend.length)}</strong></span>
-          <span>Peak: <strong className="text-white">{Math.max(...data.trend.map(t => t.closedSales))}</strong> ({data.trend.reduce((best, t) => t.closedSales > best.closedSales ? t : best, data.trend[0])?.label})</span>
-        </div>
       </div>
       <SlideFooter city={data.city} date={data.date} />
-    </SlideWrapper>
+    </div>
   )
 }
 
-// Slide 7 — Recent Sales showcase
+// ─── Slide 7 — Recent Sales ────────────────────────────────────────────────────
+
 function SlideRecentSales({ data }: { data: MarketData }) {
   const sales = data.recentSales?.slice(0, 6) || []
 
   return (
-    <SlideWrapper>
-      <div className="flex flex-col flex-1 px-10 py-10 pb-16">
-        <p className="text-xs font-semibold uppercase tracking-widest text-orange-400 mb-1">
-          Recent Transactions
-        </p>
-        <h2 className="text-3xl font-bold text-white mb-6">
-          What Sold in {data.reportMonth}
-        </h2>
+    <div className="relative w-full h-full bg-white flex flex-col pb-10">
+      <div className="h-1.5 w-full bg-gradient-to-r from-orange-400 via-orange-300 to-amber-200" />
+      <div className="flex flex-col flex-1 px-10 py-7">
+        <Eyebrow>Recent Transactions</Eyebrow>
+        <h2 className="text-3xl font-bold text-gray-950 mb-5">What Sold in {data.reportMonth}</h2>
 
         <div className="grid grid-cols-2 gap-3 flex-1">
-          {sales.map((s, i) => {
-            const overUnder = s.overUnder
-            return (
-              <div
-                key={i}
-                className="bg-white/5 border border-white/10 rounded-2xl p-4 flex gap-3 items-start"
-              >
+          {sales.map((s, i) => (
+            <div key={i} className="bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden flex">
+              {/* Property image or placeholder */}
+              <div className="w-20 flex-shrink-0 relative bg-gray-100">
                 {s.image ? (
-                  <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-white/5">
-                    <img
-                      src={s.image}
-                      alt={s.address}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                  <img src={s.image} alt={s.address} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-16 h-16 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
-                    <Home className="w-6 h-6 text-white/20" />
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Home className="w-6 h-6 text-gray-200" />
                   </div>
                 )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">{s.address}</p>
-                  {s.neighborhood && (
-                    <p className="text-[11px] text-white/30 truncate">{s.neighborhood}</p>
+              </div>
+              <div className="flex-1 p-3 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 truncate leading-tight">{s.address}</p>
+                {s.neighborhood && <p className="text-[10px] text-gray-400 truncate">{s.neighborhood}</p>}
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[11px] text-gray-400">{s.beds}bd · {s.baths}ba</span>
+                  {s.sqft && <span className="text-[11px] text-gray-300">{fmt(s.sqft)} sf</span>}
+                </div>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="text-sm font-bold text-orange-600">{fmtFull(s.soldPrice)}</span>
+                  {s.overUnder != null && (
+                    <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${s.overUnder > 0 ? 'bg-emerald-50 text-emerald-600' : s.overUnder < 0 ? 'bg-red-50 text-red-500' : 'text-gray-400'}`}>
+                      {s.overUnder > 0 ? `+${s.overUnder}%` : `${s.overUnder}%`}
+                    </span>
                   )}
-                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                    <span className="text-xs text-white/40">{s.beds}bd / {s.baths}ba</span>
-                    {s.sqft && <span className="text-xs text-white/30">{fmt(s.sqft)} sf</span>}
-                  </div>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-sm font-bold text-orange-400">{fmtFull(s.soldPrice)}</span>
-                    {overUnder != null && (
-                      <span
-                        className={`text-[11px] font-semibold ${
-                          overUnder > 0 ? 'text-green-400' : overUnder < 0 ? 'text-red-400' : 'text-white/30'
-                        }`}
-                      >
-                        {overUnder > 0 ? `+${overUnder}%` : `${overUnder}%`} list
-                      </span>
-                    )}
-                    {s.daysOnMarket != null && (
-                      <span className="text-[11px] text-white/30">{s.daysOnMarket}d</span>
-                    )}
-                  </div>
+                  {s.daysOnMarket != null && <span className="text-[11px] text-gray-300 ml-auto">{s.daysOnMarket}d</span>}
                 </div>
               </div>
-            )
-          })}
+            </div>
+          ))}
         </div>
       </div>
       <SlideFooter city={data.city} date={data.date} />
-    </SlideWrapper>
+    </div>
   )
 }
 
-// Slide 8 — MoM comparison table
+// ─── Slide 8 — Month/Month Comparison ─────────────────────────────────────────
+
 function SlideMoMComparison({ data }: { data: MarketData }) {
+  const prevDate = new Date(data.date + '-01')
+  prevDate.setMonth(prevDate.getMonth() - 1)
+  const prevLabel = prevDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+
   const rows = [
-    {
-      label: 'Homes Sold',
-      current: fmt(data.closedSales),
-      prev: fmt(data.mom.closedSales),
-      delta: delta(data.closedSales, data.mom.closedSales),
-    },
-    {
-      label: 'Median Sale Price',
-      current: fmtPrice(data.medSoldPrice),
-      prev: fmtPrice(data.mom.medSoldPrice),
-      delta: delta(data.medSoldPrice, data.mom.medSoldPrice),
-    },
-    {
-      label: 'Median Days on Market',
-      current: fmt(data.medDaysOnMarket),
-      prev: fmt(data.mom.medDaysOnMarket),
-      delta: delta(data.medDaysOnMarket, data.mom.medDaysOnMarket),
-      invert: true,
-    },
-    {
-      label: 'Sold Above List Price',
-      current: fmt(data.aboveList),
-      prev: fmt(data.mom.aboveList),
-      delta: delta(data.aboveList, data.mom.aboveList),
-    },
-    {
-      label: 'Avg. Price / Sq Ft',
-      current: data.avgPricePerSqft ? `$${fmt(data.avgPricePerSqft)}` : '—',
-      prev: data.mom.avgPricePerSqft ? `$${fmt(data.mom.avgPricePerSqft)}` : '—',
-      delta: delta(data.avgPricePerSqft, data.mom.avgPricePerSqft),
-    },
+    { label: 'Homes Sold', current: fmt(data.closedSales), prev: fmt(data.mom.closedSales), d: delta(data.closedSales, data.mom.closedSales) },
+    { label: 'Median Sale Price', current: fmtPrice(data.medSoldPrice), prev: fmtPrice(data.mom.medSoldPrice), d: delta(data.medSoldPrice, data.mom.medSoldPrice) },
+    { label: 'Median Days on Market', current: fmt(data.medDaysOnMarket), prev: fmt(data.mom.medDaysOnMarket), d: delta(data.medDaysOnMarket, data.mom.medDaysOnMarket), invert: true },
+    { label: 'Sold Above List Price', current: fmt(data.aboveList), prev: fmt(data.mom.aboveList), d: delta(data.aboveList, data.mom.aboveList) },
+    { label: 'Avg. Price / Sq Ft', current: data.avgPricePerSqft ? `$${fmt(data.avgPricePerSqft)}` : '—', prev: data.mom.avgPricePerSqft ? `$${fmt(data.mom.avgPricePerSqft)}` : '—', d: delta(data.avgPricePerSqft, data.mom.avgPricePerSqft) },
   ]
 
-  const prevMonthDate = new Date(data.date + '-01')
-  prevMonthDate.setMonth(prevMonthDate.getMonth() - 1)
-  const prevMonthLabel = prevMonthDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })
-
   return (
-    <SlideWrapper>
-      <div className="flex flex-col flex-1 px-10 py-10 pb-16">
-        <p className="text-xs font-semibold uppercase tracking-widest text-orange-400 mb-1">
-          Month over Month
-        </p>
-        <h2 className="text-3xl font-bold text-white mb-8">
-          {data.reportMonth} vs. {prevMonthLabel}
-        </h2>
+    <div className="relative w-full h-full bg-white flex pb-10">
+      {/* Left: table */}
+      <div className="flex flex-col w-[58%] px-10 py-8">
+        <Eyebrow>Month over Month</Eyebrow>
+        <h2 className="text-3xl font-bold text-gray-950 mb-6">{data.reportMonth} vs. {prevLabel}</h2>
 
         <div className="flex-1">
-          <div className="grid grid-cols-4 text-[10px] font-semibold uppercase tracking-widest text-white/30 px-4 mb-2">
+          <div className="grid grid-cols-4 text-[10px] font-semibold uppercase tracking-widest text-gray-300 px-4 mb-2">
             <span className="col-span-2">Metric</span>
-            <span className="text-right">{prevMonthLabel.split(' ')[0]}</span>
+            <span className="text-right">{prevLabel.split(' ')[0]}</span>
             <span className="text-right">{data.reportMonth.split(' ')[0]}</span>
           </div>
           <div className="space-y-2">
-            {rows.map(({ label, current, prev, delta: d, invert }) => (
-              <div
-                key={label}
-                className="grid grid-cols-4 items-center bg-white/5 border border-white/10 rounded-xl px-4 py-3"
-              >
-                <span className="col-span-2 text-sm text-white/70">{label}</span>
-                <span className="text-sm text-white/40 text-right">{prev}</span>
-                <div className="text-right flex items-center justify-end gap-2">
-                  <span className="text-sm font-semibold text-white">{current}</span>
-                  <DeltaBadge pct={d} invert={invert} />
+            {rows.map(({ label, current, prev, d, invert }) => (
+              <div key={label} className="grid grid-cols-4 items-center bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
+                <span className="col-span-2 text-sm text-gray-600">{label}</span>
+                <span className="text-sm text-gray-400 text-right">{prev}</span>
+                <div className="flex items-center justify-end gap-2">
+                  <span className="text-sm font-semibold text-gray-950">{current}</span>
+                  <DeltaBadge pct={d} invert={invert} size="xs" />
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="mt-6 bg-white/5 border border-white/10 rounded-2xl p-4">
-          <p className="text-xs text-white/40 leading-relaxed">
-            Data sourced from CRMLS via Repliers MLS. Stats reflect residential single-family and
-            condo transactions within {data.city} city limits.
+        <div className="mt-4 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
+          <p className="text-[11px] text-gray-400 leading-relaxed">
+            Data sourced from CRMLS via Repliers MLS. Stats reflect residential transactions within {data.city} city limits.
           </p>
         </div>
       </div>
+
+      {/* Right: sold home lifestyle */}
+      <div className="flex-1 relative overflow-hidden rounded-l-3xl my-4 mr-4">
+        <Image src="/images/mk-sold.jpg" alt="Sold home" fill className="object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/70 via-gray-950/20 to-transparent" />
+        <div className="absolute bottom-5 left-5 right-5">
+          <p className="text-[10px] uppercase tracking-widest text-orange-400 font-semibold mb-1">Month over Month</p>
+          <p className="text-2xl font-bold text-white leading-tight">
+            {data.closedSales} homes closed<br />in {data.reportMonth}
+          </p>
+        </div>
+      </div>
+
       <SlideFooter city={data.city} date={data.date} />
-    </SlideWrapper>
+    </div>
   )
 }
 
-// Slide 9 — CTA / Agent
+// ─── Slide 9 — CTA ────────────────────────────────────────────────────────────
+
 function SlideCTA({ data }: { data: MarketData }) {
   return (
-    <SlideWrapper>
-      <div className="flex flex-col items-center justify-center flex-1 px-10 py-16 text-center">
-        <div className="mb-8">
-          <Image
-            src="/mike-avatar.png"
-            alt="Mike Mathias"
-            width={80}
-            height={80}
-            className="rounded-full border-2 border-orange-400/30 mx-auto mb-4"
-          />
-          <p className="text-lg font-bold text-white">Mike Mathias</p>
-          <p className="text-sm text-white/40">Mathias Real Estate Group</p>
-          <p className="text-sm text-orange-400 mt-1">DRE #01892427</p>
+    <div className="relative w-full h-full flex pb-10">
+      {/* Left: full-bleed exterior hero */}
+      <div className="w-[45%] relative overflow-hidden rounded-r-3xl my-4 ml-4">
+        <Image src="/modern-home-exterior.png" alt="Home exterior" fill className="object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/80 via-gray-950/30 to-transparent" />
+        <div className="absolute bottom-6 left-6 right-6">
+          <p className="text-white/50 text-xs mb-1">{data.reportMonth} · {data.city}</p>
+          <p className="text-2xl font-bold text-white leading-tight">Thinking About<br />Making a Move?</p>
         </div>
-
-        <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight mb-4 max-w-sm">
-          Thinking About Making a Move?
-        </h2>
-        <p className="text-white/50 text-base mb-8 max-w-xs leading-relaxed">
-          Whether you&apos;re buying, selling, or just curious about your home&apos;s value — let&apos;s talk numbers.
-        </p>
-
-        <div className="flex flex-col gap-3 w-full max-w-xs">
-          <a
-            href="tel:8052629707"
-            className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 text-white font-semibold py-3 rounded-lg transition-colors text-sm"
-          >
-            Call 805.262.9707
-          </a>
-          <a
-            href="https://mathiasregroup.com"
-            className="flex items-center justify-center gap-2 bg-white/5 border border-white/20 hover:bg-white/10 text-white font-semibold py-3 rounded-lg transition-colors text-sm"
-          >
-            mathiasregroup.com
-          </a>
-        </div>
-
-        <p className="text-xs text-white/20 mt-8">
-          {data.reportMonth} · {data.city} Market Report
-        </p>
       </div>
+
+      {/* Right: CTA content */}
+      <div className="flex-1 bg-white flex flex-col justify-center px-10">
+        <Eyebrow>Let&apos;s Connect</Eyebrow>
+        <h2 className="text-3xl font-bold text-gray-950 leading-tight mb-3 mt-1">
+          Get expert guidance<br />on your next step.
+        </h2>
+        <p className="text-sm text-gray-500 leading-relaxed mb-7 max-w-xs">
+          Whether you&apos;re buying, selling, or just curious about your home&apos;s value — let&apos;s talk numbers. No obligation.
+        </p>
+
+        <div className="flex items-center gap-3 mb-6">
+          <Image src="/mike-avatar.png" alt="Mike Mathias" width={52} height={52} className="rounded-full border-2 border-orange-100 object-cover" />
+          <div>
+            <p className="font-bold text-gray-950">Mike Mathias</p>
+            <p className="text-xs text-gray-400">Mathias Real Estate Group · DRE 01892427</p>
+          </div>
+        </div>
+
+        <div className="space-y-3 max-w-xs">
+          <a href="tel:8052629707" className="flex items-center gap-3 bg-orange-500 hover:bg-orange-400 text-white font-semibold py-3 px-5 rounded-xl transition-colors text-sm">
+            <Phone className="w-4 h-4" /> 805.262.9707
+          </a>
+          <a href="https://mathiasregroup.com" className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-semibold py-3 px-5 rounded-xl transition-colors text-sm">
+            <Globe className="w-4 h-4 text-orange-500" /> mathiasregroup.com
+          </a>
+        </div>
+      </div>
+
       <SlideFooter city={data.city} date={data.date} />
-    </SlideWrapper>
+    </div>
   )
 }
 
-// ─── Slide deck navigation ────────────────────────────────────────────────────
+// ─── Slide registry & labels ──────────────────────────────────────────────────
 
 const SLIDE_LABELS = [
-  'Cover',
-  'Snapshot',
-  'Inventory',
-  'Pricing',
-  'Speed',
-  'Trend',
-  'Recent Sales',
-  'Month/Month',
-  'Contact',
+  'Cover', 'Snapshot', 'Inventory', 'Pricing', 'Speed', 'Trend', 'Recent Sales', 'Month/Month', 'Contact',
 ]
 
 // ─── Main page ────────────────────────────────────────────────────────────────
@@ -863,51 +765,33 @@ export default function MarketUpdatePage() {
   const citySlug = params.city ?? 'thousand-oaks'
   const date = params.date ?? new Date().toISOString().slice(0, 7)
 
-  // Convert slug to display name
-  const cityName = citySlug
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ')
+  const cityName = citySlug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 
   const [data, setData] = useState<MarketData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [slide, setSlide] = useState(0)
-  const [isFullscreen, setIsFullscreen] = useState(false)
   const deckRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setLoading(true)
     fetch(`/api/market-updates?city=${encodeURIComponent(cityName)}&date=${date}`)
       .then((r) => r.json())
-      .then((d) => {
-        if (d.error) throw new Error(d.error)
-        setData(d)
-      })
+      .then((d) => { if (d.error) throw new Error(d.error); setData(d) })
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false))
   }, [cityName, date])
 
-  function prevSlide() {
-    setSlide((s) => Math.max(0, s - 1))
-  }
-  function nextSlide() {
-    setSlide((s) => Math.min(SLIDE_LABELS.length - 1, s + 1))
-  }
+  function prev() { setSlide((s) => Math.max(0, s - 1)) }
+  function next() { setSlide((s) => Math.min(SLIDE_LABELS.length - 1, s + 1)) }
 
-  // Keyboard navigation
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'ArrowRight' || e.key === ' ') nextSlide()
-      if (e.key === 'ArrowLeft') prevSlide()
+      if (e.key === 'ArrowRight' || e.key === ' ') next()
+      if (e.key === 'ArrowLeft') prev()
       if (e.key === 'f' || e.key === 'F') {
-        if (!document.fullscreenElement) {
-          deckRef.current?.requestFullscreen()
-          setIsFullscreen(true)
-        } else {
-          document.exitFullscreen()
-          setIsFullscreen(false)
-        }
+        if (!document.fullscreenElement) { deckRef.current?.requestFullscreen() }
+        else { document.exitFullscreen() }
       }
     }
     window.addEventListener('keydown', onKey)
@@ -916,10 +800,10 @@ export default function MarketUpdatePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center space-y-3">
-          <div className="w-10 h-10 rounded-full border-2 border-orange-400/20 border-t-orange-400 animate-spin mx-auto" />
-          <p className="text-white/40 text-sm">Loading market data…</p>
+          <div className="w-10 h-10 rounded-full border-2 border-orange-200 border-t-orange-500 animate-spin mx-auto" />
+          <p className="text-gray-400 text-sm">Loading market data…</p>
         </div>
       </div>
     )
@@ -927,10 +811,10 @@ export default function MarketUpdatePage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center px-6">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
         <div className="text-center max-w-sm">
-          <p className="text-orange-400 font-semibold mb-2">Failed to load market data</p>
-          <p className="text-white/40 text-sm">{error}</p>
+          <p className="text-orange-500 font-semibold mb-2">Failed to load market data</p>
+          <p className="text-gray-400 text-sm">{error}</p>
         </div>
       </div>
     )
@@ -949,51 +833,52 @@ export default function MarketUpdatePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-950 border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <MapPin className="w-3.5 h-3.5 text-orange-400" />
-          <span className="text-xs text-white/60 font-medium">{data.city} · {data.reportMonth}</span>
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      {/* Top nav bar */}
+      <div className="flex items-center justify-between px-5 py-2.5 bg-white border-b border-gray-100 shadow-sm">
+        <div className="flex items-center gap-2.5">
+          <div className="w-2 h-2 rounded-full bg-orange-400" />
+          <span className="text-xs text-gray-600 font-medium">{data.city} · {data.reportMonth}</span>
         </div>
-        <div className="flex items-center gap-1">
+        {/* Dot nav */}
+        <div className="flex items-center gap-1.5">
           {SLIDE_LABELS.map((label, i) => (
             <button
               key={i}
               onClick={() => setSlide(i)}
               title={label}
-              className={`w-2 h-2 rounded-full transition-all ${
-                i === slide ? 'bg-orange-400 w-4' : 'bg-white/20 hover:bg-white/40'
+              className={`rounded-full transition-all ${
+                i === slide
+                  ? 'bg-orange-500 w-5 h-2'
+                  : 'bg-gray-200 hover:bg-gray-300 w-2 h-2'
               }`}
             />
           ))}
         </div>
-        <span className="text-xs text-white/30">
-          {slide + 1} / {SLIDE_LABELS.length}
-        </span>
+        <span className="text-xs text-gray-400">{slide + 1} / {SLIDE_LABELS.length}</span>
       </div>
 
-      {/* Slide area */}
-      <div className="flex-1 flex items-center justify-center bg-black p-4">
+      {/* Slide */}
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
         <div
           ref={deckRef}
-          className="relative w-full max-w-4xl bg-gray-950 rounded-2xl overflow-hidden shadow-2xl"
+          className="relative w-full max-w-5xl bg-white rounded-2xl overflow-hidden shadow-xl border border-gray-100"
           style={{ aspectRatio: '16/9' }}
         >
           {slides[slide]}
 
-          {/* Nav arrows */}
+          {/* Arrow overlays */}
           <button
-            onClick={prevSlide}
+            onClick={prev}
             disabled={slide === 0}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-black/60 disabled:opacity-20 transition-all z-10"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 disabled:opacity-20 shadow-sm transition-all z-10"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
-            onClick={nextSlide}
+            onClick={next}
             disabled={slide === slides.length - 1}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-black/60 disabled:opacity-20 transition-all z-10"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 disabled:opacity-20 shadow-sm transition-all z-10"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -1001,29 +886,17 @@ export default function MarketUpdatePage() {
       </div>
 
       {/* Bottom bar */}
-      <div className="flex items-center justify-between px-6 py-3 bg-gray-950 border-t border-white/5">
+      <div className="flex items-center justify-between px-5 py-2.5 bg-white border-t border-gray-100">
         <div className="flex gap-2">
-          <button
-            onClick={prevSlide}
-            disabled={slide === 0}
-            className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white disabled:opacity-20 transition-colors px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10"
-          >
+          <button onClick={prev} disabled={slide === 0} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 disabled:opacity-30 transition-colors px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-100">
             <ChevronLeft className="w-3.5 h-3.5" /> Prev
           </button>
-          <button
-            onClick={nextSlide}
-            disabled={slide === slides.length - 1}
-            className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white disabled:opacity-20 transition-colors px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10"
-          >
+          <button onClick={next} disabled={slide === slides.length - 1} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 disabled:opacity-30 transition-colors px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-100">
             Next <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
-
-        <span className="text-xs text-white/25 hidden sm:block">
-          Press ← → to navigate · F for fullscreen
-        </span>
-
-        <span className="text-xs font-medium text-white/40">{SLIDE_LABELS[slide]}</span>
+        <span className="text-xs text-gray-300 hidden sm:block">← → to navigate · F for fullscreen</span>
+        <span className="text-xs font-medium text-gray-400">{SLIDE_LABELS[slide]}</span>
       </div>
     </div>
   )
